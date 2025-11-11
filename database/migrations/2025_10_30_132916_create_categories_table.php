@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('color')->nullable();
+            $table->text('summary')->nullable();
+            $table->string('animation_style')->nullable();
             $table->unsignedInteger('position')->default(0);
             $table->timestamps();
+            $table->index('user_id');
         });
     }
 

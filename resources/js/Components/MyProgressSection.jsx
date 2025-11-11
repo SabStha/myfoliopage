@@ -154,7 +154,17 @@ const MyProgressSection = ({ className = '', items = null, certificates = [], co
       {homePageSections && homePageSections.length > 0 ? (
         homePageSections.map((sectionConfig, index) => {
           console.log(`Rendering section ${index}:`, sectionConfig);
-          const navLabel = (sectionConfig.nav_item_label || '').toLowerCase();
+          
+          // Handle nav_item_label - it might be a string or translatable object
+          let navItemLabel = '';
+          if (typeof sectionConfig.nav_item_label === 'string') {
+            navItemLabel = sectionConfig.nav_item_label;
+          } else if (sectionConfig.nav_item_label && typeof sectionConfig.nav_item_label === 'object') {
+            // Extract string from translatable object
+            navItemLabel = sectionConfig.nav_item_label.en || sectionConfig.nav_item_label.ja || sectionConfig.nav_item_label.label || '';
+          }
+          
+          const navLabel = (navItemLabel || '').toLowerCase();
           const isTryHackMe = navLabel.includes('tryhackme') || navLabel.includes('thm');
           
           // Use NavLinks as the data source - no need to filter old arrays
@@ -162,7 +172,11 @@ const MyProgressSection = ({ className = '', items = null, certificates = [], co
           const navLinks = sectionConfig.nav_links || [];
           
           // Debug: Log what categories data is being passed
-          console.log(`MyProgressSection: Section ${index} - navLinks count:`, navLinks.length);
+          console.log(`MyProgressSection: Section ${index} (ID: ${sectionConfig.id}) - navLinks count:`, navLinks.length);
+          console.log(`MyProgressSection: Section ${index} - nav_item_label:`, sectionConfig.nav_item_label);
+          console.log(`MyProgressSection: Section ${index} - title:`, sectionConfig.title);
+          console.log(`MyProgressSection: Section ${index} - full config:`, JSON.stringify(sectionConfig, null, 2));
+          
           navLinks.forEach((link, linkIdx) => {
             if (link.categories && link.categories.length > 0) {
               console.log(`MyProgressSection: NavLink ${linkIdx} (${link.title}) has ${link.categories.length} categories:`, 
@@ -186,6 +200,8 @@ const MyProgressSection = ({ className = '', items = null, certificates = [], co
           const subtitle = typeof sectionConfig.subtitle === 'string' 
             ? sectionConfig.subtitle 
             : (sectionConfig.subtitle?.en || sectionConfig.subtitle?.ja || '');
+          
+          console.log(`MyProgressSection: About to render section ${index} with title: "${brandTitle}", navLinks: ${navLinks.length}, Component: ${isTryHackMe ? 'TryHackMeSection' : 'CertificatesSection'}`);
           
           return (
             <div key={sectionConfig.id || index} className="mt-16 md:mt-20 lg:mt-24">

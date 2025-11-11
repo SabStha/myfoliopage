@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists before trying to alter it
+        if (!Schema::hasTable('certificates')) {
+            return;
+        }
+        
         Schema::table('certificates', function (Blueprint $table) {
             // Proof & Verification
             $table->date('expiry_date')->nullable()->after('issued_at');
@@ -37,6 +42,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Check if table exists before trying to alter it
+        if (!Schema::hasTable('certificates')) {
+            return;
+        }
+        
         Schema::table('certificates', function (Blueprint $table) {
             $table->dropForeign(['project_id']);
             $table->dropColumn([
@@ -53,5 +63,7 @@ return new class extends Migration
         });
     }
 };
+
+
 
 

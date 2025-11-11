@@ -75,7 +75,7 @@ const ProgressRow = ({
 
       {/* Right: Value/Goal - Larger text, fixed width */}
       <div className="text-right text-base text-neutral-600 uppercase tabular-nums whitespace-nowrap">
-        {value.toLocaleString()} / {goal.toLocaleString()}
+        {(value ?? 0).toLocaleString()} / {(goal ?? 100).toLocaleString()}
         {eta && <span className="ml-3 text-neutral-400 normal-case text-sm">· ETA {eta}</span>}
       </div>
     </div>

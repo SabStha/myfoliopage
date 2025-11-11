@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('category_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('nav_link_id')->nullable()->constrained('nav_links')->onDelete('set null'); // Link to subcategory (sub-nav)
             $table->string('title')->nullable();
+            $table->string('slug')->nullable();
             $table->string('image_path')->nullable();
             $table->string('url')->nullable();
             $table->text('summary')->nullable();
@@ -26,6 +28,7 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes for performance
+            $table->index('user_id');
             $table->index('category_id');
             $table->index('nav_link_id');
             $table->index('position');

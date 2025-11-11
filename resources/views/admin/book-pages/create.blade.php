@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Create New Book Page')
+@section('title', __('app.admin.book_page.create'))
 @section('content')
     <script>
         window.bookPageCreateData = {
@@ -68,7 +68,7 @@
                 },
                 async createNewSection() {
                     if (!this.newSectionName || !this.newSectionCategoryId) {
-                        alert('Please enter section name and select a category');
+                        alert('{{ __('app.admin.code_summary.please_enter_section_name_and_category') }}');
                         return;
                     }
                     this.loading = true;
@@ -109,11 +109,11 @@
                             this.newSectionCategoryId = this.selectedCategories && this.selectedCategories.length > 0 ? this.selectedCategories[0] : '';
                             this.showNewSectionForm = false;
                         } else {
-                            alert('Error creating section');
+                            alert('{{ __('app.admin.code_summary.error_creating_section') }}');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('Error creating section');
+                        alert('{{ __('app.admin.code_summary.error_creating_section') }}');
                     } finally {
                         this.loading = false;
                     }
@@ -294,8 +294,8 @@
         <div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 text-white">
             <div class="flex items-center justify-between">
                 <div class="flex-1 min-w-0">
-                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">Create New Book Page</h1>
-                    <p class="text-purple-100 text-sm sm:text-base lg:text-lg">Document your reading journey with comprehensive details</p>
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">{{ __('app.admin.book_page.create') }}</h1>
+                    <p class="text-purple-100 text-sm sm:text-base lg:text-lg">{{ __('app.admin.book_page.create_description') }}</p>
                 </div>
                 <div class="hidden md:block flex-shrink-0 ml-4">
                     <div class="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -342,7 +342,7 @@
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Basic Information
+                            {{ __('app.admin.book_page.basic_information') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6" x-data="bookPageTranslationData()">
@@ -398,13 +398,13 @@
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Slug
+                                {{ __('app.admin.book_page.slug') }}
                             </label>
                             <div class="flex items-center gap-2">
                                 <input 
                                     name="slug" 
                                     class="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none" 
-                                    placeholder="Auto-generated if empty" />
+                                    placeholder="{{ __('app.admin.book_page.slug_placeholder') }}" />
                                 <button 
                                     type="button"
                                     @click="autoSlug = !autoSlug"
@@ -415,18 +415,18 @@
                                     </svg>
                                 </button>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Auto-generated from title if left empty</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.book_page.slug_help') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Content (What you read)
+                                {{ __('app.admin.book_page.content') }}
                             </label>
                             <textarea 
                                 name="content" 
                                 rows="8" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none resize-none" 
-                                placeholder="Enter the content you read from the book page..."></textarea>
+                                placeholder="{{ __('app.admin.book_page.content_placeholder') }}"></textarea>
                         </div>
 
                         {{-- Summary Field with Bilingual Input --}}
@@ -479,7 +479,7 @@
                                     required></textarea>
                                 <p class="text-xs text-gray-500 mt-1">{{ __('app.common.type_in_japanese_auto_translate') }}</p>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Required field</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.book_page.required_field') }}</p>
                         </div>
                     </div>
                 </div>
@@ -491,57 +491,57 @@
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Learning Outcomes & Proof
+                            {{ __('app.admin.book_page.learning_outcomes') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Key Objectives (one per line)
+                                {{ __('app.admin.book_page.key_objectives') }}
                             </label>
                             <textarea 
                                 name="key_objectives" 
                                 @input="previewData.key_objectives = $event.target.value"
                                 rows="6" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none resize-none font-mono text-sm" 
-                                placeholder="• Objective 1&#10;• Objective 2&#10;• Objective 3"></textarea>
-                            <p class="text-xs text-gray-500 mt-1">Enter one objective per line</p>
+                                placeholder="{{ __('app.admin.book_page.key_objectives_placeholder') }}"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.book_page.key_objectives_hint') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Reflection / Insight (2-4 sentences)
+                                {{ __('app.admin.book_page.reflection') }}
                             </label>
                             <textarea 
                                 name="reflection" 
                                 @input="previewData.reflection = $event.target.value"
                                 rows="4" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none resize-none" 
-                                placeholder="What clicked? What was hard? What will you apply?"></textarea>
+                                placeholder="{{ __('app.admin.book_page.reflection_placeholder') }}"></textarea>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Applied Snippet / Exercise (code or screenshot link)
+                                {{ __('app.admin.book_page.applied_snippet') }}
                             </label>
                             <textarea 
                                 name="applied_snippet" 
                                 @input="previewData.applied_snippet = $event.target.value"
                                 rows="6" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none resize-none font-mono text-sm" 
-                                placeholder="Paste code snippet or link to screenshot/exercise"></textarea>
-                            <p class="text-xs text-red-500 mt-1">⚠️ If empty, Result/Evidence becomes required</p>
+                                placeholder="{{ __('app.admin.book_page.applied_snippet_placeholder') }}"></textarea>
+                            <p class="text-xs text-red-500 mt-1">⚠️ {{ __('app.admin.book_page.applied_snippet_warning') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                References / ISBN / Page Range
+                                {{ __('app.admin.book_page.references') }}
                             </label>
                             <input 
                                 name="references" 
                                 @input="previewData.references = $event.target.value"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none" 
-                                placeholder="e.g., ISBN: 978-0132350884, Pages 42-58" />
+                                placeholder="{{ __('app.admin.book_page.references_placeholder') }}" />
                         </div>
                     </div>
                 </div>
@@ -553,53 +553,53 @@
                             <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                             </svg>
-                            Reproducibility
+                            {{ __('app.admin.book_page.reproducibility') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                How to Run / Recreate (exact commands or steps)
+                                {{ __('app.admin.book_page.how_to_run') }}
                             </label>
                             <textarea 
                                 name="how_to_run" 
                                 @input="previewData.how_to_run = $event.target.value"
                                 rows="6" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all outline-none resize-none font-mono text-sm" 
-                                placeholder="Step 1: Command here&#10;Step 2: Command here"></textarea>
+                                placeholder="{{ __('app.admin.book_page.how_to_run_placeholder') }}"></textarea>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Result / Evidence (expected output, screenshot, or link to gist)
+                                {{ __('app.admin.book_page.result_evidence') }}
                             </label>
                             <textarea 
                                 name="result_evidence" 
                                 @input="previewData.result_evidence = $event.target.value"
                                 rows="4" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all outline-none resize-none" 
-                                placeholder="Expected output or link to screenshot/gist"></textarea>
-                            <p class="text-xs text-red-500 mt-1">⚠️ Required if Applied Snippet is empty</p>
+                                placeholder="{{ __('app.admin.book_page.result_evidence_placeholder') }}"></textarea>
+                            <p class="text-xs text-red-500 mt-1">⚠️ {{ __('app.admin.book_page.result_evidence_warning') }}</p>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Difficulty
+                                    {{ __('app.admin.book_page.difficulty') }}
                                 </label>
                                 <select 
                                     name="difficulty" 
                                     @change="previewData.difficulty = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all outline-none">
-                                    <option value="">Select difficulty...</option>
-                                    <option value="Beginner">Beginner</option>
-                                    <option value="Intermediate">Intermediate</option>
-                                    <option value="Advanced">Advanced</option>
+                                    <option value="">{{ __('app.admin.code_summary.difficulty_select') }}</option>
+                                    <option value="Beginner">{{ __('app.common.beginner') }}</option>
+                                    <option value="Intermediate">{{ __('app.common.intermediate') }}</option>
+                                    <option value="Advanced">{{ __('app.common.advanced') }}</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Time Spent (minutes)
+                                    {{ __('app.admin.book_page.time_spent') }}
                                 </label>
                                 <input 
                                     type="number" 
@@ -607,7 +607,7 @@
                                     @input="previewData.time_spent = $event.target.value"
                                     min="0"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all outline-none" 
-                                    placeholder="e.g., 45" />
+                                    placeholder="{{ __('app.admin.book_page.time_spent_placeholder') }}" />
                             </div>
                         </div>
                     </div>
@@ -620,63 +620,63 @@
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>
-                            Book Details
+                            {{ __('app.admin.book_page.book_details') }}
                         </h2>
                     </div>
                     <div class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Book Title
+                                    {{ __('app.admin.book_page.book_title') }}
                                 </label>
                                 <input 
                                     name="book_title" 
                                     @input="previewData.book_title = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" 
-                                    placeholder="e.g., Clean Code" />
+                                    placeholder="{{ __('app.admin.book_page.book_title_placeholder') }}" />
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Author
+                                    {{ __('app.admin.book_page.author') }}
                                 </label>
                                 <input 
                                     name="author" 
                                     @input="previewData.author = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" 
-                                    placeholder="e.g., Robert C. Martin" />
+                                    placeholder="{{ __('app.admin.book_page.author_placeholder') }}" />
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Page Number
+                                    {{ __('app.admin.book_page.page_number') }}
                                 </label>
                                 <input 
                                     type="number" 
                                     name="page_number" 
                                     @input="previewData.page_number = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" 
-                                    placeholder="e.g., 42" />
+                                    placeholder="{{ __('app.admin.book_page.page_number_placeholder') }}" />
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Read At
+                                    {{ __('app.admin.book_page.read_at') }}
                                 </label>
                                 <input 
                                     type="date" 
                                     name="read_at" 
                                     @change="previewData.read_at = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" />
-                                <p class="text-xs text-gray-500 mt-1">Format: YYYY-MM-DD</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.book_page.read_at_format') }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Status
+                                    {{ __('app.admin.book_page.status') }}
                                 </label>
                                 <select 
                                     name="status" 
                                     @change="previewData.status = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none">
-                                    <option value="completed">Completed</option>
-                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">{{ __('app.common.completed') }}</option>
+                                    <option value="in_progress">{{ __('app.common.in_progress') }}</option>
                                 </select>
                             </div>
                         </div>
@@ -690,13 +690,13 @@
                             <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                             </svg>
-                            Organization
+                            {{ __('app.admin.book_page.organization') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Categories
+                                {{ __('app.admin.code_summary.categories') }}
                             </label>
                             <select 
                                 name="categories[]" 
@@ -711,13 +711,13 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                Hold Ctrl/Cmd to select multiple categories
+                                {{ __('app.admin.code_summary.categories_hint') }}
                             </p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Sections (grouping within categories)
+                                {{ __('app.admin.code_summary.sections') }}
                             </label>
                             <select 
                                 name="sections[]" 
@@ -733,7 +733,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                Hold Ctrl/Cmd to select multiple sections
+                                {{ __('app.admin.code_summary.sections_hint') }}
                             </p>
                             
                             <button 
@@ -743,7 +743,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                Add New Section
+                                {{ __('app.admin.code_summary.add_new_section') }}
                             </button>
                         </div>
 
@@ -757,36 +757,36 @@
                                 <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                Create New Section
+                                {{ __('app.admin.code_summary.create_new_section') }}
                             </h4>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">{{ __('app.admin.code_summary.category') }}</label>
                                     <select 
                                         x-model="newSectionCategoryId" 
                                         class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none" 
                                         required>
-                                        <option value="">Select a category...</option>
+                                        <option value="">{{ __('app.admin.code_summary.select_category') }}</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}">{{ $category->getTranslated('name') ?: $category->slug }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Section Name</label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">{{ __('app.admin.code_summary.section_name') }}</label>
                                     <input 
                                         type="text" 
                                         x-model="newSectionName" 
                                         class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none" 
-                                        placeholder="e.g., Lesson 1" />
+                                        placeholder="{{ __('app.admin.code_summary.section_name_placeholder') }}" />
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description (optional)</label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">{{ __('app.admin.code_summary.description_optional') }}</label>
                                     <textarea 
                                         x-model="newSectionDescription" 
                                         rows="3" 
                                         class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none resize-none" 
-                                        placeholder="Brief description..."></textarea>
+                                        placeholder="{{ __('app.admin.code_summary.description_placeholder') }}"></textarea>
                                 </div>
                                 <div class="flex gap-3">
                                     <button 
@@ -794,20 +794,20 @@
                                         @click="createNewSection()" 
                                         :disabled="loading" 
                                         class="px-6 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white rounded-lg font-medium disabled:opacity-50 transition-all shadow-md hover:shadow-lg">
-                                        <span x-show="!loading">Create & Add</span>
+                                        <span x-show="!loading">{{ __('app.admin.code_summary.create_and_add') }}</span>
                                         <span x-show="loading" class="flex items-center gap-2">
                                             <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Creating...
+                                            {{ __('app.admin.code_summary.creating') }}
                                         </span>
                                     </button>
                                     <button 
                                         type="button" 
                                         @click="showNewSectionForm = false; newSectionName = ''; newSectionDescription = ''; newSectionCategoryId = '';" 
                                         class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-all">
-                                        Cancel
+                                        {{ __('app.common.cancel') }}
                                     </button>
                                 </div>
                             </div>
@@ -822,20 +822,20 @@
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                             </svg>
-                            Tags
+                            {{ __('app.admin.book_page.tags') }}
                         </h2>
                     </div>
                     <div class="p-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Tags (comma separated, max 5)
+                                {{ __('app.admin.book_page.tags_label') }}
                             </label>
                                 <input 
                                 name="tags" 
                                 @input="previewData.tags = normalizeTags($event.target.value)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none" 
-                                placeholder="Laravel, PHP, Security, Best Practices" />
-                            <p class="text-xs text-gray-500 mt-2">Separate tags with commas. Maximum 5 tags. Tags are automatically lowercased.</p>
+                                placeholder="{{ __('app.admin.book_page.tags_placeholder') }}" />
+                            <p class="text-xs text-gray-500 mt-2">{{ __('app.admin.book_page.tags_hint') }}</p>
                         </div>
                     </div>
                 </div>
@@ -848,7 +848,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                        Cancel
+                        {{ __('app.common.cancel') }}
                     </a>
                     <button 
                         type="submit" 
@@ -856,7 +856,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Create Book Page
+                        {{ __('app.admin.book_page.create') }}
                     </button>
                 </div>
             </form>
@@ -872,7 +872,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
-                            Live Preview
+                            {{ __('app.admin.book_page.live_preview') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-4">
@@ -880,12 +880,12 @@
                         <div class="flex flex-wrap gap-2" x-show="previewData.status || previewData.difficulty || previewData.time_spent">
                             <template x-if="previewData.status === 'completed'">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                    ✓ Completed
+                                    ✓ {{ __('app.common.completed') }}
                                 </span>
                             </template>
                             <template x-if="previewData.status === 'in_progress'">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                    ⏳ In Progress
+                                    ⏳ {{ __('app.common.in_progress') }}
                                 </span>
                             </template>
                             <template x-if="previewData.difficulty">
@@ -900,29 +900,29 @@
                             </template>
                             <template x-if="previewData.time_spent">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                                    ⏱ <span x-text="previewData.time_spent"></span> min
+                                    ⏱ <span x-text="previewData.time_spent"></span> <span x-text="'{{ __('app.common.min') }}'"></span>
                                 </span>
                             </template>
                         </div>
 
                         {{-- Title --}}
                         <div x-show="previewData.title">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2" x-text="previewData.title || 'Untitled'"></h3>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2" x-text="previewData.title || '{{ __('app.admin.book_page.untitled') }}'"></h3>
                         </div>
 
                         {{-- Book Info --}}
                         <div class="text-sm text-gray-600 space-y-1" x-show="previewData.book_title || previewData.author || previewData.page_number">
                             <template x-if="previewData.book_title">
-                                <p><span class="font-semibold">Book:</span> <span x-text="previewData.book_title"></span></p>
+                                <p><span class="font-semibold">{{ __('app.admin.book_page.book_label') }}</span> <span x-text="previewData.book_title"></span></p>
                             </template>
                             <template x-if="previewData.author">
-                                <p><span class="font-semibold">Author:</span> <span x-text="previewData.author"></span></p>
+                                <p><span class="font-semibold">{{ __('app.admin.book_page.author_label') }}</span> <span x-text="previewData.author"></span></p>
                             </template>
                             <template x-if="previewData.page_number">
-                                <p><span class="font-semibold">Page:</span> <span x-text="previewData.page_number"></span></p>
+                                <p><span class="font-semibold">{{ __('app.admin.book_page.page_label') }}</span> <span x-text="previewData.page_number"></span></p>
                             </template>
                             <template x-if="previewData.read_at">
-                                <p><span class="font-semibold">Read:</span> <span x-text="previewData.read_at"></span></p>
+                                <p><span class="font-semibold">{{ __('app.admin.book_page.read_label') }}</span> <span x-text="previewData.read_at"></span></p>
                             </template>
                         </div>
 
@@ -933,7 +933,7 @@
 
                         {{-- Key Objectives --}}
                         <div x-show="previewData.key_objectives" class="border-l-4 border-green-500 pl-4">
-                            <h4 class="font-semibold text-gray-900 mb-2">Key Objectives:</h4>
+                            <h4 class="font-semibold text-gray-900 mb-2">{{ __('app.admin.book_page.key_objectives_label') }}</h4>
                             <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside">
                                 <template x-for="(obj, index) in (previewData.key_objectives ? previewData.key_objectives.split('\n').filter(o => o.trim()) : [])" :key="index">
                                     <li x-text="obj.trim()"></li>
@@ -943,7 +943,7 @@
 
                         {{-- Reflection --}}
                         <div x-show="previewData.reflection">
-                            <h4 class="font-semibold text-gray-900 mb-2">Reflection:</h4>
+                            <h4 class="font-semibold text-gray-900 mb-2">{{ __('app.admin.book_page.reflection_label') }}</h4>
                             <p class="text-sm text-gray-700 leading-relaxed" x-text="previewData.reflection"></p>
                         </div>
 
@@ -960,7 +960,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
-                            <p class="text-sm">Start filling the form to see preview</p>
+                            <p class="text-sm">{{ __('app.admin.book_page.preview_start') }}</p>
                         </div>
                     </div>
                 </div>

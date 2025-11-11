@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('nav_links', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             $table->foreignId('nav_item_id')->constrained('nav_items')->cascadeOnDelete();
             $table->string('title');
+            $table->string('slug')->nullable();
             $table->string('url')->nullable();
             $table->string('proof_url')->nullable();
             $table->unsignedInteger('progress')->nullable();
@@ -22,6 +24,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->unsignedInteger('position')->default(0);
             $table->timestamps();
+            $table->index('user_id');
         });
     }
 

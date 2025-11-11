@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('hero_sections', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             
             // Background
             $table->string('background_color')->default('#e0e7ff'); // Light indigo/blue-gray
@@ -59,6 +60,7 @@ return new class extends Migration
             $table->integer('image_rotation_interval')->default(2000); // milliseconds
             
             $table->timestamps();
+            $table->index('user_id');
         });
     }
 

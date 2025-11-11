@@ -2042,7 +2042,13 @@
                                 console.error('Error re-registering Alpine component:', e);
                             }
                         }
-                        // roomTranslationData is registered via alpine:init event listener
+                        if (window.registerRoomTranslationComponent) {
+                            try {
+                                window.registerRoomTranslationComponent();
+                            } catch (e) {
+                                console.error('Error re-registering translation component:', e);
+                            }
+                        }
                     } else if (type === 'course' && window.registerCourseCreateComponent) {
                         try {
                             window.registerCourseCreateComponent();
@@ -2125,6 +2131,13 @@
                                             window.registerRoomCreateComponent();
                                         } catch (e) {
                                             console.error('Error ensuring Alpine component registration:', e);
+                                        }
+                                    }
+                                    if (window.registerRoomTranslationComponent) {
+                                        try {
+                                            window.registerRoomTranslationComponent();
+                                        } catch (e) {
+                                            console.error('Error ensuring translation component registration:', e);
                                         }
                                     }
                                     // Find the element with x-data and initialize Alpine on it

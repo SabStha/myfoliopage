@@ -104,7 +104,7 @@
             // Get blogs from component props (already defined above)
             $blogPosts = $blogs->map(function($blog) {
               $image = $blog->media->where('type', 'image')->first();
-              $imageUrl = $image ? asset('storage/' . $image->path) : asset('storage/certficates/certificate-1.jpg');
+              $imageUrl = $image ? asset('storage/' . $image->path) : asset('storage/certificates/certificate-1.jpg');
               $publishedAt = $blog->published_at ? $blog->published_at : $blog->created_at;
               return [
                 'title' => $blog->getTranslated('title'),

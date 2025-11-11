@@ -491,6 +491,11 @@ Route::get('/courses/{course}', function (Course $course) {
     return view('courses.show', compact('course'));
 })->name('courses.show');
 
+// Landing page route - MUST be before /{username} route
+Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+
+// OLD HOME ROUTE - MOVED TO PORTFOLIO CONTROLLER
+/*
 Route::get('/', function () {
     $profile = Profile::with('media')->first();
     // Refresh heroSection to get latest data
@@ -1048,7 +1053,23 @@ Route::get('/', function () {
     $homePageSections = \App\Models\HomePageSection::with('navItem')
         ->where('enabled', true)
         ->orderBy('position')
-        ->get()
+        ->get();
+    
+    \Log::info('Home page: Loading home page sections', [
+        'total_sections' => $homePageSections->count(),
+        'section_ids' => $homePageSections->pluck('id')->toArray(),
+        'section_details' => $homePageSections->map(function($s) {
+            return [
+                'id' => $s->id,
+                'enabled' => $s->enabled,
+                'nav_item_id' => $s->nav_item_id,
+                'nav_item_label' => $s->navItem->label ?? 'N/A',
+                'position' => $s->position
+            ];
+        })->toArray()
+    ]);
+    
+    $homePageSections = $homePageSections
         ->map(function($section) {
             // Get NavLinks for this section based on selected_nav_link_ids
             // null means "show all", empty array means "none selected"
@@ -1116,7 +1137,15 @@ Route::get('/', function () {
                 \Log::info('NavLinks fetched', [
                     'section_id' => $section->id,
                     'nav_links_count' => $navLinks->count(),
-                    'nav_link_ids' => $navLinks->pluck('id')->toArray()
+                    'nav_link_ids' => $navLinks->pluck('id')->toArray(),
+                    'nav_links_with_categories' => $navLinks->map(function($link) {
+                        return [
+                            'id' => $link->id,
+                            'title' => $link->title,
+                            'categories_count' => $link->categories->count(),
+                            'category_ids' => $link->categories->pluck('id')->toArray()
+                        ];
+                    })->toArray()
                 ]);
                 
                 $navLinks = $navLinks
@@ -1195,9 +1224,20 @@ Route::get('/', function () {
                         })->toArray();
                         
                         $currentLocaleForLink = app()->getLocale();
+                        
+                        // Ensure title is a string
+                        $linkTitle = '';
+                        if (is_string($link->title)) {
+                            $linkTitle = $link->title;
+                        } elseif (is_array($link->title)) {
+                            $linkTitle = $link->title[$currentLocaleForLink] ?? $link->title['en'] ?? $link->title['ja'] ?? '';
+                        } else {
+                            $linkTitle = (string)($link->title ?? 'Untitled');
+                        }
+                        
                         return [
                             'id' => $link->id,
-                            'title' => $link->title,
+                            'title' => $linkTitle, // Always a string
                             'position' => $link->position,
                             'category_id' => $link->category_id, // Keep for backward compatibility
                             'categories' => $categoriesArray, // NEW: Multiple categories
@@ -1229,19 +1269,110 @@ Route::get('/', function () {
             }
             
             $currentLocale = app()->getLocale();
-            return [
+            
+            // Ensure nav_item_label is a string for frontend
+            $navItemLabel = '';
+            if ($section->navItem) {
+                $labelTranslated = $section->navItem->getTranslated('label', $currentLocale);
+                if (is_string($labelTranslated)) {
+                    $navItemLabel = $labelTranslated;
+                } elseif (is_array($labelTranslated)) {
+                    $navItemLabel = $labelTranslated[$currentLocale] ?? $labelTranslated['en'] ?? $labelTranslated['ja'] ?? '';
+                } elseif (is_array($section->navItem->label)) {
+                    $navItemLabel = $section->navItem->label[$currentLocale] ?? $section->navItem->label['en'] ?? $section->navItem->label['ja'] ?? '';
+                } else {
+                    $navItemLabel = (string)($section->navItem->label ?? '');
+                }
+            }
+            
+            // Ensure title is a string for frontend
+            // First try current locale, then fallback to other locale, then navItem label
+            $sectionTitle = '';
+            $titleRaw = $section->title;
+            
+            if (is_array($titleRaw)) {
+                // Try current locale first
+                $sectionTitle = $titleRaw[$currentLocale] ?? '';
+                // If empty, try the other locale
+                if (empty($sectionTitle)) {
+                    $otherLocale = $currentLocale === 'en' ? 'ja' : 'en';
+                    $sectionTitle = $titleRaw[$otherLocale] ?? '';
+                }
+            } else {
+                // If not an array, try getTranslated
+                $titleTranslated = $section->getTranslated('title', $currentLocale);
+                if (is_string($titleTranslated) && !empty($titleTranslated)) {
+                    $sectionTitle = $titleTranslated;
+                } elseif (is_array($titleTranslated)) {
+                    $sectionTitle = $titleTranslated[$currentLocale] ?? '';
+                    if (empty($sectionTitle)) {
+                        $otherLocale = $currentLocale === 'en' ? 'ja' : 'en';
+                        $sectionTitle = $titleTranslated[$otherLocale] ?? '';
+                    }
+                }
+            }
+            
+            // Final fallback to navItem label if title is still empty
+            if (empty($sectionTitle) && $section->navItem) {
+                $sectionTitle = $navItemLabel;
+            }
+            
+            // Ensure subtitle is a string for frontend
+            // First try current locale, then fallback to other locale
+            $sectionSubtitle = '';
+            $subtitleRaw = $section->subtitle;
+            
+            if (is_array($subtitleRaw)) {
+                // Try current locale first
+                $sectionSubtitle = $subtitleRaw[$currentLocale] ?? '';
+                // If empty, try the other locale
+                if (empty($sectionSubtitle)) {
+                    $otherLocale = $currentLocale === 'en' ? 'ja' : 'en';
+                    $sectionSubtitle = $subtitleRaw[$otherLocale] ?? '';
+                }
+            } else {
+                // If not an array, try getTranslated
+                $subtitleTranslated = $section->getTranslated('subtitle', $currentLocale);
+                if (is_string($subtitleTranslated) && !empty($subtitleTranslated)) {
+                    $sectionSubtitle = $subtitleTranslated;
+                } elseif (is_array($subtitleTranslated)) {
+                    $sectionSubtitle = $subtitleTranslated[$currentLocale] ?? '';
+                    if (empty($sectionSubtitle)) {
+                        $otherLocale = $currentLocale === 'en' ? 'ja' : 'en';
+                        $sectionSubtitle = $subtitleTranslated[$otherLocale] ?? '';
+                    }
+                }
+            }
+            
+            $sectionData = [
                 'id' => $section->id,
                 'nav_item_id' => $section->nav_item_id,
-                'nav_item_label' => $section->navItem ? $section->navItem->label : '',
+                'nav_item_label' => $navItemLabel, // Always a string
                 'position' => $section->position,
                 'text_alignment' => $section->text_alignment,
                 'animation_style' => $section->animation_style ?? null,
-                'title' => $section->getTranslated('title', $currentLocale) ?? ($section->navItem ? $section->navItem->label : ''),
-                'subtitle' => $section->getTranslated('subtitle', $currentLocale),
+                'title' => $sectionTitle, // Always a string
+                'subtitle' => $sectionSubtitle, // Always a string
                 'selected_nav_link_ids' => $selectedNavLinkIds,
                 'nav_links' => $navLinks ?? [], // Ensure navLinks is always an array
                 'subsection_configurations' => $section->subsection_configurations ?? [],
             ];
+            
+            \Log::info('Home page: Section data prepared', [
+                'section_id' => $sectionData['id'],
+                'nav_item_label' => $sectionData['nav_item_label'],
+                'title' => $sectionData['title'],
+                'nav_links_count' => count($sectionData['nav_links']),
+                'nav_links_summary' => array_map(function($link) {
+                    return [
+                        'id' => $link['id'] ?? 'N/A',
+                        'title' => $link['title'] ?? 'N/A',
+                        'categories_count' => count($link['categories'] ?? [])
+                    ];
+                }, $sectionData['nav_links'])
+            ]);
+            
+            return $sectionData;
         })
         ->values()
         ->toArray();
@@ -1388,6 +1519,7 @@ Route::get('/', function () {
     
     return view('home', compact('services','profile', 'profileImages', 'finalProfileImages', 'heroSection', 'engagementSection', 'engagementVideo', 'certificates', 'certificatesData', 'courses', 'coursesData', 'labs', 'roomsData', 'badgesData', 'gamesData', 'simulationsData', 'programsData', 'progressItems', 'homePageSections', 'blogs'));
 })->name('home');
+*/
 Route::view('/about', 'pages.about')->name('about');
 Route::view('/skills', 'pages.skills')->name('skills');
 Route::get('/projects', function () {
@@ -1608,7 +1740,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('engagement/reset', [\App\Http\Controllers\Admin\EngagementSectionController::class, 'reset'])->name('engagement.reset');
     Route::resource('ongoing-progress', \App\Http\Controllers\Admin\OngoingProgressController::class)->parameters(['ongoing-progress' => 'ongoingProgressItem']);
     Route::resource('home-page-sections', \App\Http\Controllers\Admin\HomePageSectionController::class)->parameters(['home-page-sections' => 'homePageSection']);
+    Route::post('home-page-sections/{homePageSection}/toggle-enabled', [\App\Http\Controllers\Admin\HomePageSectionController::class, 'toggleEnabled'])->name('home-page-sections.toggle-enabled');
     Route::get('home-page-sections/nav-links/{navItemId}', [\App\Http\Controllers\Admin\HomePageSectionController::class, 'getNavLinks'])->name('home-page-sections.nav-links');
     Route::get('home-page-sections/nav-items/list', [\App\Http\Controllers\Admin\HomePageSectionController::class, 'getNavItems'])->name('home-page-sections.nav-items');
     Route::post('build', [\App\Http\Controllers\Admin\BuildController::class, 'build'])->name('build');
 });
+
+// User portfolio pages - MUST be LAST to avoid catching other routes
+Route::get('/{username}', [\App\Http\Controllers\PortfolioController::class, 'show'])->name('portfolio.show');

@@ -98,3 +98,5 @@ The language switcher button is automatically mounted on non-admin pages. It:
 3. Update Blade templates to use `__()` helper
 4. Test thoroughly in both languages
 
+
+

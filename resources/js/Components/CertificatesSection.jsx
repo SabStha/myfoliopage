@@ -293,6 +293,28 @@ const handleCardClick = (item, e) => {
   console.warn('This should not navigate - preventDefault was called');
 };
 
+// Helper function to extract string from translatable object
+const extractString = (value, fallback = '') => {
+  if (typeof value === 'string') {
+    // Check if it's a JSON string and decode it
+    try {
+      const decoded = JSON.parse(value);
+      if (decoded && typeof decoded === 'object') {
+        const currentLang = window.currentLocale || 'en';
+        return decoded[currentLang] || decoded.en || decoded.ja || fallback;
+      }
+    } catch (e) {
+      // Not JSON, use as-is
+    }
+    return value;
+  }
+  if (value && typeof value === 'object') {
+    const currentLang = window.currentLocale || 'en';
+    return value[currentLang] || value.en || value.ja || fallback;
+  }
+  return String(value || fallback);
+};
+
 const CertificatesSection = ({ 
   certificates = [],
   courses = [],
@@ -319,6 +341,17 @@ const CertificatesSection = ({
   console.log('CertificatesSection: textAlignment:', textAlignment);
   const tabs = navLinks && navLinks.length > 0 
     ? navLinks.map(link => {
+        // Extract title as string
+        let linkTitle = '';
+        if (typeof link.title === 'string') {
+          linkTitle = link.title;
+        } else if (link.title && typeof link.title === 'object') {
+          const currentLang = window.currentLocale || 'en';
+          linkTitle = link.title[currentLang] || link.title.en || link.title.ja || 'Untitled';
+        } else {
+          linkTitle = String(link.title || 'Untitled');
+        }
+        
         // Debug: Log category data to verify animation_style and image_url are included
         if (link.categories && link.categories.length > 0) {
           console.log('CertificatesSection: NavLink', link.id, 'categories:', link.categories.map(c => ({
@@ -330,7 +363,7 @@ const CertificatesSection = ({
         }
         return {
             id: String(link.id),
-            title: link.title || 'Untitled',
+            title: linkTitle,
             key: `navlink-${link.id}`,
           categories: link.categories || [], // Store categories for this sub-nav
           navLink: link, // Store full navLink data
@@ -346,13 +379,26 @@ const CertificatesSection = ({
   // Set initial active tab to first NavLink/category if available, otherwise fallback to certificates
   const [activeTab, setActiveTab] = useState(() => {
     const initialTabs = navLinks && navLinks.length > 0 
-      ? navLinks.map(link => ({
-          id: String(link.id),
-          title: link.title || 'Untitled',
-          key: `navlink-${link.id}`,
-          categories: link.categories || [],
-          navLink: link,
-        }))
+      ? navLinks.map(link => {
+          // Extract title as string
+          let linkTitle = '';
+          if (typeof link.title === 'string') {
+            linkTitle = link.title;
+          } else if (link.title && typeof link.title === 'object') {
+            const currentLang = window.currentLocale || 'en';
+            linkTitle = link.title[currentLang] || link.title.en || link.title.ja || 'Untitled';
+          } else {
+            linkTitle = String(link.title || 'Untitled');
+          }
+          
+          return {
+            id: String(link.id),
+            title: linkTitle,
+            key: `navlink-${link.id}`,
+            categories: link.categories || [],
+            navLink: link,
+          };
+        })
       : [];
     return initialTabs.length > 0 ? initialTabs[0].key : 'certificates';
   });
@@ -705,7 +751,7 @@ const CertificatesSection = ({
     }
     
     // PRIORITY 2: Check if category name/slug matches any of the original styles (automatic matching)
-    const categoryName = (typeof category.name === 'string' ? category.name : (category.name?.en || category.name?.ja || category.slug || '')).toLowerCase();
+    const categoryName = extractString(category.name, category.slug || '').toLowerCase();
     const categorySlug = (category.slug || '').toLowerCase();
     
     // Certificates style (editorial grid collage with carousel)
@@ -1444,7 +1490,7 @@ const CertificatesSection = ({
                                 setSelectedCategory(category.id);
                               }}
                             >
-                              {(typeof category.name === 'string' ? category.name : (category.name?.en || category.name?.ja || category.slug || ''))}
+                              {extractString(category.name, category.slug || 'Category')}
                             </p>
                           ))}
                         </div>
@@ -1478,6 +1524,7 @@ const CertificatesSection = ({
                    (() => {
                      const activeTabId = activeTab.replace('navlink-', '');
                      const activeNavLink = tabs.find(tab => tab.id === activeTabId);
+                     const activeNavLinkTitle = activeNavLink ? extractString(activeNavLink.title, 'Untitled') : '';
                      const categories = activeNavLink?.categories || [];
                      
                     // If a category is selected, show items in that category
@@ -1556,7 +1603,7 @@ const CertificatesSection = ({
                                  </button>
                                  <span className="text-sm text-neutral-400">•</span>
                                  <span className="text-sm text-neutral-600">
-                                   {activeNavLink?.title} → {(typeof selectedCategoryObj?.name === 'string' ? selectedCategoryObj.name : (selectedCategoryObj?.name?.en || selectedCategoryObj?.name?.ja || 'Category'))}
+                                   {activeNavLinkTitle} → {extractString(selectedCategoryObj?.name, 'Category')}
                                  </span>
                                </div>
                                {/* Certificates carousel style */}
@@ -1866,7 +1913,7 @@ const CertificatesSection = ({
                                  </button>
                                  <span className="text-sm text-neutral-400">•</span>
                                  <span className="text-sm text-neutral-600">
-                                   {activeNavLink?.title} → {(typeof selectedCategoryObj?.name === 'string' ? selectedCategoryObj.name : (selectedCategoryObj?.name?.en || selectedCategoryObj?.name?.ja || 'Category'))}
+                                   {activeNavLinkTitle} → {extractString(selectedCategoryObj?.name, 'Category')}
                                  </span>
                                </div>
                                <div className="space-y-6 p-4">
@@ -1959,7 +2006,7 @@ const CertificatesSection = ({
                                 </button>
                                 <span className="text-sm text-neutral-400">•</span>
                                 <span className="text-sm text-neutral-600">
-                                  {activeNavLink?.title} → {selectedCategoryObj?.name || 'Category'}
+                                  {activeNavLinkTitle} → {extractString(selectedCategoryObj?.name, 'Category')}
                                 </span>
                               </div>
                               <style>{`

@@ -36,43 +36,134 @@ class CertificateController extends Controller
      */
     public function create(Request $request)
     {
-        // Filter categories and sections if navigation context is provided
-        if ($request->has('nav_item_id')) {
-            $navItem = \App\Models\NavItem::find($request->nav_item_id);
-            if ($navItem) {
-                // Get categories from this NavItem's NavLinks
-                $navItemCategoryIds = $navItem->links()->with('categories')->get()
-                    ->pluck('categories')
-                    ->flatten()
-                    ->pluck('id')
-                    ->unique()
-                    ->toArray();
-                
-                $categories = Category::whereIn('id', $navItemCategoryIds)->orderBy('name')->get();
-                $sections = CategoryItem::with('category')
-                    ->whereIn('category_id', $navItemCategoryIds)
-                    ->orderBy('category_id')
-                    ->orderBy('position')
-                    ->get();
+        try {
+            // Filter categories and sections if navigation context is provided
+            if ($request->has('nav_item_id')) {
+                $navItem = \App\Models\NavItem::find($request->nav_item_id);
+                if ($navItem) {
+                    // Get categories from this NavItem's NavLinks
+                    $navItemCategoryIds = $navItem->links()->with('categories')->get()
+                        ->flatMap(function($link) {
+                            return $link->categories ?? collect();
+                        })
+                        ->pluck('id')
+                        ->unique()
+                        ->filter()
+                        ->toArray();
+                    
+                    // Handle empty array case
+                    if (empty($navItemCategoryIds)) {
+                        $categories = collect();
+                        $sections = collect();
+                    } else {
+                        $categories = Category::whereIn('id', $navItemCategoryIds)->orderBy('position')->orderBy('slug')->get();
+                        $sections = CategoryItem::with('category')
+                            ->whereIn('category_id', $navItemCategoryIds)
+                            ->orderBy('category_id')
+                            ->orderBy('position')
+                            ->get()
+                            ->filter(function($section) {
+                                return $section !== null;
+                            });
+                    }
+                } else {
+                    $categories = collect();
+                    $sections = collect();
+                }
             } else {
-                $categories = collect();
-                $sections = collect();
+                $categories = Category::orderBy('position')->orderBy('slug')->get();
+                $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get()
+                    ->filter(function($section) {
+                        return $section !== null;
+                    });
             }
-        } else {
-            $categories = Category::orderBy('name')->get();
-            $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+            
+            $allTags = Tag::orderBy('name')->get();
+            $projects = Project::orderBy('title')->get();
+            
+            // Prepare sections data for JavaScript safely
+            $sectionsData = [];
+            if ($sections && $sections->count() > 0) {
+                try {
+                    $sectionsData = $sections->map(function($s) {
+                        if (!$s || !is_object($s)) {
+                            return null;
+                        }
+                        
+                        try {
+                            $categoryName = 'Unknown';
+                            if (isset($s->category) && $s->category && is_object($s->category)) {
+                                try {
+                                    $catName = $s->category->getTranslated('name');
+                                    if (is_string($catName) && !empty($catName)) {
+                                        $categoryName = $catName;
+                                    } elseif (isset($s->category->slug) && is_string($s->category->slug)) {
+                                        $categoryName = $s->category->slug;
+                                    }
+                                } catch (\Exception $e) {
+                                    // If getTranslated fails, try slug
+                                    if (isset($s->category->slug) && is_string($s->category->slug)) {
+                                        $categoryName = $s->category->slug;
+                                    }
+                                }
+                            }
+                            
+                            $sectionTitle = 'Untitled';
+                            try {
+                                $titleRaw = $s->getTranslated('title');
+                                if (is_string($titleRaw) && !empty($titleRaw)) {
+                                    $sectionTitle = $titleRaw;
+                                } elseif (isset($s->slug) && is_string($s->slug)) {
+                                    $sectionTitle = $s->slug;
+                                }
+                            } catch (\Exception $e) {
+                                if (isset($s->slug) && is_string($s->slug)) {
+                                    $sectionTitle = $s->slug;
+                                }
+                            }
+                            
+                            return [
+                                'id' => isset($s->id) ? (int)$s->id : 0,
+                                'name' => $sectionTitle,
+                                'title' => $sectionTitle,
+                                'category_id' => isset($s->category_id) ? (int)$s->category_id : null,
+                                'category_name' => $categoryName
+                            ];
+                        } catch (\Exception $e) {
+                            \Log::warning('Error processing section: ' . $e->getMessage());
+                            return null;
+                        }
+                    })->filter(function($item) {
+                        return $item !== null;
+                    })->values()->all();
+                } catch (\Exception $e) {
+                    \Log::error('Error preparing sections data: ' . $e->getMessage());
+                    $sectionsData = [];
+                }
+            }
+            
+            // If this is an AJAX request (for modal), return just the form
+            if ($request->ajax() || $request->wantsJson()) {
+                return view('admin.certificates.create', compact('categories', 'allTags', 'sections', 'projects', 'sectionsData'))
+                    ->render();
+            }
+            
+            return view('admin.certificates.create', compact('categories', 'allTags', 'sections', 'projects', 'sectionsData'));
+        } catch (\Exception $e) {
+            \Log::error('Certificate create error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            // Return empty collections on error
+            $categories = collect();
+            $sections = collect();
+            $allTags = Tag::orderBy('name')->get();
+            $projects = Project::orderBy('title')->get();
+            $sectionsData = [];
+            
+            return view('admin.certificates.create', compact('categories', 'allTags', 'sections', 'projects', 'sectionsData'));
         }
-        
-        $allTags = Tag::orderBy('name')->get();
-        $projects = Project::orderBy('title')->get();
-        
-        // If this is an AJAX request (for modal), return just the form
-        if ($request->ajax() || $request->wantsJson()) {
-            return view('admin.certificates.create', compact('categories', 'allTags', 'sections', 'projects'))
-                ->render();
-        }
-        
-        return view('admin.certificates.create', compact('categories', 'allTags', 'sections', 'projects'));
     }
 
     /**

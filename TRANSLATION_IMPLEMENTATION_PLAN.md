@@ -77,3 +77,5 @@ hero_sections.heading_text = '{"en":"Projects","ja":"プロジェクト"}' (JSON
 3. Update admin forms to handle both languages
 4. Update views to use translated getters
 
+
+

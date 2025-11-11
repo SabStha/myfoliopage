@@ -3,10 +3,22 @@
 @section('content')
     <script>
         window.certificateCreateData = {
-            sections: @js($sections->map(function($s) {
-                return ['id' => $s->id, 'name' => $s->getTranslated('title'), 'title' => $s->getTranslated('title'), 'category_id' => $s->category_id, 'category_name' => $s->category->getTranslated('name')];
-            })),
-            selectedCategories: []
+            sections: @json($sectionsData ?? []),
+            selectedCategories: [],
+            translations: {
+                provider: @json(__('app.admin.certificate.provider_label')),
+                issued_by: @json(__('app.admin.certificate.issued_by_label')),
+                issued: @json(__('app.admin.certificate.issued_label')),
+                expires: @json(__('app.admin.certificate.expires_label')),
+                learning_outcomes: @json(__('app.admin.certificate.learning_outcomes_label')),
+                reflection: @json(__('app.admin.certificate.reflection_label')),
+                untitled: @json(__('app.admin.certificate.untitled')),
+                status_completed: @json(__('app.admin.certificate.status_completed')),
+                status_in_progress: @json(__('app.admin.certificate.status_in_progress')),
+                level_beginner: @json(__('app.admin.certificate.level_beginner')),
+                level_intermediate: @json(__('app.admin.certificate.level_intermediate')),
+                level_advanced: @json(__('app.admin.certificate.level_advanced'))
+            }
         };
         
         // Register Alpine.js component data - works for both normal page load and modal load
@@ -38,6 +50,7 @@
                             status: 'completed',
                             tags: ''
                         },
+                        translations: window.certificateCreateData?.translations || {},
                         normalizeTags(tags) {
                             if (!tags) return '';
                             return tags.split(',')
@@ -136,8 +149,8 @@
         <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-4xl font-bold mb-2">Create New Certificate</h1>
-                    <p class="text-blue-100 text-lg">Document your achievements with comprehensive verification details</p>
+                    <h1 class="text-4xl font-bold mb-2">{{ __('app.admin.certificate.create') }}</h1>
+                    <p class="text-blue-100 text-lg">{{ __('app.admin.certificate.create_description') }}</p>
                 </div>
                 <div class="hidden md:block">
                     <div class="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -163,14 +176,14 @@
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Basic Information
+                            {{ __('app.admin.certificate.basic_information') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <x-dual-language-input 
                             name="title" 
-                            label="Title" 
-                            placeholder="e.g., AWS Certified Solutions Architect"
+                            label="{{ __('app.admin.certificate.title') }}" 
+                            placeholder="{{ __('app.admin.certificate.title_placeholder') }}"
                             required="true"
                         />
 
@@ -178,28 +191,28 @@
                             <div>
                                 <x-dual-language-input 
                                     name="provider" 
-                                    label="Provider" 
-                                    placeholder="e.g., AWS, Coursera, TryHackMe"
+                                    label="{{ __('app.admin.certificate.provider') }}" 
+                                    placeholder="{{ __('app.admin.certificate.provider_placeholder') }}"
                                     required="true"
                                     @input="previewData.provider = $event.target.value"
                                 />
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Issued By
+                                    {{ __('app.admin.certificate.issued_by') }}
                                 </label>
                                 <input 
                                     name="issued_by" 
                                     @input="previewData.issued_by = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" 
-                                    placeholder="e.g., AWS Training and Certification" />
+                                    placeholder="{{ __('app.admin.certificate.issued_by_placeholder') }}" />
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Issued At <span class="text-red-500">*</span>
+                                    {{ __('app.admin.certificate.issued_at') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="date" 
@@ -210,27 +223,27 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Credential ID
+                                    {{ __('app.admin.certificate.credential_id') }}
                                 </label>
                                 <input 
                                     name="credential_id" 
                                     @input="previewData.credential_id = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none font-mono text-sm" 
-                                    placeholder="e.g., AB-12345678" />
+                                    placeholder="{{ __('app.admin.certificate.credential_id_placeholder') }}" />
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Verify URL
+                                {{ __('app.admin.certificate.verify_url') }}
                             </label>
                             <input 
                                 type="url" 
                                 name="verify_url" 
                                 @input="previewData.verify_url = $event.target.value"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" 
-                                placeholder="https://coursera.org/verify/XYZ123" />
-                            <p class="text-xs text-gray-500 mt-1">Required if no certificate image is uploaded</p>
+                                placeholder="{{ __('app.admin.certificate.verify_url_placeholder') }}" />
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.verify_url_hint') }}</p>
                         </div>
                     </div>
                 </div>
@@ -242,13 +255,13 @@
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                             </svg>
-                            Proof & Verification
+                            {{ __('app.admin.certificate.proof_verification') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Certificate Image / File
+                                {{ __('app.admin.certificate.certificate_image') }}
                             </label>
                             <input 
                                 type="file" 
@@ -256,7 +269,7 @@
                                 accept="image/*,.pdf"
                                 @change="previewImage($event)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none" />
-                            <p class="text-xs text-gray-500 mt-1">Upload PNG, JPG, or PDF. Required if no Verify URL is provided.</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.certificate_image_hint') }}</p>
                             <div x-show="imagePreview" class="mt-4">
                                 <img :src="imagePreview" alt="Preview" class="max-w-xs rounded-lg border border-gray-300">
                             </div>
@@ -274,12 +287,12 @@
                                 value="1"
                                 x-model="previewData.has_expiry"
                                 class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                            <label for="has_expiry" class="text-sm font-semibold text-gray-700">Certificate has expiration date</label>
+                            <label for="has_expiry" class="text-sm font-semibold text-gray-700">{{ __('app.admin.certificate.has_expiry') }}</label>
                         </div>
 
                         <div x-show="previewData.has_expiry">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Expiry Date
+                                {{ __('app.admin.certificate.expiry_date') }}
                             </label>
                             <input 
                                 type="date" 
@@ -297,28 +310,28 @@
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                             </svg>
-                            Context & Impact
+                            {{ __('app.admin.certificate.context_impact') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Level
+                                    {{ __('app.admin.certificate.level') }}
                                 </label>
                                 <select 
                                     name="level" 
                                     @change="previewData.level = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none">
-                                    <option value="">Select level</option>
-                                    <option value="Beginner">Beginner</option>
-                                    <option value="Intermediate">Intermediate</option>
-                                    <option value="Advanced">Advanced</option>
+                                    <option value="">{{ __('app.admin.certificate.level_select') }}</option>
+                                    <option value="Beginner">{{ __('app.admin.certificate.level_beginner') }}</option>
+                                    <option value="Intermediate">{{ __('app.admin.certificate.level_intermediate') }}</option>
+                                    <option value="Advanced">{{ __('app.admin.certificate.level_advanced') }}</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Learning Hours
+                                    {{ __('app.admin.certificate.learning_hours') }}
                                 </label>
                                 <input 
                                     type="number" 
@@ -326,35 +339,35 @@
                                     min="0"
                                     @input="previewData.learning_hours = $event.target.value"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none" 
-                                    placeholder="e.g., 12" />
+                                    placeholder="{{ __('app.admin.certificate.learning_hours_placeholder') }}" />
                             </div>
                         </div>
 
                         <x-dual-language-input 
                             name="learning_outcomes" 
-                            label="Learning Outcomes / Key Topics (one per line)" 
+                            label="{{ __('app.admin.certificate.learning_outcomes') }}" 
                             rows="6"
-                            placeholder="• IAM&#10;• EC2&#10;• S3&#10;• VPC basics"
+                            placeholder="{{ __('app.admin.certificate.learning_outcomes_placeholder') }}"
                         />
-                        <p class="text-xs text-gray-500 mt-1">Enter one topic per line</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.learning_outcomes_hint') }}</p>
 
                         <x-dual-language-input 
                             name="reflection" 
-                            label="Reflection / Impact (2-4 sentences)" 
+                            label="{{ __('app.admin.certificate.reflection') }}" 
                             rows="4"
-                            placeholder="How you applied this knowledge. e.g., Used VPC knowledge to deploy AmaKo staging server securely."
+                            placeholder="{{ __('app.admin.certificate.reflection_placeholder') }}"
                         />
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Status
+                                {{ __('app.admin.certificate.status') }}
                             </label>
                             <select 
                                 name="status" 
                                 @change="previewData.status = $event.target.value"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none">
-                                <option value="completed">Completed</option>
-                                <option value="in_progress">In Progress</option>
+                                <option value="completed">{{ __('app.admin.certificate.status_completed') }}</option>
+                                <option value="in_progress">{{ __('app.admin.certificate.status_in_progress') }}</option>
                             </select>
                         </div>
                     </div>
@@ -367,28 +380,32 @@
                             <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                             </svg>
-                            Traceability & Portfolio Integration
+                            {{ __('app.admin.certificate.traceability_portfolio') }}
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Link to Project
+                                {{ __('app.admin.certificate.link_to_project') }}
                             </label>
                             <select 
                                 name="project_id" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none">
-                                <option value="">Select a project (optional)</option>
+                                <option value="">{{ __('app.admin.certificate.link_to_project_select') }}</option>
                                 @foreach($projects as $project)
-                                    <option value="{{ $project->id }}">{{ $project->title }}</option>
+                                    @php
+                                        $projectTitleRaw = $project->getTranslated('title');
+                                        $projectTitle = is_string($projectTitleRaw) && !empty($projectTitleRaw) ? $projectTitleRaw : (is_string($project->slug) ? $project->slug : 'Untitled');
+                                    @endphp
+                                    <option value="{{ $project->id }}">{{ $projectTitle }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Link this certificate to a relevant project</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.link_to_project_hint') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Categories
+                                {{ __('app.admin.certificate.categories') }}
                             </label>
                             <select 
                                 name="categories[]" 
@@ -397,15 +414,19 @@
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none" 
                                 size="5">
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->getTranslated('name') ?: $category->slug }}</option>
+                                    @php
+                                        $catNameRaw = $category->getTranslated('name');
+                                        $catName = is_string($catNameRaw) ? $catNameRaw : ($category->slug ?? 'Unknown');
+                                    @endphp
+                                    <option value="{{ $category->id }}">{{ $catName }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple categories</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.categories_hint') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Sections (grouping within categories)
+                                {{ __('app.admin.certificate.sections') }}
                             </label>
                             <select 
                                 name="sections[]" 
@@ -413,22 +434,31 @@
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none" 
                                 size="5">
                                 @foreach($sections as $section)
-                                    <option value="{{ $section->id }}">{{ $section->category->getTranslated('name') ?: $section->category->slug }} → {{ $section->getTranslated('title') ?: $section->slug }}</option>
+                                    @php
+                                        $categoryName = 'Unknown';
+                                        if ($section->category) {
+                                            $catName = $section->category->getTranslated('name');
+                                            $categoryName = is_string($catName) ? $catName : ($section->category->slug ?? 'Unknown');
+                                        }
+                                        $sectionTitleRaw = $section->getTranslated('title');
+                                        $sectionTitle = is_string($sectionTitleRaw) ? $sectionTitleRaw : ($section->slug ?? 'Untitled');
+                                    @endphp
+                                    <option value="{{ $section->id }}">{{ $categoryName }} → {{ $sectionTitle }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple sections</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.sections_hint') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Tags (max 5, comma separated)
+                                {{ __('app.admin.certificate.tags') }}
                             </label>
                             <input 
                                 name="tags" 
                                 @input="previewData.tags = normalizeTags($event.target.value)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none" 
-                                placeholder="cloud, security, aws" />
-                            <p class="text-xs text-gray-500 mt-1">Tags are automatically normalized (lowercase, trimmed, max 5)</p>
+                                placeholder="{{ __('app.admin.certificate.tags_placeholder') }}" />
+                            <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.tags_hint') }}</p>
                         </div>
                     </div>
                 </div>
@@ -436,10 +466,10 @@
                 {{-- Form Actions --}}
                 <div class="flex items-center justify-end gap-4">
                     <a href="{{ route('admin.certificates.index') }}" class="px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors">
-                        Cancel
+                        {{ __('app.admin.certificate.cancel') }}
                     </a>
                     <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                        Create Certificate
+                        {{ __('app.admin.certificate.create_button') }}
                     </button>
                 </div>
             </div>
@@ -454,7 +484,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                 </svg>
-                                Live Preview
+                                {{ __('app.admin.certificate.live_preview') }}
                             </h3>
                         </div>
                         <div class="p-4 space-y-4">
@@ -467,12 +497,12 @@
                             <div class="flex flex-wrap gap-2">
                                 <template x-if="previewData.status === 'completed'">
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        ✓ Completed
+                                        ✓ <span x-text="translations.status_completed || 'Completed'"></span>
                                     </span>
                                 </template>
                                 <template x-if="previewData.status === 'in_progress'">
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                        ⏳ In Progress
+                                        ⏳ <span x-text="translations.status_in_progress || 'In Progress'"></span>
                                     </span>
                                 </template>
                                 <template x-if="previewData.level">
@@ -482,7 +512,7 @@
                                             'bg-orange-100 text-orange-800': previewData.level === 'Intermediate',
                                             'bg-red-100 text-red-800': previewData.level === 'Advanced'
                                         }"
-                                        x-text="previewData.level">
+                                        x-text="previewData.level === 'Beginner' ? (translations.level_beginner || 'Beginner') : (previewData.level === 'Intermediate' ? (translations.level_intermediate || 'Intermediate') : (previewData.level === 'Advanced' ? (translations.level_advanced || 'Advanced') : previewData.level))">
                                     </span>
                                 </template>
                                 <template x-if="previewData.learning_hours">
@@ -494,28 +524,28 @@
 
                             {{-- Title --}}
                             <div x-show="previewData.title">
-                                <h3 class="text-lg font-bold text-gray-900 mb-2" x-text="previewData.title || 'Untitled'"></h3>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2" x-text="previewData.title || translations.untitled || 'Untitled'"></h3>
                             </div>
 
                             {{-- Provider & Issued By --}}
                             <div class="text-sm text-gray-600 space-y-1" x-show="previewData.provider || previewData.issued_by">
                                 <template x-if="previewData.provider">
-                                    <p><span class="font-semibold">Provider:</span> <span x-text="previewData.provider"></span></p>
+                                    <p><span class="font-semibold" x-text="translations.provider || 'Provider:'"></span> <span x-text="previewData.provider"></span></p>
                                 </template>
                                 <template x-if="previewData.issued_by">
-                                    <p><span class="font-semibold">Issued By:</span> <span x-text="previewData.issued_by"></span></p>
+                                    <p><span class="font-semibold" x-text="translations.issued_by || 'Issued By:'"></span> <span x-text="previewData.issued_by"></span></p>
                                 </template>
                                 <template x-if="previewData.issued_at">
-                                    <p><span class="font-semibold">Issued:</span> <span x-text="previewData.issued_at"></span></p>
+                                    <p><span class="font-semibold" x-text="translations.issued || 'Issued:'"></span> <span x-text="previewData.issued_at"></span></p>
                                 </template>
                                 <template x-if="previewData.expiry_date">
-                                    <p><span class="font-semibold">Expires:</span> <span x-text="previewData.expiry_date"></span></p>
+                                    <p><span class="font-semibold" x-text="translations.expires || 'Expires:'"></span> <span x-text="previewData.expiry_date"></span></p>
                                 </template>
                             </div>
 
                             {{-- Learning Outcomes --}}
                             <div x-show="previewData.learning_outcomes" class="text-sm">
-                                <p class="font-semibold text-gray-700 mb-1">Learning Outcomes:</p>
+                                <p class="font-semibold text-gray-700 mb-1" x-text="translations.learning_outcomes || 'Learning Outcomes:'"></p>
                                 <ul class="list-disc list-inside text-gray-600 space-y-1">
                                     <template x-for="(obj, index) in (previewData.learning_outcomes?.split('\n').filter(o => o.trim()) || [])" :key="index">
                                         <li x-text="obj.trim().replace(/^[•\-\*]\s*/, '')"></li>
@@ -525,7 +555,7 @@
 
                             {{-- Reflection --}}
                             <div x-show="previewData.reflection" class="text-sm">
-                                <p class="font-semibold text-gray-700 mb-1">Reflection:</p>
+                                <p class="font-semibold text-gray-700 mb-1" x-text="translations.reflection || 'Reflection:'"></p>
                                 <p class="text-gray-600 leading-relaxed" x-text="previewData.reflection"></p>
                             </div>
 

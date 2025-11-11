@@ -76,6 +76,7 @@
 
                 <div>
                     <label class="flex items-center gap-2">
+                        <input type="hidden" name="enabled" value="0">
                         <input type="checkbox" name="enabled" value="1" checked class="rounded border-gray-300 text-[#ffb400] focus:ring-[#ffb400]">
                         <span class="text-sm font-medium text-gray-700">Enabled</span>
                     </label>

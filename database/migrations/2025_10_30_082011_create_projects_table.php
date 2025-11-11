@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('summary')->nullable();
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->string('demo_url')->nullable();
             $table->date('completed_at')->nullable();
             $table->timestamps();
+            $table->index('user_id');
         });
     }
 

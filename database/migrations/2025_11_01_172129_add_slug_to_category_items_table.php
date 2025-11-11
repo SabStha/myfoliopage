@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category_items', function (Blueprint $table) {
-            $table->string('slug')->nullable()->after('title');
-            $table->index('slug');
-        });
+        // Check if table exists and column doesn't exist before adding
+        if (Schema::hasTable('category_items') && !Schema::hasColumn('category_items', 'slug')) {
+            Schema::table('category_items', function (Blueprint $table) {
+                $table->string('slug')->nullable()->after('title');
+                $table->index('slug');
+            });
+        }
     }
 
     /**

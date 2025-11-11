@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('nav_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             $table->string('label');
+            $table->string('slug')->nullable();
             $table->string('route')->nullable();
             $table->string('url')->nullable();
             $table->string('active_pattern')->nullable();
@@ -21,6 +23,7 @@ return new class extends Migration
             $table->unsignedInteger('position')->default(0);
             $table->boolean('visible')->default(true);
             $table->timestamps();
+            $table->index('user_id');
         });
     }
 

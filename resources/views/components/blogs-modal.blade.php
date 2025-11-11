@@ -98,7 +98,7 @@
                     >
                         <div class="w-full h-48 overflow-hidden bg-gray-100 dark:bg-gray-700">
                             <img 
-                                :src="blog.imageUrl || '/storage/certficates/certificate-1.jpg'"
+                                :src="blog.imageUrl || '/storage/certificates/certificate-1.jpg'"
                                 :alt="blog.title"
                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 x-on:error="$el.style.display='none'; $el.nextElementSibling.style.display='flex';"

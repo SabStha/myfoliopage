@@ -46,7 +46,7 @@ class HomePageSectionController extends Controller
             'subsection_configurations.*.layout_style' => 'nullable|string|max:255',
         ]);
 
-        $data['enabled'] = $request->has('enabled') ? (bool)$request->input('enabled') : true;
+        $data['enabled'] = (bool)$request->input('enabled', true);
         
         // Process title and subtitle translations
         if (isset($data['title']) && is_array($data['title'])) {
@@ -157,7 +157,7 @@ class HomePageSectionController extends Controller
             'subsection_configurations.*.layout_style' => 'nullable|string|max:255',
         ]);
 
-        $data['enabled'] = $request->has('enabled') ? (bool)$request->input('enabled') : true;
+        $data['enabled'] = (bool)$request->input('enabled', true);
         
         // Process title and subtitle translations
         if (isset($data['title']) && is_array($data['title'])) {
@@ -234,6 +234,15 @@ class HomePageSectionController extends Controller
         }
         
         return redirect()->route('admin.home-page-sections.index')->with('status', 'Home page section updated successfully');
+    }
+
+    public function toggleEnabled(HomePageSection $homePageSection)
+    {
+        $homePageSection->enabled = !$homePageSection->enabled;
+        $homePageSection->save();
+        
+        return redirect()->route('admin.nav.index')
+            ->with('status', $homePageSection->enabled ? 'Section enabled' : 'Section disabled');
     }
 
     public function destroy(HomePageSection $homePageSection)

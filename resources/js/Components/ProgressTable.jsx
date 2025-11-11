@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 
-const fmt = (n) => n.toLocaleString();
+const fmt = (n) => (n ?? 0).toLocaleString();
 
 const ProgressTable = ({
   items,

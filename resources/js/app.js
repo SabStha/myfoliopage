@@ -6,6 +6,44 @@ import './i18n'; // Import i18n service
 
 window.Alpine = Alpine;
 
+// Global registry for dual-language-input components
+window.dualLanguageInputRegistry = {
+    components: new Set(),
+    hasPendingTranslations() {
+        for (const component of this.components) {
+            if (component.translating || component.translateTimeout) {
+                return true;
+            }
+        }
+        return false;
+    },
+    getPendingCount() {
+        let count = 0;
+        for (const component of this.components) {
+            if (component.translating || component.translateTimeout) {
+                count++;
+            }
+        }
+        return count;
+    },
+    waitForTranslations() {
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                if (!this.hasPendingTranslations()) {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 100); // Check every 100ms
+            
+            // Timeout after 10 seconds to prevent infinite waiting
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                resolve();
+            }, 10000);
+        });
+    }
+};
+
 // Register Alpine.js component for dual language input BEFORE Alpine starts
 // This ensures it's available globally, including for dynamically loaded content
 Alpine.data('dualLanguageInput', () => ({
@@ -14,6 +52,15 @@ Alpine.data('dualLanguageInput', () => ({
     jaValue: '',
     translating: false,
     translateTimeout: null,
+    init() {
+        // Register this component in the global registry
+        window.dualLanguageInputRegistry.components.add(this);
+        
+        // Cleanup on component destroy
+        this.$el.addEventListener('alpine:destroyed', () => {
+            window.dualLanguageInputRegistry.components.delete(this);
+        });
+    },
     async translateText(text, fromLang, toLang) {
         if (!text || text.trim().length === 0) return;
         
@@ -56,7 +103,11 @@ Alpine.data('dualLanguageInput', () => ({
             clearTimeout(this.translateTimeout);
             this.translateTimeout = setTimeout(() => {
                 if (value && value.trim().length > 0) {
-                    this.translateText(value, 'en', 'ja');
+                    this.translateText(value, 'en', 'ja').finally(() => {
+                        this.translateTimeout = null;
+                    });
+                } else {
+                    this.translateTimeout = null;
                 }
             }, 1000); // Debounce 1 second
         } else {
@@ -65,7 +116,11 @@ Alpine.data('dualLanguageInput', () => ({
             clearTimeout(this.translateTimeout);
             this.translateTimeout = setTimeout(() => {
                 if (value && value.trim().length > 0) {
-                    this.translateText(value, 'ja', 'en');
+                    this.translateText(value, 'ja', 'en').finally(() => {
+                        this.translateTimeout = null;
+                    });
+                } else {
+                    this.translateTimeout = null;
                 }
             }, 1000); // Debounce 1 second
         }
@@ -74,8 +129,110 @@ Alpine.data('dualLanguageInput', () => ({
 
 Alpine.start();
 
-// React Component Loading - wait for DOM to be ready
+// Global form submission interceptor to ensure translations complete
 document.addEventListener('DOMContentLoaded', () => {
+    // Intercept all form submissions
+    document.addEventListener('submit', async function(e) {
+        const form = e.target;
+        
+        // Skip if form has data-no-translation-check attribute
+        if (form.hasAttribute('data-no-translation-check')) {
+            return;
+        }
+        
+        // Check if form contains dual-language-input components
+        const hasDualLanguageInputs = form.querySelector('[x-data*="dualLanguageInput"]') !== null;
+        
+        if (hasDualLanguageInputs && window.dualLanguageInputRegistry.hasPendingTranslations()) {
+            // Prevent form submission
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show user-friendly message
+            const pendingCount = window.dualLanguageInputRegistry.getPendingCount();
+            let message;
+            if (window.translations && window.translations.common) {
+                if (pendingCount === 1) {
+                    message = window.translations.common.wait_translation_single || 'Please wait for translation to complete before submitting...';
+                } else {
+                    message = (window.translations.common.wait_translation_multiple || 'Please wait for :count translations to complete before submitting...').replace(':count', pendingCount);
+                }
+            } else {
+                message = pendingCount === 1 
+                    ? 'Please wait for translation to complete before submitting...'
+                    : `Please wait for ${pendingCount} translations to complete before submitting...`;
+            }
+            
+            // Create or update notification
+            let notification = document.getElementById('translation-wait-notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'translation-wait-notification';
+                notification.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md';
+                notification.innerHTML = `
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="flex-1"></span>
+                    <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200">×</button>
+                `;
+                document.body.appendChild(notification);
+            }
+            
+            const messageSpan = notification.querySelector('span');
+            if (messageSpan) {
+                messageSpan.textContent = message;
+            }
+            
+            // Wait for translations to complete
+            await window.dualLanguageInputRegistry.waitForTranslations();
+            
+            // Remove notification
+            notification.remove();
+            
+            // Re-submit the form
+            form.submit();
+        }
+    });
+    
+    // Also intercept programmatic form submissions (fetch/AJAX)
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        // Check if this is a form submission
+        const [url, options] = args;
+        if (options && options.method && ['POST', 'PUT', 'PATCH'].includes(options.method.toUpperCase())) {
+            // Check if translations are pending
+            if (window.dualLanguageInputRegistry.hasPendingTranslations()) {
+                // Show notification
+                let notification = document.getElementById('translation-wait-notification');
+                if (!notification) {
+                    notification = document.createElement('div');
+                    notification.id = 'translation-wait-notification';
+                    notification.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md';
+                    notification.innerHTML = `
+                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>${window.translations?.common?.wait_translation_single || 'Please wait for translation to complete...'}</span>
+                        <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200">×</button>
+                    `;
+                    document.body.appendChild(notification);
+                }
+                
+                // Wait for translations
+                await window.dualLanguageInputRegistry.waitForTranslations();
+                
+                // Remove notification
+                notification.remove();
+            }
+        }
+        
+        return originalFetch.apply(this, args);
+    };
+    
+    // React Component Loading - wait for DOM to be ready
   console.log('DOMContentLoaded event fired, checking for my-works-root...');
   const rootElement = document.getElementById('my-works-root');
   console.log('Found my-works-root element:', rootElement);

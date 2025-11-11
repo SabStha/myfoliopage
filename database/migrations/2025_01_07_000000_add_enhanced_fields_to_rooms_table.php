@@ -11,29 +11,68 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists before trying to alter it
+        if (!Schema::hasTable('rooms')) {
+            return;
+        }
+        
         Schema::table('rooms', function (Blueprint $table) {
             // Learning & Purpose
-            $table->text('objective_goal')->nullable()->after('summary'); // What you intended to learn
-            $table->text('key_techniques_used')->nullable()->after('objective_goal'); // Concrete skills gained
-            $table->text('tools_commands_used')->nullable()->after('key_techniques_used'); // Tools/commands for reproducibility
-            $table->text('attack_vector_summary')->nullable()->after('tools_commands_used'); // Thought process (enumeration → exploit → priv-esc)
-            $table->text('flag_evidence_proof')->nullable()->after('attack_vector_summary'); // user.txt and root.txt hashes or screenshots
-            $table->integer('time_spent')->nullable()->after('flag_evidence_proof'); // Minutes
-            $table->text('reflection_takeaways')->nullable()->after('time_spent'); // Why it mattered / what you'd do differently
-            $table->string('difficulty_confirmation')->nullable()->after('reflection_takeaways'); // Self-rated + official room rating
+            if (!Schema::hasColumn('rooms', 'objective_goal')) {
+                $table->text('objective_goal')->nullable()->after('summary');
+            }
+            if (!Schema::hasColumn('rooms', 'key_techniques_used')) {
+                $table->text('key_techniques_used')->nullable()->after('objective_goal');
+            }
+            if (!Schema::hasColumn('rooms', 'tools_commands_used')) {
+                $table->text('tools_commands_used')->nullable()->after('key_techniques_used');
+            }
+            if (!Schema::hasColumn('rooms', 'attack_vector_summary')) {
+                $table->text('attack_vector_summary')->nullable()->after('tools_commands_used');
+            }
+            if (!Schema::hasColumn('rooms', 'flag_evidence_proof')) {
+                $table->text('flag_evidence_proof')->nullable()->after('attack_vector_summary');
+            }
+            if (!Schema::hasColumn('rooms', 'time_spent')) {
+                $table->integer('time_spent')->nullable()->after('flag_evidence_proof');
+            }
+            if (!Schema::hasColumn('rooms', 'reflection_takeaways')) {
+                $table->text('reflection_takeaways')->nullable()->after('time_spent');
+            }
+            if (!Schema::hasColumn('rooms', 'difficulty_confirmation')) {
+                $table->string('difficulty_confirmation')->nullable()->after('reflection_takeaways');
+            }
             
             // Reproducibility
-            $table->text('walkthrough_summary_steps')->nullable()->after('difficulty_confirmation'); // Main steps in attack chain
-            $table->text('tools_environment')->nullable()->after('walkthrough_summary_steps'); // OS, VPN, browser extensions, notes software
-            $table->text('command_log_snippet')->nullable()->after('tools_environment'); // Top 5-10 lines showing key commands
-            $table->string('room_id_author')->nullable()->after('command_log_snippet'); // Official name or link for reference
-            $table->string('completion_screenshot_report_link')->nullable()->after('room_id_author'); // Attach or link proof
+            if (!Schema::hasColumn('rooms', 'walkthrough_summary_steps')) {
+                $table->text('walkthrough_summary_steps')->nullable()->after('difficulty_confirmation');
+            }
+            if (!Schema::hasColumn('rooms', 'tools_environment')) {
+                $table->text('tools_environment')->nullable()->after('walkthrough_summary_steps');
+            }
+            if (!Schema::hasColumn('rooms', 'command_log_snippet')) {
+                $table->text('command_log_snippet')->nullable()->after('tools_environment');
+            }
+            if (!Schema::hasColumn('rooms', 'room_id_author')) {
+                $table->string('room_id_author')->nullable()->after('command_log_snippet');
+            }
+            if (!Schema::hasColumn('rooms', 'completion_screenshot_report_link')) {
+                $table->string('completion_screenshot_report_link')->nullable()->after('room_id_author');
+            }
             
             // Traceability & Meta
-            $table->string('platform_username')->nullable()->after('completion_screenshot_report_link'); // Your handle for validation
-            $table->string('platform_profile_link')->nullable()->after('platform_username'); // Profile URL
-            $table->enum('status', ['completed', 'in_progress', 'retired'])->default('in_progress')->after('platform_profile_link');
-            $table->integer('score_points_earned')->nullable()->after('status'); // e.g., TryHackMe 20 pts, HTB 30 pts
+            if (!Schema::hasColumn('rooms', 'platform_username')) {
+                $table->string('platform_username')->nullable()->after('completion_screenshot_report_link');
+            }
+            if (!Schema::hasColumn('rooms', 'platform_profile_link')) {
+                $table->string('platform_profile_link')->nullable()->after('platform_username');
+            }
+            if (!Schema::hasColumn('rooms', 'status')) {
+                $table->enum('status', ['completed', 'in_progress', 'retired'])->default('in_progress')->after('platform_profile_link');
+            }
+            if (!Schema::hasColumn('rooms', 'score_points_earned')) {
+                $table->integer('score_points_earned')->nullable()->after('status');
+            }
         });
     }
 
@@ -42,6 +81,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Check if table exists before trying to alter it
+        if (!Schema::hasTable('rooms')) {
+            return;
+        }
+        
         Schema::table('rooms', function (Blueprint $table) {
             $table->dropColumn([
                 'objective_goal',
@@ -65,5 +109,7 @@ return new class extends Migration
         });
     }
 };
+
+
 
 

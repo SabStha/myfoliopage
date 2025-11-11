@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists before trying to alter it
+        if (!Schema::hasTable('courses')) {
+            return;
+        }
+        
         Schema::table('courses', function (Blueprint $table) {
             // Learning & Scope
             $table->string('course_url')->nullable()->after('provider'); // Provider Course URL
@@ -47,6 +52,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Check if table exists before trying to alter it
+        if (!Schema::hasTable('courses')) {
+            return;
+        }
+        
         Schema::table('courses', function (Blueprint $table) {
             $table->dropColumn([
                 'course_url',
@@ -71,5 +81,7 @@ return new class extends Migration
         });
     }
 };
+
+
 
 
