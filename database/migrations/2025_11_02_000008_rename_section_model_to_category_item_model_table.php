@@ -38,6 +38,38 @@ return new class extends Migration
                 Schema::dropIfExists('section_model');
             } else {
                 // For other databases, use rename
+                // First, drop the foreign key before renaming (using original table name)
+                try {
+                    // Try to find and drop the foreign key constraint
+                    $foreignKeys = DB::select("
+                        SELECT CONSTRAINT_NAME 
+                        FROM information_schema.KEY_COLUMN_USAGE 
+                        WHERE TABLE_SCHEMA = DATABASE() 
+                        AND TABLE_NAME = 'section_model' 
+                        AND COLUMN_NAME = 'section_id' 
+                        AND REFERENCED_TABLE_NAME IS NOT NULL
+                    ");
+                    
+                    if (!empty($foreignKeys)) {
+                        $foreignKeyName = $foreignKeys[0]->CONSTRAINT_NAME;
+                        Schema::table('section_model', function (Blueprint $table) use ($foreignKeyName) {
+                            $table->dropForeign($foreignKeyName);
+                        });
+                    }
+                } catch (\Exception $e) {
+                    // Foreign key might not exist, continue
+                }
+                
+                // Drop unique constraint before renaming
+                try {
+                    Schema::table('section_model', function (Blueprint $table) {
+                        $table->dropUnique('section_model_unique');
+                    });
+                } catch (\Exception $e) {
+                    // Unique constraint might not exist, continue
+                }
+                
+                // Rename table
                 Schema::rename('section_model', 'category_item_model');
                 
                 // Rename column
@@ -45,15 +77,13 @@ return new class extends Migration
                     $table->renameColumn('section_id', 'category_item_id');
                 });
                 
-                // Drop old foreign key and add new one
+                // Add new foreign key
                 Schema::table('category_item_model', function (Blueprint $table) {
-                    $table->dropForeign(['section_id']);
                     $table->foreign('category_item_id')->references('id')->on('category_items')->onDelete('cascade');
                 });
                 
-                // Update unique constraint
+                // Add new unique constraint
                 Schema::table('category_item_model', function (Blueprint $table) {
-                    $table->dropUnique('section_model_unique');
                     $table->unique(['category_item_id', 'sectionable_id', 'sectionable_type'], 'category_item_model_unique');
                 });
             }

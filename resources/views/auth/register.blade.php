@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-8 text-center">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ __('auth.create_account') }}</h2>
-        <p class="text-gray-600">{{ __('auth.register_subtitle') }}</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ __('app.auth.create_account') }}</h2>
+        <p class="text-gray-600">{{ __('app.auth.register_subtitle') }}</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-6">
@@ -10,7 +10,7 @@
         <!-- Name -->
         <div>
             <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('auth.name') }}
+                {{ __('app.auth.name') }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -26,7 +26,7 @@
                     required 
                     autofocus 
                     autocomplete="name"
-                    placeholder="{{ __('auth.name_placeholder') }}"
+                    placeholder="{{ __('app.auth.name_placeholder') }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>

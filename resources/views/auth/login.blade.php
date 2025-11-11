@@ -3,8 +3,8 @@
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <div class="mb-8 text-center">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ __('auth.welcome_back') }}</h2>
-        <p class="text-gray-600">{{ __('auth.login_subtitle') }}</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ __('app.auth.welcome_back') }}</h2>
+        <p class="text-gray-600">{{ __('app.auth.login_subtitle') }}</p>
     </div>
 
     <form method="POST" action="{{ route('login') }}" class="space-y-6">
@@ -13,7 +13,7 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('auth.email') }}
+                {{ __('app.auth.email') }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -29,7 +29,7 @@
                     required 
                     autofocus 
                     autocomplete="username"
-                    placeholder="{{ __('auth.email_placeholder') }}"
+                    placeholder="{{ __('app.auth.email_placeholder') }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -39,7 +39,7 @@
         <!-- Password -->
         <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('auth.password') }}
+                {{ __('app.auth.password') }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -53,7 +53,7 @@
                     name="password" 
                     required 
                     autocomplete="current-password"
-                    placeholder="{{ __('auth.password_placeholder') }}"
+                    placeholder="{{ __('app.auth.password_placeholder') }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -69,7 +69,7 @@
                     name="remember" 
                     class="w-4 h-4 text-[#ffb400] bg-gray-100 border-gray-300 rounded focus:ring-[#ffb400] focus:ring-2"
                 />
-                <span class="ml-2 text-sm text-gray-600">{{ __('auth.remember_me') }}</span>
+                <span class="ml-2 text-sm text-gray-600">{{ __('app.auth.remember_me') }}</span>
             </label>
 
             @if (Route::has('password.request'))
@@ -77,7 +77,7 @@
                     href="{{ route('password.request') }}" 
                     class="text-sm font-medium text-[#ffb400] hover:text-[#ff9500] transition-colors duration-200"
                 >
-                    {{ __('auth.forgot_password') }}
+                    {{ __('app.auth.forgot_password') }}
                 </a>
             @endif
         </div>
@@ -87,23 +87,23 @@
             type="submit" 
             class="w-full bg-gradient-to-r from-[#ffb400] to-[#ff9500] text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ffb400] focus:ring-offset-2"
         >
-            {{ __('auth.login') }}
+            {{ __('app.auth.login') }}
         </button>
     </form>
 
     <!-- Divider -->
     <div class="mt-8 flex items-center">
         <div class="flex-1 border-t border-gray-300"></div>
-        <span class="px-4 text-sm text-gray-500">{{ __('auth.or') }}</span>
+        <span class="px-4 text-sm text-gray-500">{{ __('app.auth.or') }}</span>
         <div class="flex-1 border-t border-gray-300"></div>
     </div>
 
     <!-- Register Link -->
     <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
-            {{ __('auth.dont_have_account') }}
+            {{ __('app.auth.dont_have_account') }}
             <a href="{{ route('register') }}" class="font-semibold text-[#ffb400] hover:text-[#ff9500] transition-colors duration-200">
-                {{ __('auth.create_one') }}
+                {{ __('app.auth.create_one') }}
             </a>
         </p>
     </div>
