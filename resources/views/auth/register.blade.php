@@ -36,7 +36,7 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('auth.email') }}
+                {{ __('app.auth.email') }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -51,7 +51,7 @@
                     value="{{ old('email') }}" 
                     required 
                     autocomplete="username"
-                    placeholder="{{ __('auth.email_placeholder') }}"
+                    placeholder="{{ __('app.auth.email_placeholder') }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -61,7 +61,7 @@
         <!-- Password -->
         <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('auth.password') }}
+                {{ __('app.auth.password') }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -75,7 +75,7 @@
                     name="password" 
                     required 
                     autocomplete="new-password"
-                    placeholder="{{ __('auth.password_placeholder') }}"
+                    placeholder="{{ __('app.auth.password_placeholder') }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -85,7 +85,7 @@
         <!-- Confirm Password -->
         <div>
             <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('auth.confirm_password') }}
+                {{ __('app.auth.confirm_password') }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -99,7 +99,7 @@
                     name="password_confirmation" 
                     required 
                     autocomplete="new-password"
-                    placeholder="{{ __('auth.confirm_password_placeholder') }}"
+                    placeholder="{{ __('app.auth.confirm_password_placeholder') }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -111,23 +111,23 @@
             type="submit" 
             class="w-full bg-gradient-to-r from-[#ffb400] to-[#ff9500] text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ffb400] focus:ring-offset-2"
         >
-            {{ __('auth.register') }}
+            {{ __('app.auth.register') }}
         </button>
     </form>
 
     <!-- Divider -->
     <div class="mt-8 flex items-center">
         <div class="flex-1 border-t border-gray-300"></div>
-        <span class="px-4 text-sm text-gray-500">{{ __('auth.or') }}</span>
+        <span class="px-4 text-sm text-gray-500">{{ __('app.auth.or') }}</span>
         <div class="flex-1 border-t border-gray-300"></div>
     </div>
 
     <!-- Login Link -->
     <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
-            {{ __('auth.already_registered') }}
+            {{ __('app.auth.already_registered') }}
             <a href="{{ route('login') }}" class="font-semibold text-[#ffb400] hover:text-[#ff9500] transition-colors duration-200">
-                {{ __('auth.sign_in') }}
+                {{ __('app.auth.sign_in') }}
             </a>
         </p>
     </div>
