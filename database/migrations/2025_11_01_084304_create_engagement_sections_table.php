@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('engagement_sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('title')->default('Discover our engagements');
             $table->string('hint')->default('(SCROLL)');
             $table->string('video_path')->nullable();

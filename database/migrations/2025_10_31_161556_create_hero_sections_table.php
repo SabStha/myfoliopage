@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('hero_sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             
             // Background
             $table->string('background_color')->default('#e0e7ff'); // Light indigo/blue-gray

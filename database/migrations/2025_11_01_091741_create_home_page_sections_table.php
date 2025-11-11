@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('home_page_sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('nav_item_id')->constrained('nav_items')->cascadeOnDelete();
             $table->integer('position')->default(0);
             $table->enum('text_alignment', ['left', 'right'])->default('left');

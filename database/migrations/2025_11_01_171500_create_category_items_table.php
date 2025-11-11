@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('category_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('nav_link_id')->nullable()->constrained('nav_links')->onDelete('set null'); // Link to subcategory (sub-nav)
             $table->string('title')->nullable();
