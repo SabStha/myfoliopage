@@ -1,0 +1,56 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Courses</h2>
+            <a href="{{ route('admin.courses.create') }}" class="px-3 py-2 text-sm rounded bg-blue-600 text-white">New Course</a>
+        </div>
+    </x-slot>
+    <div class="py-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    @if(session('status'))
+                        <div class="mb-4 p-3 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 rounded">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                                <th class="py-2">Title</th>
+                                <th class="py-2">Provider</th>
+                                <th class="py-2">Issued At</th>
+                                <th class="py-2">Completed At</th>
+                                <th class="py-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($courses as $course)
+                                <tr class="border-b border-gray-100 dark:border-gray-700">
+                                    <td class="py-2">{{ $course->getTranslated('title') }}</td>
+                                    <td class="py-2">{{ $course->getTranslated('provider') ?? '-' }}</td>
+                                    <td class="py-2">{{ $course->issued_at ? \Carbon\Carbon::parse($course->issued_at)->format('Y-m-d') : '-' }}</td>
+                                    <td class="py-2">{{ $course->completed_at ? \Carbon\Carbon::parse($course->completed_at)->format('Y-m-d') : '-' }}</td>
+                                    <td class="py-2 text-right space-x-2">
+                                        <a href="{{ route('admin.courses.edit', $course) }}" class="text-blue-600 hover:underline">Edit</a>
+                                        <form method="POST" action="{{ route('admin.courses.destroy', $course) }}" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="text-red-600 hover:underline" onclick="return confirm('Delete this course?')">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td class="py-4" colspan="5">No courses yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                    <div class="mt-4">{{ $courses->links() }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
+
+
+
