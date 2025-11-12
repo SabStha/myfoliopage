@@ -93,3 +93,4 @@ php artisan migrate
 - `routes/web.php` - Added legal page routes
 
 
+

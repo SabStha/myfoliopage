@@ -1833,12 +1833,20 @@
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         const data = await response.json();
-                        throw new Error(data.message || 'Session expired - please log in again');
+                        alert(data.message || 'Your session has expired. Please log in again.');
+                        window.location.href = data.redirect || '{{ route("login") }}';
+                        throw new Error(data.message || 'Session expired');
                     }
+                    // If not JSON, still redirect to login
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '{{ route("login") }}';
+                    throw new Error('Session expired');
                 }
                 
                 // Check if we got redirected (status 302, 301, etc.) or error
                 if (response.redirected || response.status === 302 || response.status === 301) {
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '{{ route("login") }}';
                     throw new Error('Redirected - likely authentication required');
                 }
                 if (!response.ok) {
