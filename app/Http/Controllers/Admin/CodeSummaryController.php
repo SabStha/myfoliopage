@@ -10,6 +10,7 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class CodeSummaryController extends Controller
 {
@@ -48,13 +49,14 @@ class CodeSummaryController extends Controller
             ->get();
         
         // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
-        $sections = CategoryItem::where(function($query) use ($userId) {
+        // First get user's category IDs
+        $userCategoryIds = Category::where('user_id', $userId)->pluck('id')->toArray();
+        
+        $sections = CategoryItem::where(function($query) use ($userId, $userCategoryIds) {
                 $query->where('user_id', $userId)
-                      ->orWhere(function($q) use ($userId) {
+                      ->orWhere(function($q) use ($userCategoryIds) {
                           $q->whereNull('user_id')
-                            ->whereHas('category', function($catQuery) use ($userId) {
-                                $catQuery->where('user_id', $userId);
-                            });
+                            ->whereIn('category_id', $userCategoryIds);
                       });
             })
             ->with('category')
@@ -234,6 +236,15 @@ class CodeSummaryController extends Controller
         }
 
         $data['user_id'] = Auth::id();
+        
+        // Filter out fields that don't exist in the database to prevent SQL errors
+        // Get the actual table columns
+        $tableColumns = Schema::getColumnListing('code_summaries');
+        $fillableFields = (new CodeSummary())->getFillable();
+        
+        // Only keep fields that are both fillable and exist in the database
+        $data = array_intersect_key($data, array_flip(array_intersect($fillableFields, $tableColumns)));
+        
         $codeSummary = CodeSummary::create($data);
 
         // Sync categories
@@ -436,6 +447,14 @@ class CodeSummaryController extends Controller
                 'expected_output' => 'Expected Output is required when Code is empty.'
             ])->withInput();
         }
+
+        // Filter out fields that don't exist in the database to prevent SQL errors
+        // Get the actual table columns
+        $tableColumns = Schema::getColumnListing('code_summaries');
+        $fillableFields = (new CodeSummary())->getFillable();
+        
+        // Only keep fields that are both fillable and exist in the database
+        $data = array_intersect_key($data, array_flip(array_intersect($fillableFields, $tableColumns)));
 
         $codeSummary->update($data);
 

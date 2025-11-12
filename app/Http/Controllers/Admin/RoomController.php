@@ -53,13 +53,14 @@ class RoomController extends Controller
             ->get();
         
         // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
-        $sections = CategoryItem::where(function($query) use ($userId) {
+        // First get user's category IDs
+        $userCategoryIds = Category::where('user_id', $userId)->pluck('id')->toArray();
+        
+        $sections = CategoryItem::where(function($query) use ($userId, $userCategoryIds) {
                 $query->where('user_id', $userId)
-                      ->orWhere(function($q) use ($userId) {
+                      ->orWhere(function($q) use ($userCategoryIds) {
                           $q->whereNull('user_id')
-                            ->whereHas('category', function($catQuery) use ($userId) {
-                                $catQuery->where('user_id', $userId);
-                            });
+                            ->whereIn('category_id', $userCategoryIds);
                       });
             })
             ->with('category')
