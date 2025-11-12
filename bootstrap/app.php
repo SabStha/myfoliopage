@@ -30,23 +30,28 @@ return Application::configure(basePath: dirname(__DIR__))
         // This catches ALL AuthenticationException instances, including from default middleware
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
             // Log for debugging
-            \Log::info('AuthenticationException caught', [
+            \Log::info('AuthenticationException caught in exception handler', [
                 'isAjax' => $request->header('X-Requested-With') === 'XMLHttpRequest',
                 'header' => $request->header('X-Requested-With'),
                 'accept' => $request->header('Accept'),
                 'url' => $request->url(),
                 'user' => \Illuminate\Support\Facades\Auth::check() ? \Illuminate\Support\Facades\Auth::id() : null,
+                'session_id' => $request->hasSession() ? $request->session()->getId() : 'no session',
             ]);
             
             // Check if this is an AJAX request - be very specific
             $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest';
             
             if ($isAjax) {
+                \Log::info('Returning JSON response for AJAX request');
                 return response()->json([
                     'error' => 'Unauthenticated',
                     'message' => 'Your session has expired. Please log in again.',
                     'redirect' => route('login')
                 ], 401)->header('Content-Type', 'application/json');
             }
+            
+            // Return null to let Laravel handle the redirect normally
+            return null;
         });
     })->create();
