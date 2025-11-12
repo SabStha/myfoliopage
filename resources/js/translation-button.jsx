@@ -88,19 +88,41 @@ const TranslationButton = () => {
     };
 
     return (
-        <button
-            onClick={handleToggle}
-            className="fixed top-4 right-4 z-50 bg-[#ffb400] hover:bg-[#e6a200] text-[#111] px-4 py-2 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 font-semibold text-sm"
-            title={isJapanese ? 'Switch to English' : 'Switch to Japanese'}
-            style={{
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            }}
-        >
-            <span>{isJapanese ? '🇬🇧 EN' : '🇯🇵 JA'}</span>
-            <span className="hidden sm:inline">
-                {isJapanese ? 'English' : '日本語'}
-            </span>
-        </button>
+        <>
+            <style>{`
+                #translation-button-root button {
+                    position: fixed !important;
+                    z-index: 9999 !important;
+                    pointer-events: auto !important;
+                }
+                @media (max-width: 640px) {
+                    #translation-button-root button {
+                        bottom: 1rem !important;
+                        right: 1rem !important;
+                        min-width: 50px !important;
+                        height: 45px !important;
+                        padding: 0.5rem 1rem !important;
+                        font-size: 0.875rem !important;
+                    }
+                }
+                @media (min-width: 641px) {
+                    #translation-button-root button {
+                        bottom: 1.5rem !important;
+                        right: 1.5rem !important;
+                    }
+                }
+            `}</style>
+            <button
+                onClick={handleToggle}
+                className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-gray-800 border-2 border-[#ffb400] hover:bg-[#ffb400] hover:border-[#e6a200] text-[#111] dark:text-gray-100 px-4 py-2.5 rounded-full shadow-xl transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base min-w-[60px] h-[50px] backdrop-blur-sm"
+                title={isJapanese ? 'Switch to English' : 'Switch to Japanese'}
+                style={{
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1)',
+                }}
+            >
+                <span className="text-lg font-bold">{isJapanese ? 'EN' : '日本語'}</span>
+            </button>
+        </>
     );
 };
 

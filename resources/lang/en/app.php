@@ -1069,5 +1069,9 @@ return [
     'auth.create_one' => 'Create one',
     'auth.or' => 'or',
     'auth.back_to_home' => 'Back to Home',
+    'auth.accept_terms' => 'I accept the',
+    'auth.terms_and_conditions' => 'Terms and Conditions',
+    'auth.accept_privacy' => 'I accept the',
+    'auth.privacy_policy' => 'Privacy Policy',
 ];
 

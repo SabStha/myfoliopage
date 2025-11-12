@@ -66,5 +66,8 @@
                 </div>
             </div>
         </div>
+        
+        {{-- Translation Button --}}
+        <div id="translation-button-root"></div>
     </body>
 </html>

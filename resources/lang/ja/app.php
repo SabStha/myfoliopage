@@ -1068,5 +1068,9 @@ return [
     'auth.create_one' => '作成する',
     'auth.or' => 'または',
     'auth.back_to_home' => 'ホームに戻る',
+    'auth.accept_terms' => '私は',
+    'auth.terms_and_conditions' => '利用規約',
+    'auth.accept_privacy' => '私は',
+    'auth.privacy_policy' => 'プライバシーポリシー',
 ];
 
