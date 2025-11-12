@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Project;
 use App\Models\Certificate;
@@ -395,9 +396,21 @@ Route::get('/api/certificates/{certificate}', function (Certificate $certificate
     ]);
 })->name('api.certificates.show');
 
-Route::get('/api/blogs', function () {
-    $blogs = \App\Models\Blog::where('is_published', true)
-        ->with(['media', 'tags'])
+Route::get('/api/blogs', function (Request $request) {
+    $username = $request->query('username');
+    $query = \App\Models\Blog::where('is_published', true);
+    
+    // Filter by user if username is provided
+    if ($username) {
+        $user = \App\Models\User::where('username', $username)
+            ->orWhere('slug', $username)
+            ->first();
+        if ($user) {
+            $query->where('user_id', $user->id);
+        }
+    }
+    
+    $blogs = $query->with(['media', 'tags'])
         ->orderBy('published_at', 'desc')
         ->orderBy('created_at', 'desc')
         ->get()
@@ -1592,6 +1605,21 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Debug route to check authentication status (remove in production)
+Route::get('/debug-auth', function () {
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'user_id' => Auth::id(),
+        'user' => Auth::user() ? [
+            'id' => Auth::user()->id,
+            'name' => Auth::user()->name,
+            'email' => Auth::user()->email,
+        ] : null,
+        'session_id' => session()->getId(),
+        'session_data' => session()->all(),
+    ]);
+})->name('debug.auth');
 
 // Admin routes (simple fallback until Filament)
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {

@@ -12,7 +12,12 @@
         async loadBlogs() {
             this.loading = true;
             try {
-                const response = await fetch('/api/blogs');
+                // Extract username from current URL path
+                const pathParts = window.location.pathname.split('/').filter(p => p);
+                const username = pathParts[0] || null;
+                const apiUrl = username ? `/api/blogs?username=${encodeURIComponent(username)}` : '/api/blogs';
+                
+                const response = await fetch(apiUrl);
                 this.blogs = await response.json();
                 this.filteredBlogs = this.blogs;
                 this.categories = [...new Set(this.blogs.map(b => b.category).filter(Boolean))];

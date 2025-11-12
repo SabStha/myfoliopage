@@ -265,13 +265,16 @@ class PortfolioController extends Controller
         
         // Get progress items (similar to current home route)
         $currentLocale = app()->getLocale();
-        $progressItems = NavItem::with('links')
-            ->where('user_id', $user->id)
+        $progressItems = NavItem::where('user_id', $user->id)
+            ->with(['links' => function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }])
             ->where('visible', true)
             ->orderBy('position')
             ->get()
-            ->map(function($navItem) use ($currentLocale) {
-                $links = $navItem->links;
+            ->map(function($navItem) use ($currentLocale, $user) {
+                // Filter links by user_id
+                $links = $navItem->links->where('user_id', $user->id);
                 $totalLinks = $links->count();
                 
                 if ($totalLinks === 0) {
@@ -388,8 +391,9 @@ class PortfolioController extends Controller
         $simulationsData = [];
         $programsData = [];
         
-        // Get blogs for this user (blogs are global, not user-specific)
-        $blogs = Blog::where('is_published', true)
+        // Get blogs for this user
+        $blogs = Blog::where('user_id', $user->id)
+            ->where('is_published', true)
             ->with('media')
             ->orderBy('published_at', 'desc')
             ->orderBy('created_at', 'desc')

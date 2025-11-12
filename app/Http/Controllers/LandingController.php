@@ -291,15 +291,18 @@ class LandingController extends Controller
                 ->values()
                 ->toArray();
             
-            // Get progress items
-            $progressItems = NavItem::with('links')
-                ->where('user_id', $sampleUser->id)
+            // Get progress items - filtered by sample user
+            $progressItems = NavItem::where('user_id', $sampleUser->id)
+                ->with(['links' => function($query) use ($sampleUser) {
+                    $query->where('user_id', $sampleUser->id);
+                }])
                 ->where('visible', true)
                 ->orderBy('position')
                 ->limit(5) // Show more progress items
                 ->get()
-                ->map(function($navItem) {
-                    $links = $navItem->links;
+                ->map(function($navItem) use ($sampleUser) {
+                    // Filter links by user_id
+                    $links = $navItem->links->where('user_id', $sampleUser->id);
                     $totalLinks = $links->count();
                     
                     if ($totalLinks === 0) {
@@ -418,8 +421,9 @@ class LandingController extends Controller
             $simulationsData = [];
             $programsData = [];
             
-            // Get blogs for preview
-            $blogs = Blog::where('is_published', true)
+            // Get blogs for preview (filtered by sample user)
+            $blogs = Blog::where('user_id', $sampleUser->id)
+                ->where('is_published', true)
                 ->with('media')
                 ->orderBy('published_at', 'desc')
                 ->orderBy('created_at', 'desc')

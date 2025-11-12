@@ -5,18 +5,25 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\NavItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OngoingProgressController extends Controller
 {
     public function index()
     {
-        // Fetch NavItems with their links to calculate progress
-        $navItems = NavItem::with('links')
+        $userId = Auth::id();
+        
+        // Fetch NavItems with their links to calculate progress - filtered by user
+        $navItems = NavItem::where('user_id', $userId)
+            ->with(['links' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
             ->where('visible', true)
             ->orderBy('position')
             ->get()
-            ->map(function($navItem) {
-                $links = $navItem->links;
+            ->map(function($navItem) use ($userId) {
+                // Filter links by user_id
+                $links = $navItem->links->where('user_id', $userId);
                 $totalLinks = $links->count();
                 $avgProgress = $totalLinks > 0 ? round($links->avg('progress') ?? 0) : 0;
                 $completedLinks = $links->where('progress', 100)->count();
