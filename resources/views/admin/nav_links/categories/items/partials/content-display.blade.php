@@ -160,7 +160,7 @@
                         @foreach($codeSummaries as $codeSummary)
                             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-start justify-between mb-2">
-                                    <h4 class="font-semibold text-gray-900">{{ $codeSummary->title }}</h4>
+                                    <h4 class="font-semibold text-gray-900">{{ $codeSummary->getTranslated('title') ?: $codeSummary->slug }}</h4>
                                     <div class="flex items-center gap-2">
                                         <button onclick="openEditContentModal('code-summary', '{{ $codeSummary->slug }}')" class="text-blue-600 hover:text-blue-700">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,8 +180,8 @@
                                         </form>
                                     </div>
                                 </div>
-                                @if($codeSummary->summary)
-                                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ Str::limit($codeSummary->summary, 100) }}</p>
+                                @if($codeSummary->getTranslated('summary'))
+                                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ Str::limit($codeSummary->getTranslated('summary'), 100) }}</p>
                                 @endif
                                 @if($codeSummary->sections && $codeSummary->sections->isNotEmpty())
                                     <div class="mt-2 pt-2 border-t border-gray-100">
