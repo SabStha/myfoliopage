@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Profile extends Model
 {
-    protected $fillable = ['name','role','photo_path'];
+    protected $fillable = ['user_id', 'name','role','photo_path'];
 
     public function media(): MorphMany
     {

@@ -117,8 +117,10 @@
             </a>
         @endif
         @php
-            // Filter out specific items by checking their English label
-            $items = \App\Models\NavItem::orderBy('position')
+            // Get only NavItems belonging to the authenticated user
+            $userId = Auth::id();
+            $items = \App\Models\NavItem::where('user_id', $userId)
+                ->orderBy('position')
                 ->get()
                 ->filter(function($item) {
                     $label = $item->getTranslated('label', 'en') ?: '';

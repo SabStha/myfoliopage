@@ -8,6 +8,7 @@ use App\Models\EngagementSection;
 use App\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class EngagementSectionController extends Controller
 {
@@ -19,10 +20,12 @@ class EngagementSectionController extends Controller
     }
     public function edit()
     {
-        $engagementSection = EngagementSection::first();
+        $userId = Auth::id();
+        $engagementSection = EngagementSection::where('user_id', $userId)->first();
         if (!$engagementSection) {
             // Create with factory defaults
             $engagementSection = EngagementSection::create([
+                'user_id' => $userId,
                 'title' => json_encode(['en' => 'Discover our engagements', 'ja' => '']),
             ]);
         }
@@ -35,11 +38,13 @@ class EngagementSectionController extends Controller
 
     public function update(Request $request)
     {
+        $userId = Auth::id();
         // Get existing engagement section or create a new one
-        $engagementSection = EngagementSection::first();
+        $engagementSection = EngagementSection::where('user_id', $userId)->first();
         
         if (!$engagementSection) {
             $engagementSection = new EngagementSection();
+            $engagementSection->user_id = $userId;
             $engagementSection->save();
             $engagementSection = EngagementSection::find($engagementSection->id);
         }
@@ -102,11 +107,13 @@ class EngagementSectionController extends Controller
 
     public function reset()
     {
-        $engagementSection = EngagementSection::first();
+        $userId = Auth::id();
+        $engagementSection = EngagementSection::where('user_id', $userId)->first();
         
         if (!$engagementSection) {
             // If no engagement section exists, create one with defaults
             $engagementSection = EngagementSection::create([
+                'user_id' => $userId,
                 'title' => 'Discover our engagements',
             ]);
             return redirect()->route('admin.engagement.edit')->with('status', 'Engagement section created with factory defaults');

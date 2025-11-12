@@ -10,6 +10,7 @@ class EngagementSection extends Model
 {
     use HasTranslations;
     protected $fillable = [
+        'user_id',
         'title',
         'video_path',
         'poster_path',
