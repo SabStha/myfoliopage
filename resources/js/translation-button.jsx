@@ -90,38 +90,68 @@ const TranslationButton = () => {
     return (
         <>
             <style>{`
-                #translation-button-root button {
-                    position: fixed !important;
-                    z-index: 9999 !important;
-                    pointer-events: auto !important;
+                /* Container: positioned but doesn't block clicks */
+                #translation-button-root {
+                    position: fixed;
+                    bottom: 0;
+                    right: 0;
+                    z-index: 40;
+                    pointer-events: none;
+                    padding: 1rem;
+                    margin: 0;
                 }
-                @media (max-width: 640px) {
-                    #translation-button-root button {
-                        bottom: 1rem !important;
-                        right: 1rem !important;
-                        min-width: 50px !important;
-                        height: 45px !important;
-                        padding: 0.5rem 1rem !important;
-                        font-size: 0.875rem !important;
+                /* Button: only this element receives clicks */
+                #translation-button-root button {
+                    pointer-events: auto;
+                    position: relative;
+                    margin: 0;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                }
+                /* Ensure button stays in safe corner area */
+                @media (min-width: 641px) {
+                    #translation-button-root {
+                        padding: 1.25rem;
                     }
                 }
-                @media (min-width: 641px) {
+                /* Mobile: smaller padding and button */
+                @media (max-width: 640px) {
+                    #translation-button-root {
+                        padding: 0.75rem;
+                    }
                     #translation-button-root button {
-                        bottom: 1.5rem !important;
-                        right: 1.5rem !important;
+                        min-width: 44px !important;
+                        height: 44px !important;
+                        padding: 0.5rem !important;
+                        font-size: 0.8125rem !important;
+                    }
+                }
+                /* Lower z-index when modals are open (modals use z-50) */
+                body:has([class*="z-50"]:not([class*="translation"])) #translation-button-root {
+                    z-index: 30;
+                }
+                /* Ensure it doesn't interfere with admin sidebar on large screens */
+                @media (min-width: 1024px) {
+                    /* Admin pages have sidebar, button stays in corner */
+                    body:has([class*="lg:ml-\\[280px\\]"]) #translation-button-root {
+                        right: 0;
                     }
                 }
             `}</style>
-            <button
-                onClick={handleToggle}
-                className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-gray-800 border-2 border-[#ffb400] hover:bg-[#ffb400] hover:border-[#e6a200] text-[#111] dark:text-gray-100 px-4 py-2.5 rounded-full shadow-xl transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base min-w-[60px] h-[50px] backdrop-blur-sm"
-                title={isJapanese ? 'Switch to English' : 'Switch to Japanese'}
-                style={{
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1)',
-                }}
-            >
-                <span className="text-lg font-bold">{isJapanese ? 'EN' : '日本語'}</span>
-            </button>
+            <div id="translation-button-root">
+                <button
+                    onClick={handleToggle}
+                    className="bg-white dark:bg-gray-800 border-2 border-[#ffb400] hover:bg-[#ffb400] hover:border-[#e6a200] text-[#111] dark:text-gray-100 px-3 py-2 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center font-bold text-sm min-w-[56px] h-[56px] backdrop-blur-sm hover:scale-105 active:scale-95"
+                    title={isJapanese ? 'Switch to English' : 'Switch to Japanese'}
+                    style={{
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                    }}
+                >
+                    <span className="text-base font-bold leading-none">{isJapanese ? 'EN' : '日本語'}</span>
+                </button>
+            </div>
         </>
     );
 };

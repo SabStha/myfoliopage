@@ -156,6 +156,7 @@ return [
     'admin.edit_profile' => 'プロフィールを編集',
     'admin.menu' => 'メニュー',
     'admin.view_public_homepage' => '公開ホームページを表示',
+    'admin.logout' => 'ログアウト',
     
     // Admin Navigation & Sections
     'admin.nav.title' => 'ナビゲーションとホームページセクション',

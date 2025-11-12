@@ -156,6 +156,7 @@ return [
     'admin.edit_profile' => 'Edit profile',
     'admin.menu' => 'Menu',
     'admin.view_public_homepage' => 'View Public Homepage',
+    'admin.logout' => 'Logout',
     
     // Admin Navigation & Sections
     'admin.nav.title' => 'Navigation & Home Page Sections',

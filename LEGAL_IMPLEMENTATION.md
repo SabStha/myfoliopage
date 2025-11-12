@@ -92,3 +92,4 @@ php artisan migrate
 - `resources/views/auth/register.blade.php` - Added acceptance checkboxes
 - `routes/web.php` - Added legal page routes
 
+
