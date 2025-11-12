@@ -33,7 +33,7 @@ class NavLinkController extends Controller
             abort(403, 'Unauthorized access');
         }
         
-        // Only show categories that belong to this user and are already used by other NavLinks in this NavItem
+        // Show all categories that belong to this user and are used by ANY NavLink in this NavItem
         $categoryIds = $nav->links()
             ->where('user_id', Auth::id())
             ->with('categories')
@@ -44,10 +44,22 @@ class NavLinkController extends Controller
             ->unique()
             ->toArray();
         
-        $categories = \App\Models\Category::where('user_id', Auth::id())
-            ->whereIn('id', $categoryIds)
+        // Get categories that are linked to NavLinks in this NavItem, filtered by user_id for security
+        // Also include categories without user_id if they're linked (for backward compatibility)
+        if (!empty($categoryIds)) {
+            $categories = \App\Models\Category::where(function($query) use ($categoryIds) {
+                $query->whereIn('id', $categoryIds)
+                    ->where(function($q) {
+                        $q->where('user_id', Auth::id())
+                          ->orWhereNull('user_id'); // Include categories without user_id for backward compatibility
+                    });
+            })
             ->orderBy('position')
             ->get();
+        } else {
+            // No categories linked yet - show empty list
+            $categories = collect([]);
+        }
         
         return view('admin.nav_links.create', compact('nav','categories'));
     }
@@ -315,6 +327,7 @@ class NavLinkController extends Controller
             $data['slug'] = $slug;
         }
         
+        $data['user_id'] = Auth::id();
         $category = \App\Models\Category::create($data);
         $link->categories()->attach($category->id);
         
