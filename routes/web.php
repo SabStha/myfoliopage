@@ -1774,6 +1774,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Convert name to title and description to summary for CategoryItem
         $itemData = [
             'category_id' => $data['category_id'],
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
             'title' => $data['name'],
             'summary' => $data['description'] ?? null,
             'position' => $data['position'] ?? 0,

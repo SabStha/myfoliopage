@@ -715,6 +715,7 @@ class NavLinkController extends Controller
         }
         
         $data['category_id'] = $category->id;
+        $data['user_id'] = Auth::id();
         $data['position'] = $data['position'] ?? 0;
         
         $item = \App\Models\CategoryItem::create($data);

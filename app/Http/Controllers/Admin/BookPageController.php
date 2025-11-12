@@ -77,7 +77,16 @@ class BookPageController extends Controller
             ->orderBy('slug')
             ->get();
         
-        $sections = CategoryItem::where('user_id', $userId)
+        // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
+        $sections = CategoryItem::where(function($query) use ($userId) {
+                $query->where('user_id', $userId)
+                      ->orWhere(function($q) use ($userId) {
+                          $q->whereNull('user_id')
+                            ->whereHas('category', function($catQuery) use ($userId) {
+                                $catQuery->where('user_id', $userId);
+                            });
+                      });
+            })
             ->with('category')
             ->orderBy('category_id')
             ->orderBy('position')
@@ -292,7 +301,16 @@ class BookPageController extends Controller
                     ->whereIn('id', $allRelevantCategoryIds)
                     ->orderBy('name')
                     ->get();
-                $sections = CategoryItem::where('user_id', $userId)
+                // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
+                $sections = CategoryItem::where(function($query) use ($userId, $allRelevantCategoryIds) {
+                        $query->where('user_id', $userId)
+                              ->orWhere(function($q) use ($userId) {
+                                  $q->whereNull('user_id')
+                                    ->whereHas('category', function($catQuery) use ($userId) {
+                                        $catQuery->where('user_id', $userId);
+                                    });
+                              });
+                    })
                     ->with('category')
                     ->whereIn('category_id', $allRelevantCategoryIds)
                     ->orderBy('category_id')
@@ -300,7 +318,16 @@ class BookPageController extends Controller
                     ->get();
             } else {
                 $categories = Category::where('user_id', $userId)->orderBy('name')->get();
-                $sections = CategoryItem::where('user_id', $userId)
+                // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
+                $sections = CategoryItem::where(function($query) use ($userId) {
+                        $query->where('user_id', $userId)
+                              ->orWhere(function($q) use ($userId) {
+                                  $q->whereNull('user_id')
+                                    ->whereHas('category', function($catQuery) use ($userId) {
+                                        $catQuery->where('user_id', $userId);
+                                    });
+                              });
+                    })
                     ->with('category')
                     ->orderBy('category_id')
                     ->orderBy('position')
@@ -308,7 +335,16 @@ class BookPageController extends Controller
             }
         } else {
             $categories = Category::where('user_id', $userId)->orderBy('name')->get();
-            $sections = CategoryItem::where('user_id', $userId)
+            // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
+            $sections = CategoryItem::where(function($query) use ($userId) {
+                    $query->where('user_id', $userId)
+                          ->orWhere(function($q) use ($userId) {
+                              $q->whereNull('user_id')
+                                ->whereHas('category', function($catQuery) use ($userId) {
+                                    $catQuery->where('user_id', $userId);
+                                });
+                          });
+                })
                 ->with('category')
                 ->orderBy('category_id')
                 ->orderBy('position')
