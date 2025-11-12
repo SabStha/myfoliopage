@@ -1823,11 +1823,10 @@
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html,application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    'Content-Type': 'application/json'
+                    'Accept': 'text/html',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
-                credentials: 'include', // Always include cookies/session
+                credentials: 'same-origin', // Include cookies/session for same origin
                 cache: 'no-cache'
             })
             .then(async response => {

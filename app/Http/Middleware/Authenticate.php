@@ -34,13 +34,10 @@ class Authenticate extends Middleware
             }
         }
 
-        // Check if this is an AJAX request - check multiple ways
-        $isAjax = $request->expectsJson() || 
-                  $request->ajax() || 
-                  $request->wantsJson() ||
-                  $request->header('X-Requested-With') === 'XMLHttpRequest' ||
-                  str_contains($request->header('Accept', ''), 'application/json') ||
-                  $request->header('Accept') === 'text/html,application/json';
+        // Check if this is an AJAX request - be more specific
+        // Only check for X-Requested-With header or explicit JSON accept
+        $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                  ($request->expectsJson() && !$request->acceptsHtml());
 
         // If not authenticated and it's an AJAX request, return JSON directly
         if ($isAjax) {

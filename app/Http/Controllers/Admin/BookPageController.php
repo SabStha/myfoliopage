@@ -48,9 +48,11 @@ class BookPageController extends Controller
      */
     public function create(Request $request)
     {
-        // Ensure user is authenticated
+        // Ensure user is authenticated - middleware should handle this, but double-check
         if (!Auth::check()) {
-            if ($request->ajax() || $request->wantsJson()) {
+            // Check if this is an AJAX request
+            if ($request->header('X-Requested-With') === 'XMLHttpRequest' || 
+                ($request->expectsJson() && !$request->acceptsHtml())) {
                 return response()->json(['error' => 'Unauthorized', 'message' => 'Please log in to continue'], 401);
             }
             return redirect()->route('login');
