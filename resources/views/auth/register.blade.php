@@ -111,6 +111,45 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <!-- Terms and Privacy Acceptance -->
+        <div class="space-y-3">
+            <div class="flex items-start">
+                <input 
+                    id="terms_accepted" 
+                    type="checkbox" 
+                    name="terms_accepted" 
+                    value="1"
+                    required
+                    class="mt-1 h-4 w-4 text-[#ffb400] border-gray-300 rounded focus:ring-[#ffb400]"
+                />
+                <label for="terms_accepted" class="ml-2 text-sm text-gray-700">
+                    {{ trans('app.auth.accept_terms', [], $locale) ?: 'I accept the' }} 
+                    <a href="{{ route('legal.terms') }}" target="_blank" class="text-[#ffb400] hover:text-[#ff9500] underline font-semibold">
+                        {{ trans('app.auth.terms_and_conditions', [], $locale) ?: 'Terms and Conditions' }}
+                    </a>
+                </label>
+            </div>
+            <x-input-error :messages="$errors->get('terms_accepted')" class="mt-1" />
+            
+            <div class="flex items-start">
+                <input 
+                    id="privacy_accepted" 
+                    type="checkbox" 
+                    name="privacy_accepted" 
+                    value="1"
+                    required
+                    class="mt-1 h-4 w-4 text-[#ffb400] border-gray-300 rounded focus:ring-[#ffb400]"
+                />
+                <label for="privacy_accepted" class="ml-2 text-sm text-gray-700">
+                    {{ trans('app.auth.accept_privacy', [], $locale) ?: 'I accept the' }} 
+                    <a href="{{ route('legal.privacy') }}" target="_blank" class="text-[#ffb400] hover:text-[#ff9500] underline font-semibold">
+                        {{ trans('app.auth.privacy_policy', [], $locale) ?: 'Privacy Policy' }}
+                    </a>
+                </label>
+            </div>
+            <x-input-error :messages="$errors->get('privacy_accepted')" class="mt-1" />
+        </div>
+
         <!-- Submit Button -->
         <button 
             type="submit" 

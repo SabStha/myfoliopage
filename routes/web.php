@@ -1655,6 +1655,15 @@ Route::get('/rooms/{room:slug}', function (\App\Models\Room $room) {
 Route::view('/timeline', 'pages.timeline')->name('timeline');
 Route::view('/contact', 'pages.contact')->name('contact');
 
+// Legal pages
+Route::get('/legal/terms', function () {
+    return view('legal.terms');
+})->name('legal.terms');
+
+Route::get('/legal/privacy', function () {
+    return view('legal.privacy');
+})->name('legal.privacy');
+
 // Removed /dashboard route - using /admin/dashboard instead
 // Route::get('/dashboard', function () {
 //     return view('dashboard');

@@ -33,12 +33,28 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms_accepted' => ['required', 'accepted'],
+            'privacy_accepted' => ['required', 'accepted'],
+        ], [
+            'terms_accepted.required' => 'You must accept the Terms and Conditions to register.',
+            'terms_accepted.accepted' => 'You must accept the Terms and Conditions to register.',
+            'privacy_accepted.required' => 'You must accept the Privacy Policy to register.',
+            'privacy_accepted.accepted' => 'You must accept the Privacy Policy to register.',
         ]);
+
+        // Current version identifiers (update these when you change terms/privacy)
+        $currentTermsVersion = '1.0';
+        $currentPrivacyVersion = '1.0';
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'terms_accepted_at' => now(),
+            'privacy_accepted_at' => now(),
+            'terms_version' => $currentTermsVersion,
+            'privacy_version' => $currentPrivacyVersion,
+            'acceptance_ip_address' => $request->ip(),
         ]);
 
         event(new Registered($user));

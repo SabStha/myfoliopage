@@ -23,6 +23,11 @@ class User extends Authenticatable
         'slug',
         'email',
         'password',
+        'terms_accepted_at',
+        'privacy_accepted_at',
+        'terms_version',
+        'privacy_version',
+        'acceptance_ip_address',
     ];
 
     /**
@@ -44,6 +49,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
+            'privacy_accepted_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
