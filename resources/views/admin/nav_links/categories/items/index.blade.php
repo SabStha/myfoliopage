@@ -515,22 +515,24 @@
             </form>
             
             {{-- Success Message (shown after creation) --}}
-            <div id="create-item-success" class="hidden absolute inset-0 bg-white rounded-lg flex flex-col items-center justify-center z-50">
-                <div class="text-center px-6">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ __('app.admin.categories.section_created_successfully') }}</h3>
-                    <p class="text-sm text-gray-600 mb-6">{{ __('app.admin.categories.section_created_message') }}</p>
-                    <div class="flex items-center justify-center gap-3">
-                        <button type="button" onclick="resetCreateItemForm()" class="px-5 py-2.5 text-sm font-medium bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors">
-                            {{ __('app.admin.categories.create_another') }}
-                        </button>
-                        <button type="button" onclick="closeCreateItemModal(true)" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            {{ __('app.admin.categories.close') }}
-                        </button>
+            <div id="create-item-success" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 px-8 py-10 text-center">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg mb-6">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">{{ __('app.admin.categories.section_created_successfully') }}</h3>
+                        <p class="text-base text-gray-600 mb-8">{{ __('app.admin.categories.section_created_message') }}</p>
+                        <div class="flex items-center justify-center gap-4">
+                            <button type="button" onclick="resetCreateItemForm()" class="px-6 py-3 text-sm font-semibold bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                                {{ __('app.admin.categories.create_another') }}
+                            </button>
+                            <button type="button" onclick="closeCreateItemModal(true)" class="px-6 py-3 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 transform hover:scale-105">
+                                {{ __('app.admin.categories.close') }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1880,7 +1882,8 @@
                 
                 // Check if it's actually a login page (has login form AND password input AND email input)
                 // AND doesn't have the expected create form elements
-                const hasCreateFormElements = doc.querySelector('input[name="title"], input[name="book_title"], textarea[name="summary"]');
+                // Support both regular and array-based input names (title[en], title[ja], etc.)
+                const hasCreateFormElements = doc.querySelector('input[name="title"], input[name^="title["], input[name="book_title"], textarea[name="summary"], textarea[name^="summary["]');
                 const isLoginPage = loginForm && passwordInput && emailInput && !hasCreateFormElements;
                 
                 console.log('Checking for login page:', {
@@ -1943,21 +1946,31 @@
                     }
                 
                 // Find the create form - look for forms with expected create form elements, NOT the logout form
-                // For book-page, look for form with book-page specific inputs
+                // Support both regular and array-based input names (title[en], title[ja], etc.)
                 let form = null;
                 if (type === 'book-page') {
                     // Find form that contains book-page create form elements
-                    const bookPageForm = doc.querySelector('form input[name="title"], form input[name="book_title"], form textarea[name="summary"]');
+                    const bookPageForm = doc.querySelector('form input[name="title"], form input[name^="title["], form input[name="book_title"], form textarea[name="summary"], form textarea[name^="summary["]');
                     if (bookPageForm) {
                         form = bookPageForm.closest('form');
                     }
                 } else if (type === 'code-summary') {
-                    const codeSummaryForm = doc.querySelector('form input[name="title"], form textarea[name="summary"]');
+                    const codeSummaryForm = doc.querySelector('form input[name="title"], form input[name^="title["], form textarea[name="summary"], form textarea[name^="summary["]');
                     if (codeSummaryForm) {
                         form = codeSummaryForm.closest('form');
                     }
+                } else if (type === 'room') {
+                    const roomForm = doc.querySelector('form input[name="title"], form input[name^="title["], form textarea[name="summary"], form textarea[name^="summary["]');
+                    if (roomForm) {
+                        form = roomForm.closest('form');
+                    }
+                } else if (type === 'course') {
+                    const courseForm = doc.querySelector('form input[name="title"], form input[name^="title["], form textarea[name="summary"], form textarea[name^="summary["]');
+                    if (courseForm) {
+                        form = courseForm.closest('form');
+                    }
                 } else if (type === 'certificate') {
-                    const certificateForm = doc.querySelector('form input[name="title"], form input[name="provider"]');
+                    const certificateForm = doc.querySelector('form input[name="title"], form input[name^="title["], form input[name="provider"]');
                     if (certificateForm) {
                         form = certificateForm.closest('form');
                     }
@@ -1978,11 +1991,16 @@
                     }
                     
                     // For book-page, code-summary, certificate, etc., check for expected form elements
-                    if (type === 'book-page' && !doc.querySelector('[x-data*="bookPageCreate"], input[name="title"], textarea[name="summary"]')) {
+                    // Support both regular and array-based input names (title[en], title[ja], etc.)
+                    if (type === 'book-page' && !doc.querySelector('[x-data*="bookPageCreate"], input[name="title"], input[name^="title["], input[name="book_title"], textarea[name="summary"], textarea[name^="summary["]')) {
                         throw new Error('Form does not contain expected book-page create form elements');
-                    } else if (type === 'code-summary' && !doc.querySelector('[x-data*="codeSummaryCreate"], input[name="title"], textarea[name="summary"]')) {
+                    } else if (type === 'code-summary' && !doc.querySelector('[x-data*="codeSummaryCreate"], input[name="title"], input[name^="title["], textarea[name="summary"], textarea[name^="summary["]')) {
                         throw new Error('Form does not contain expected code-summary create form elements');
-                    } else if (type === 'certificate' && !doc.querySelector('[x-data*="certificateCreate"], input[name="title"], input[name="provider"]')) {
+                    } else if (type === 'room' && !doc.querySelector('[x-data*="roomCreate"], input[name="title"], input[name^="title["], textarea[name="summary"], textarea[name^="summary["]')) {
+                        throw new Error('Form does not contain expected room create form elements');
+                    } else if (type === 'course' && !doc.querySelector('[x-data*="courseCreate"], input[name="title"], input[name^="title["], textarea[name="summary"], textarea[name^="summary["]')) {
+                        throw new Error('Form does not contain expected course create form elements');
+                    } else if (type === 'certificate' && !doc.querySelector('[x-data*="certificateCreate"], input[name="title"], input[name^="title["], input[name="provider"]')) {
                         throw new Error('Form does not contain expected certificate create form elements');
                     }
                 } else {
