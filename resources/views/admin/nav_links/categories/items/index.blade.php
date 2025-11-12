@@ -1875,7 +1875,10 @@
                 // Check if this looks like a login page by checking for login form
                 const loginForm = doc.querySelector('form[action*="login"], form input[type="password"][name="password"]');
                 if (loginForm) {
-                    throw new Error('Received login page instead of create form');
+                    // Check if we got redirected to login - show proper error
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '{{ route("login") }}';
+                    throw new Error('Received login page instead of create form - session expired');
                 }
                 
                 // First, execute all scripts to register Alpine components
@@ -2149,118 +2152,118 @@
                     // Initialize Alpine.js after scripts are executed and DOM is updated
                     // Wait a bit longer to ensure Alpine component registration completes
                     setTimeout(() => {
-                            if (window.Alpine) {
-                                // Ensure Alpine component is registered before initializing
-                                if (type === 'book-page') {
-                                    // Make sure components are registered
-                                    if (window.registerBookPageCreateComponent) {
-                                        try {
-                                            window.registerBookPageCreateComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring Alpine component registration:', e);
-                                        }
+                        if (window.Alpine) {
+                            // Ensure Alpine component is registered before initializing
+                            if (type === 'book-page') {
+                                // Make sure components are registered
+                                if (window.registerBookPageCreateComponent) {
+                                    try {
+                                        window.registerBookPageCreateComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring Alpine component registration:', e);
                                     }
-                                    if (window.registerBookPageTranslationComponent) {
-                                        try {
-                                            window.registerBookPageTranslationComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring translation component registration:', e);
-                                        }
+                                }
+                                if (window.registerBookPageTranslationComponent) {
+                                    try {
+                                        window.registerBookPageTranslationComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring translation component registration:', e);
                                     }
-                                    // Find the element with x-data and initialize Alpine on it
-                                    const elementWithXData = modalContent.querySelector('[x-data*="bookPageCreate"]');
-                                    if (elementWithXData) {
-                                        window.Alpine.initTree(elementWithXData);
-                                    } else {
-                                        // Fallback: initialize on modalContent
-                                        window.Alpine.initTree(modalContent);
-                                    }
-                                } else if (type === 'code-summary') {
-                                    // Make sure components are registered
-                                    if (window.registerCodeSummaryCreateComponent) {
-                                        try {
-                                            window.registerCodeSummaryCreateComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring Alpine component registration:', e);
-                                        }
-                                    }
-                                    if (window.registerCodeSummaryTranslationComponent) {
-                                        try {
-                                            window.registerCodeSummaryTranslationComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring translation component registration:', e);
-                                        }
-                                    }
-                                    // Find the element with x-data and initialize Alpine on it
-                                    const elementWithXData = modalContent.querySelector('[x-data*="codeSummaryCreate"]');
-                                    if (elementWithXData) {
-                                        window.Alpine.initTree(elementWithXData);
-                                    } else {
-                                        // Fallback: initialize on modalContent
-                                        window.Alpine.initTree(modalContent);
-                                    }
-                                } else if (type === 'room') {
-                                    // Make sure component is registered
-                                    if (window.registerRoomCreateComponent) {
-                                        try {
-                                            window.registerRoomCreateComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring Alpine component registration:', e);
-                                        }
-                                    }
-                                    if (window.registerRoomTranslationComponent) {
-                                        try {
-                                            window.registerRoomTranslationComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring translation component registration:', e);
-                                        }
-                                    }
-                                    // Find the element with x-data and initialize Alpine on it
-                                    const elementWithXData = modalContent.querySelector('[x-data*="roomCreate"]');
-                                    if (elementWithXData) {
-                                        window.Alpine.initTree(elementWithXData);
-                                    } else {
-                                        // Fallback: initialize on modalContent
-                                        window.Alpine.initTree(modalContent);
-                                    }
-                                } else if (type === 'course') {
-                                    // Make sure component is registered
-                                    if (window.registerCourseCreateComponent) {
-                                        try {
-                                            window.registerCourseCreateComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring Alpine component registration:', e);
-                                        }
-                                    }
-                                    // Find the element with x-data and initialize Alpine on it
-                                    const elementWithXData = modalContent.querySelector('[x-data*="courseCreate"]');
-                                    if (elementWithXData) {
-                                        window.Alpine.initTree(elementWithXData);
-                                    } else {
-                                        // Fallback: initialize on modalContent
-                                        window.Alpine.initTree(modalContent);
-                                    }
-                                } else if (type === 'certificate') {
-                                    // Make sure component is registered
-                                    if (window.registerCertificateCreateComponent) {
-                                        try {
-                                            window.registerCertificateCreateComponent();
-                                        } catch (e) {
-                                            console.error('Error ensuring Alpine component registration:', e);
-                                        }
-                                    }
-                                    // Find the element with x-data and initialize Alpine on it
-                                    const elementWithXData = modalContent.querySelector('[x-data*="certificateCreate"]');
-                                    if (elementWithXData) {
-                                        window.Alpine.initTree(elementWithXData);
-                                    } else {
-                                        // Fallback: initialize on modalContent
-                                        window.Alpine.initTree(modalContent);
-                                    }
+                                }
+                                // Find the element with x-data and initialize Alpine on it
+                                const elementWithXData = modalContent.querySelector('[x-data*="bookPageCreate"]');
+                                if (elementWithXData) {
+                                    window.Alpine.initTree(elementWithXData);
                                 } else {
+                                    // Fallback: initialize on modalContent
                                     window.Alpine.initTree(modalContent);
                                 }
+                            } else if (type === 'code-summary') {
+                                // Make sure components are registered
+                                if (window.registerCodeSummaryCreateComponent) {
+                                    try {
+                                        window.registerCodeSummaryCreateComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring Alpine component registration:', e);
+                                    }
+                                }
+                                if (window.registerCodeSummaryTranslationComponent) {
+                                    try {
+                                        window.registerCodeSummaryTranslationComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring translation component registration:', e);
+                                    }
+                                }
+                                // Find the element with x-data and initialize Alpine on it
+                                const elementWithXData = modalContent.querySelector('[x-data*="codeSummaryCreate"]');
+                                if (elementWithXData) {
+                                    window.Alpine.initTree(elementWithXData);
+                                } else {
+                                    // Fallback: initialize on modalContent
+                                    window.Alpine.initTree(modalContent);
+                                }
+                            } else if (type === 'room') {
+                                // Make sure component is registered
+                                if (window.registerRoomCreateComponent) {
+                                    try {
+                                        window.registerRoomCreateComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring Alpine component registration:', e);
+                                    }
+                                }
+                                if (window.registerRoomTranslationComponent) {
+                                    try {
+                                        window.registerRoomTranslationComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring translation component registration:', e);
+                                    }
+                                }
+                                // Find the element with x-data and initialize Alpine on it
+                                const elementWithXData = modalContent.querySelector('[x-data*="roomCreate"]');
+                                if (elementWithXData) {
+                                    window.Alpine.initTree(elementWithXData);
+                                } else {
+                                    // Fallback: initialize on modalContent
+                                    window.Alpine.initTree(modalContent);
+                                }
+                            } else if (type === 'course') {
+                                // Make sure component is registered
+                                if (window.registerCourseCreateComponent) {
+                                    try {
+                                        window.registerCourseCreateComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring Alpine component registration:', e);
+                                    }
+                                }
+                                // Find the element with x-data and initialize Alpine on it
+                                const elementWithXData = modalContent.querySelector('[x-data*="courseCreate"]');
+                                if (elementWithXData) {
+                                    window.Alpine.initTree(elementWithXData);
+                                } else {
+                                    // Fallback: initialize on modalContent
+                                    window.Alpine.initTree(modalContent);
+                                }
+                            } else if (type === 'certificate') {
+                                // Make sure component is registered
+                                if (window.registerCertificateCreateComponent) {
+                                    try {
+                                        window.registerCertificateCreateComponent();
+                                    } catch (e) {
+                                        console.error('Error ensuring Alpine component registration:', e);
+                                    }
+                                }
+                                // Find the element with x-data and initialize Alpine on it
+                                const elementWithXData = modalContent.querySelector('[x-data*="certificateCreate"]');
+                                if (elementWithXData) {
+                                    window.Alpine.initTree(elementWithXData);
+                                } else {
+                                    // Fallback: initialize on modalContent
+                                    window.Alpine.initTree(modalContent);
+                                }
+                            } else {
+                                window.Alpine.initTree(modalContent);
                             }
+                        }
                     }, 500);
                 } else {
                     modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4">{{ __('app.admin.categories.error_loading_form') }}</p><p class="text-sm text-gray-600">No form found in the response. Please try refreshing the page.</p></div>';

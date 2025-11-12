@@ -34,16 +34,21 @@ class Authenticate extends Middleware
             }
         }
 
+        // Check if this is an AJAX request - check multiple ways
+        $isAjax = $request->expectsJson() || 
+                  $request->ajax() || 
+                  $request->wantsJson() ||
+                  $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                  str_contains($request->header('Accept', ''), 'application/json') ||
+                  $request->header('Accept') === 'text/html,application/json';
+
         // If not authenticated and it's an AJAX request, return JSON directly
-        if ($request->expectsJson() || 
-            $request->ajax() || 
-            $request->wantsJson() ||
-            $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        if ($isAjax) {
             return response()->json([
                 'error' => 'Unauthenticated',
                 'message' => 'Your session has expired. Please log in again.',
                 'redirect' => route('login')
-            ], 401);
+            ], 401)->header('Content-Type', 'application/json');
         }
 
         // For regular requests, use parent's unauthenticated method to trigger redirect
