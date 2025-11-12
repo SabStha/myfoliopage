@@ -32,12 +32,20 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Handle authentication exceptions for AJAX requests
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
-            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            // Check multiple ways if this is an AJAX request
+            $isAjax = $request->expectsJson() || 
+                     $request->ajax() || 
+                     $request->wantsJson() ||
+                     $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                     str_contains($request->header('Accept', ''), 'application/json') ||
+                     $request->header('Accept') === 'text/html,application/json';
+            
+            if ($isAjax) {
                 return response()->json([
                     'error' => 'Unauthenticated',
                     'message' => 'Your session has expired. Please log in again.',
                     'redirect' => route('login')
-                ], 401);
+                ], 401)->header('Content-Type', 'application/json');
             }
         });
     })->create();

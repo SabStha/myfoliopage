@@ -1820,12 +1820,15 @@
             }
             
             fetch(routeUrl, {
+                method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'text/html,application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin' // Include cookies/session
+                credentials: 'include', // Always include cookies/session
+                cache: 'no-cache'
             })
             .then(async response => {
                 // Check if we got a 401 Unauthorized response (JSON)
@@ -1833,20 +1836,17 @@
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         const data = await response.json();
-                        alert(data.message || 'Your session has expired. Please log in again.');
-                        window.location.href = data.redirect || '{{ route("login") }}';
+                        modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">' + (data.message || 'Your session has expired. Please refresh the page and log in again.') + '</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
                         throw new Error(data.message || 'Session expired');
                     }
-                    // If not JSON, still redirect to login
-                    alert('Your session has expired. Please log in again.');
-                    window.location.href = '{{ route("login") }}';
+                    // If not JSON, show error in modal instead of redirecting
+                    modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please refresh the page and log in again.</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
                     throw new Error('Session expired');
                 }
                 
                 // Check if we got redirected (status 302, 301, etc.) or error
                 if (response.redirected || response.status === 302 || response.status === 301) {
-                    alert('Your session has expired. Please log in again.');
-                    window.location.href = '{{ route("login") }}';
+                    modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please refresh the page and log in again.</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
                     throw new Error('Redirected - likely authentication required');
                 }
                 if (!response.ok) {
@@ -1863,10 +1863,9 @@
                                    (html.includes('Logout') && html.includes('form') && !html.includes('book-page') && !html.includes('code-summary') && !html.includes('certificate') && !html.includes('x-data'));
                 
                 if (isLoginPage) {
-                    // Session likely expired - reload page to trigger login redirect
-                    alert('Your session has expired. Please log in again.');
-                    window.location.href = '{{ route("login") }}';
-                    throw new Error('Session expired - redirecting to login');
+                    // Session likely expired - show error in modal instead of redirecting
+                    modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please refresh the page and log in again.</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
+                    throw new Error('Session expired - login page detected');
                 }
                 
                 const parser = new DOMParser();
@@ -1875,9 +1874,8 @@
                 // Check if this looks like a login page by checking for login form
                 const loginForm = doc.querySelector('form[action*="login"], form input[type="password"][name="password"]');
                 if (loginForm) {
-                    // Check if we got redirected to login - show proper error
-                    alert('Your session has expired. Please log in again.');
-                    window.location.href = '{{ route("login") }}';
+                    // Don't redirect immediately - just show error and close modal
+                    modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please refresh the page and log in again.</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
                     throw new Error('Received login page instead of create form - session expired');
                 }
                 
