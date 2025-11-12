@@ -334,24 +334,57 @@ const CertificatesSection = ({
   const sectionRef = useRef(null);
   const isVisible = useInViewOnce(sectionRef);
   
+  const normalizeCategory = (category) => {
+    if (!category) {
+      return {
+        id: null,
+        name: 'Category',
+        items: [],
+      };
+    }
+    
+    const normalizedName = extractString(category.name, category.slug || 'Category');
+    const normalizedItems = (category.items || []).map((item) => {
+      const normalizedTitle = extractString(item.title, item.slug || 'Untitled');
+      const normalizedSummary = extractString(item.summary, '');
+      return {
+        ...item,
+        title: normalizedTitle,
+        summary: normalizedSummary,
+      };
+    });
+    
+    return {
+      ...category,
+      name: normalizedName,
+      items: normalizedItems,
+    };
+  };
+  
+  const normalizeNavLink = (link) => {
+    const imageUrl = getCertificateImage(link);
+    const normalizedTitle = extractString(link.title, 'Untitled');
+    const normalizedCategories = (link.categories || []).map(normalizeCategory);
+    
+    return {
+      ...link,
+      title: normalizedTitle,
+      imageUrl,
+      categories: normalizedCategories,
+    };
+  };
+  
+  const navLinksWithImages = navLinks.length > 0
+    ? navLinks.map(normalizeNavLink)
+    : [];
+  
   // If NavLinks are provided, create tabs from individual NavLinks (sub-navs)
   // Each NavLink becomes a tab, and we'll show its categories inside
   console.log('CertificatesSection: Received navLinks prop:', navLinks);
   console.log('CertificatesSection: navLinks.length:', navLinks?.length || 0);
   console.log('CertificatesSection: textAlignment:', textAlignment);
-  const tabs = navLinks && navLinks.length > 0 
-    ? navLinks.map(link => {
-        // Extract title as string
-        let linkTitle = '';
-        if (typeof link.title === 'string') {
-          linkTitle = link.title;
-        } else if (link.title && typeof link.title === 'object') {
-          const currentLang = window.currentLocale || 'en';
-          linkTitle = link.title[currentLang] || link.title.en || link.title.ja || 'Untitled';
-        } else {
-          linkTitle = String(link.title || 'Untitled');
-        }
-        
+  const tabs = navLinksWithImages.length > 0 
+    ? navLinksWithImages.map(link => {
         // Debug: Log category data to verify animation_style and image_url are included
         if (link.categories && link.categories.length > 0) {
           console.log('CertificatesSection: NavLink', link.id, 'categories:', link.categories.map(c => ({
@@ -363,7 +396,7 @@ const CertificatesSection = ({
         }
         return {
             id: String(link.id),
-            title: linkTitle,
+            title: link.title,
             key: `navlink-${link.id}`,
           categories: link.categories || [], // Store categories for this sub-nav
           navLink: link, // Store full navLink data
@@ -378,27 +411,14 @@ const CertificatesSection = ({
     
   // Set initial active tab to first NavLink/category if available, otherwise fallback to certificates
   const [activeTab, setActiveTab] = useState(() => {
-    const initialTabs = navLinks && navLinks.length > 0 
-      ? navLinks.map(link => {
-          // Extract title as string
-          let linkTitle = '';
-          if (typeof link.title === 'string') {
-            linkTitle = link.title;
-          } else if (link.title && typeof link.title === 'object') {
-            const currentLang = window.currentLocale || 'en';
-            linkTitle = link.title[currentLang] || link.title.en || link.title.ja || 'Untitled';
-          } else {
-            linkTitle = String(link.title || 'Untitled');
-          }
-          
-          return {
-            id: String(link.id),
-            title: linkTitle,
-            key: `navlink-${link.id}`,
-            categories: link.categories || [],
-            navLink: link,
-          };
-        })
+    const initialTabs = navLinksWithImages.length > 0 
+      ? navLinksWithImages.map(link => ({
+          id: String(link.id),
+          title: link.title,
+          key: `navlink-${link.id}`,
+          categories: link.categories || [],
+          navLink: link,
+        }))
       : [];
     return initialTabs.length > 0 ? initialTabs[0].key : 'certificates';
   });
@@ -572,18 +592,6 @@ const CertificatesSection = ({
       row2.removeEventListener('scroll', handleRow2Scroll);
     };
   }, [selectedCategory]); // Re-run when category changes
-
-  // If NavLinks are provided, use them as the data source
-  // Otherwise, use the legacy arrays (for backward compatibility)
-  const navLinksWithImages = navLinks.length > 0
-    ? navLinks.map(link => {
-        const imageUrl = getCertificateImage(link);
-        return {
-          ...link,
-          imageUrl: imageUrl
-        };
-      })
-    : [];
 
   // Format date for rooms/badges/simulations/programs (e.g., "MAR 2024")
   const formatRoomDate = (dateString) => {
@@ -1564,26 +1572,30 @@ const CertificatesSection = ({
                          
                          // Convert CategoryItems to a format compatible with the existing rendering logic
                          // Map CategoryItems to NavLink-like structure for reuse of existing animation layouts
-                         const itemsForDisplay = categoryItems.map(item => ({
-                           id: item.id,
-                           title: item.title || item.slug || 'Untitled',
-                           slug: item.slug,
-                           imageUrl: item.image_url || null,
-                           url: item.url,
-                           summary: item.summary,
-                           download_url: item.download_url,
-                           view_url: item.view_url,
-                           visit_url: item.visit_url,
-                           linked_model: item.linked_model || null, // Include linked_model for modal opening
-                           isSection: true, // Flag to identify this as a CategoryItem (section)
-                           // For image display
-                           media: item.image_url ? [{
-                             id: `category-item-${item.id}`,
-                             type: 'image',
-                             path: item.image_url.replace(/^.*\/storage\//, ''),
-                             title: item.title || item.slug
-                           }] : []
-                         }));
+                        const itemsForDisplay = categoryItems.map(item => {
+                          const itemTitle = extractString(item.title, item.slug || 'Untitled');
+                          const itemSummary = extractString(item.summary, '');
+                          return {
+                            id: item.id,
+                            title: itemTitle,
+                            slug: item.slug,
+                            imageUrl: item.image_url || null,
+                            url: item.url,
+                            summary: itemSummary,
+                            download_url: item.download_url,
+                            view_url: item.view_url,
+                            visit_url: item.visit_url,
+                            linked_model: item.linked_model || null, // Include linked_model for modal opening
+                            isSection: true, // Flag to identify this as a CategoryItem (section)
+                            // For image display
+                            media: item.image_url ? [{
+                              id: `category-item-${item.id}`,
+                              type: 'image',
+                              path: item.image_url.replace(/^.*\/storage\//, ''),
+                              title: itemTitle
+                            }] : []
+                          };
+                        });
                          
                          // Use the same rendering logic as categoryNavLinks but with CategoryItems
                          // Render based on category animation style

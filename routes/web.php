@@ -198,21 +198,67 @@ Route::get('/api/sections/{section}/content', function (\App\Models\CategoryItem
         'courses.categories'
     ]);
     
+    $locale = app()->getLocale();
+    $resolveString = function ($value, $fallback = '') use ($locale, &$resolveString) {
+        if (is_null($value)) {
+            return $fallback;
+        }
+        
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $value = $decoded;
+            } else {
+                return $value;
+            }
+        }
+        
+        if ($value instanceof \Illuminate\Contracts\Support\Arrayable) {
+            $value = $value->toArray();
+        }
+        
+        if (is_array($value)) {
+            $preferredKeys = [$locale, 'en', 'ja'];
+            foreach ($preferredKeys as $key) {
+                if (isset($value[$key]) && is_string($value[$key]) && $value[$key] !== '') {
+                    return $value[$key];
+                }
+            }
+            foreach ($value as $v) {
+                $resolved = $resolveString($v, null);
+                if (is_string($resolved) && $resolved !== '') {
+                    return $resolved;
+                }
+            }
+            return $fallback;
+        }
+        
+        if (is_object($value) && method_exists($value, '__toString')) {
+            return (string) $value;
+        }
+        
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+        
+        return $fallback;
+    };
+    
     return response()->json([
         'section' => [
             'id' => $section->id,
-            'title' => $section->getTranslated('title'),
+            'title' => $resolveString($section->getTranslated('title'), $section->slug),
             'slug' => $section->slug,
-            'summary' => $section->summary,
+            'summary' => $resolveString($section->getTranslated('summary')),
         ],
-        'bookPages' => $section->bookPages->map(function($item) {
+        'bookPages' => $section->bookPages->map(function($item) use ($resolveString) {
             return [
                 'id' => $item->id,
                 'type' => 'book-page',
-                'title' => $item->getTranslated('title'),
+                'title' => $resolveString($item->getTranslated('title'), $item->slug),
                 'slug' => $item->slug,
-                'content' => $item->getTranslated('content'),
-                'summary' => $item->getTranslated('summary'),
+                'content' => $resolveString($item->getTranslated('content')),
+                'summary' => $resolveString($item->getTranslated('summary')),
                 'author' => $item->author,
                 'book_title' => $item->book_title,
                 'page_number' => $item->page_number,
@@ -227,18 +273,23 @@ Route::get('/api/sections/{section}/content', function (\App\Models\CategoryItem
                 'time_spent' => $item->time_spent,
                 'status' => $item->status,
                 'imageUrl' => $item->media->first() ? asset('storage/' . $item->media->first()->path) : null,
-                'categories' => $item->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->getTranslated('name')]),
+                'categories' => $item->categories->map(function($c) use ($resolveString) {
+                    return [
+                        'id' => $c->id,
+                        'name' => $resolveString($c->getTranslated('name'), $c->slug),
+                    ];
+                }),
                 'tags' => $item->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
             ];
         }),
-        'codeSummaries' => $section->codeSummaries->map(function($item) {
+        'codeSummaries' => $section->codeSummaries->map(function($item) use ($resolveString) {
             return [
                 'id' => $item->id,
                 'type' => 'code-summary',
-                'title' => $item->title,
+                'title' => $resolveString($item->getTranslated('title'), $item->slug),
                 'slug' => $item->slug,
                 'code' => $item->code,
-                'summary' => $item->summary,
+                'summary' => $resolveString($item->getTranslated('summary')),
                 'language' => $item->language,
                 'file_path' => $item->file_path,
                 'repository_url' => $item->repository_url,
@@ -265,18 +316,23 @@ Route::get('/api/sections/{section}/content', function (\App\Models\CategoryItem
                 'time_spent' => $item->time_spent,
                 'status' => $item->status,
                 'imageUrl' => $item->media->first() ? asset('storage/' . $item->media->first()->path) : null,
-                'categories' => $item->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->getTranslated('name')]),
+                'categories' => $item->categories->map(function($c) use ($resolveString) {
+                    return [
+                        'id' => $c->id,
+                        'name' => $resolveString($c->getTranslated('name'), $c->slug),
+                    ];
+                }),
                 'tags' => $item->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
             ];
         }),
-        'rooms' => $section->rooms->map(function($item) {
+        'rooms' => $section->rooms->map(function($item) use ($resolveString) {
             return [
                 'id' => $item->id,
                 'type' => 'room',
-                'title' => $item->getTranslated('title'),
+                'title' => $resolveString($item->getTranslated('title'), $item->slug),
                 'slug' => $item->slug,
-                'description' => $item->getTranslated('description'),
-                'summary' => $item->getTranslated('summary'),
+                'description' => $resolveString($item->getTranslated('description')),
+                'summary' => $resolveString($item->getTranslated('summary')),
                 'platform' => $item->platform,
                 'room_url' => $item->room_url,
                 'difficulty' => $item->difficulty,
@@ -302,38 +358,53 @@ Route::get('/api/sections/{section}/content', function (\App\Models\CategoryItem
                 'status' => $item->status,
                 'score_points_earned' => $item->score_points_earned,
                 'imageUrl' => $item->media->first() ? asset('storage/' . $item->media->first()->path) : null,
-                'categories' => $item->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->getTranslated('name')]),
+                'categories' => $item->categories->map(function($c) use ($resolveString) {
+                    return [
+                        'id' => $c->id,
+                        'name' => $resolveString($c->getTranslated('name'), $c->slug),
+                    ];
+                }),
                 'tags' => $item->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
             ];
         }),
-        'certificates' => $section->certificates->map(function($item) {
+        'certificates' => $section->certificates->map(function($item) use ($resolveString) {
             return [
                 'id' => $item->id,
                 'type' => 'certificate',
-                'title' => $item->getTranslated('title'),
-                'provider' => $item->getTranslated('provider'),
+                'title' => $resolveString($item->getTranslated('title')),
+                'provider' => $resolveString($item->getTranslated('provider')),
                 'credential_id' => $item->credential_id,
                 'verify_url' => $item->verify_url,
                 'issued_at' => $item->issued_at,
                 'description' => $item->description ?? null,
                 'imageUrl' => $item->media->first() ? asset('storage/' . $item->media->first()->path) : null,
-                'categories' => $item->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->getTranslated('name')]),
+                'categories' => $item->categories->map(function($c) use ($resolveString) {
+                    return [
+                        'id' => $c->id,
+                        'name' => $resolveString($c->getTranslated('name'), $c->slug),
+                    ];
+                }),
                 'tags' => $item->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
             ];
         }),
-        'courses' => $section->courses->map(function($item) {
+        'courses' => $section->courses->map(function($item) use ($resolveString) {
             return [
                 'id' => $item->id,
                 'type' => 'course',
-                'title' => $item->getTranslated('title'),
-                'provider' => $item->getTranslated('provider'),
+                'title' => $resolveString($item->getTranslated('title')),
+                'provider' => $resolveString($item->getTranslated('provider')),
                 'credential_id' => $item->credential_id,
                 'verify_url' => $item->verify_url,
                 'issued_at' => $item->issued_at,
                 'completed_at' => $item->completed_at,
                 'description' => $item->description ?? null,
                 'imageUrl' => $item->media->first() ? asset('storage/' . $item->media->first()->path) : null,
-                'categories' => $item->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->getTranslated('name')]),
+                'categories' => $item->categories->map(function($c) use ($resolveString) {
+                    return [
+                        'id' => $c->id,
+                        'name' => $resolveString($c->getTranslated('name'), $c->slug),
+                    ];
+                }),
                 'tags' => $item->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
             ];
         }),
