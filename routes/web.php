@@ -1712,7 +1712,7 @@ Route::middleware('auth')->get('/debug-auth-protected', function () {
 })->name('debug.auth.protected');
 
 // Admin routes (simple fallback until Filament)
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'ajax.auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/tryhackme', function () {
         $nav = NavItem::whereRaw('LOWER(label) = ?', ['tryhackme'])->first();

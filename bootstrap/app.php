@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
+        // Register custom AJAX auth middleware
+        $middleware->alias([
+            'ajax.auth' => \App\Http\Middleware\EnsureAjaxAuth::class,
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         // No scheduled tasks needed for simple LinkedIn integration

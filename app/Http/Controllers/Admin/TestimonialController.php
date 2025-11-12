@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Traits\HandlesTranslations;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TestimonialController extends Controller
 {
+    use HandlesTranslations;
     /**
      * Display a listing of the resource.
      */
@@ -35,15 +37,22 @@ class TestimonialController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
+            'company' => 'nullable|array',
+            'company.en' => 'nullable|string|max:255',
+            'company.ja' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
-            'quote' => 'required|string',
+            'quote' => 'required|array',
+            'quote.en' => 'required|string',
+            'quote.ja' => 'nullable|string',
             'photo_url' => 'nullable|string|max:500',
             'sns_url' => 'nullable|url|max:500',
             'position' => 'nullable|integer|min:0',
             'is_published' => 'boolean',
             'images.*' => 'nullable|image|max:4096',
         ]);
+
+        // Process translatable fields
+        $data = $this->processTranslations($data, ['company', 'quote']);
 
         $data['is_published'] = $request->has('is_published');
         $data['position'] = $data['position'] ?? 0;
@@ -85,9 +94,13 @@ class TestimonialController extends Controller
         
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
+            'company' => 'nullable|array',
+            'company.en' => 'nullable|string|max:255',
+            'company.ja' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
-            'quote' => 'required|string',
+            'quote' => 'required|array',
+            'quote.en' => 'required|string',
+            'quote.ja' => 'nullable|string',
             'photo_url' => 'nullable|string|max:500',
             'sns_url' => 'nullable|url|max:500',
             'position' => 'nullable|integer|min:0',
@@ -96,6 +109,9 @@ class TestimonialController extends Controller
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'integer|exists:media,id',
         ]);
+
+        // Process translatable fields
+        $data = $this->processTranslations($data, ['company', 'quote']);
 
         $data['is_published'] = $request->has('is_published');
         $data['position'] = $data['position'] ?? 0;

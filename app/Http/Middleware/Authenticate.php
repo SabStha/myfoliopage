@@ -5,29 +5,48 @@ namespace App\Http\Middleware;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Closure;
 
 class Authenticate extends Middleware
 {
     /**
-     * Handle an unauthenticated user.
+     * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  array  $guards
-     * @return void
+     * @param  \Closure  $next
+     * @param  string[]  ...$guards
+     * @return mixed
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    protected function unauthenticated($request, array $guards)
+    public function handle($request, Closure $next, ...$guards)
     {
-        // For AJAX/JSON requests, return JSON response instead of redirecting
-        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
-            throw new AuthenticationException(
-                'Unauthenticated.',
-                $guards,
-                $this->redirectTo($request)
-            );
+        // Check if user is authenticated
+        if (empty($guards)) {
+            $guards = [null];
         }
 
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                Auth::shouldUse($guard);
+                return $next($request);
+            }
+        }
+
+        // If not authenticated and it's an AJAX request, return JSON directly
+        if ($request->expectsJson() || 
+            $request->ajax() || 
+            $request->wantsJson() ||
+            $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'error' => 'Unauthenticated',
+                'message' => 'Your session has expired. Please log in again.',
+                'redirect' => route('login')
+            ], 401);
+        }
+
+        // For regular requests, use parent's unauthenticated method to trigger redirect
         throw new AuthenticationException(
             'Unauthenticated.',
             $guards,
