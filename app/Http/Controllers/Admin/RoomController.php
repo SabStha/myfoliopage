@@ -45,69 +45,18 @@ class RoomController extends Controller
     {
         $userId = Auth::id();
         
-        // Filter categories and sections if navigation context is provided
-        if ($request->has('nav_item_id')) {
-            $navItem = \App\Models\NavItem::where('user_id', $userId)->find($request->nav_item_id);
-            if ($navItem) {
-                // Get categories from this NavItem's NavLinks
-                $navItemCategoryIds = $navItem->links()
-                    ->where('user_id', $userId)
-                    ->with('categories')
-                    ->get()
-                    ->pluck('categories')
-                    ->flatten()
-                    ->pluck('id')
-                    ->unique()
-                    ->toArray();
-                
-                // If nav item has categories, filter by them; otherwise show all
-                if (!empty($navItemCategoryIds)) {
-                    $categories = Category::where('user_id', $userId)
-                        ->whereIn('id', $navItemCategoryIds)
-                        ->orderBy('position')
-                        ->orderBy('slug')
-                        ->get();
-                    $sections = CategoryItem::where('user_id', $userId)
-                        ->with('category')
-                        ->whereIn('category_id', $navItemCategoryIds)
-                        ->orderBy('category_id')
-                        ->orderBy('position')
-                        ->get();
-                } else {
-                    // Fallback to all categories/sections if nav item has none
-                    $categories = Category::where('user_id', $userId)
-                        ->orderBy('position')
-                        ->orderBy('slug')
-                        ->get();
-                    $sections = CategoryItem::where('user_id', $userId)
-                        ->with('category')
-                        ->orderBy('category_id')
-                        ->orderBy('position')
-                        ->get();
-                }
-            } else {
-                // Nav item not found, show all
-                $categories = Category::where('user_id', $userId)
-                    ->orderBy('position')
-                    ->orderBy('slug')
-                    ->get();
-                $sections = CategoryItem::where('user_id', $userId)
-                    ->with('category')
-                    ->orderBy('category_id')
-                    ->orderBy('position')
-                    ->get();
-            }
-        } else {
-            $categories = Category::where('user_id', $userId)
-                ->orderBy('position')
-                ->orderBy('slug')
-                ->get();
-            $sections = CategoryItem::where('user_id', $userId)
-                ->with('category')
-                ->orderBy('category_id')
-                ->orderBy('position')
-                ->get();
-        }
+        // Always show all categories and sections for the user when creating content
+        // This ensures users can always see and select from all their categories
+        $categories = Category::where('user_id', $userId)
+            ->orderBy('position')
+            ->orderBy('slug')
+            ->get();
+        
+        $sections = CategoryItem::where('user_id', $userId)
+            ->with('category')
+            ->orderBy('category_id')
+            ->orderBy('position')
+            ->get();
         
         $allTags = Tag::orderBy('name')->get();
         
