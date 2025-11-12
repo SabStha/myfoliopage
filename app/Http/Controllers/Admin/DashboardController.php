@@ -17,8 +17,21 @@ class DashboardController extends Controller
     {
         $userId = Auth::id();
         
+        // Get categories that belong to this user OR have NavLinks belonging to this user
+        $userCategoryIds = NavLink::where('user_id', $userId)
+            ->whereNotNull('category_id')
+            ->distinct()
+            ->pluck('category_id')
+            ->toArray();
+        
+        // Get categories filtered by user_id or by NavLinks
+        $categories = Category::where(function($query) use ($userId, $userCategoryIds) {
+            $query->where('user_id', $userId)
+                  ->orWhereIn('id', $userCategoryIds);
+        })->orderBy('position')->get();
+        
         // dynamic categories from NavLink.category_id; fallback to core counts
-        $categoryCounts = Category::orderBy('position')->get()->map(function($c) use ($userId) {
+        $categoryCounts = $categories->map(function($c) use ($userId) {
             return [
                 'label' => $c->getTranslated('name'),
                 'value' => NavLink::where('category_id', $c->id)
@@ -26,13 +39,26 @@ class DashboardController extends Controller
                     ->count(),
                 'color' => $c->color,
             ];
-        });
+        })->filter(function($item) {
+            // Only include categories that have at least one NavLink
+            return $item['value'] > 0;
+        })->values();
+        
+        // Fallback to core counts if no categories with NavLinks
         if ($categoryCounts->isEmpty()) {
-            $categoryCounts = collect([
-                ['label' => 'Projects', 'value' => Project::where('user_id', $userId)->count()],
-                ['label' => 'Certificates', 'value' => Certificate::where('user_id', $userId)->count()],
-                ['label' => 'Labs', 'value' => Lab::count()],
-            ]);
+            $projectsCount = Project::where('user_id', $userId)->count();
+            $certificatesCount = Certificate::where('user_id', $userId)->count();
+            
+            // Only show metrics that have content
+            $fallbackMetrics = [];
+            if ($projectsCount > 0) {
+                $fallbackMetrics[] = ['label' => 'Projects', 'value' => $projectsCount];
+            }
+            if ($certificatesCount > 0) {
+                $fallbackMetrics[] = ['label' => 'Certificates', 'value' => $certificatesCount];
+            }
+            
+            $categoryCounts = collect($fallbackMetrics);
         }
 
         // Build last 12 months activity counts from NavLinks (issued_at fallback to created_at)

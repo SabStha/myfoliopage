@@ -155,6 +155,7 @@ return [
     'admin.customize_sidebar' => 'サイドバーをカスタマイズ',
     'admin.edit_profile' => 'プロフィールを編集',
     'admin.menu' => 'メニュー',
+    'admin.view_public_homepage' => '公開ホームページを表示',
     
     // Admin Navigation & Sections
     'admin.nav.title' => 'ナビゲーションとホームページセクション',

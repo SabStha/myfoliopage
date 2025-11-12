@@ -155,6 +155,7 @@ return [
     'admin.customize_sidebar' => 'Customize Sidebar',
     'admin.edit_profile' => 'Edit profile',
     'admin.menu' => 'Menu',
+    'admin.view_public_homepage' => 'View Public Homepage',
     
     // Admin Navigation & Sections
     'admin.nav.title' => 'Navigation & Home Page Sections',

@@ -46,3 +46,4 @@ The seeder creates:
 If you don't add the images, the template will use fallback images. However, adding these images ensures a consistent demo experience for all users.
 
 
+

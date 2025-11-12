@@ -21,28 +21,71 @@
 <div class="p-6 bg-white rounded-xl shadow border border-gray-200 space-y-6">
   <div class="flex items-center justify-between">
     <h2 class="text-2xl font-semibold text-gray-800">{{ __('app.admin.dashboard') }}</h2>
-    <form method="POST" action="{{ route('admin.build') }}" id="buildForm">
-      @csrf
-      <button type="submit" class="px-4 py-2 bg-[#ffb400] text-gray-900 font-semibold rounded-lg hover:bg-[#e6a200] transition-colors flex items-center gap-2">
+    <div class="flex items-center gap-3">
+      @php
+        $user = Auth::user();
+        $portfolioUrl = $user && $user->username ? route('portfolio.show', $user->username) : route('landing');
+      @endphp
+      <a href="{{ $portfolioUrl }}" target="_blank" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
         </svg>
-        <span>{{ __('app.admin.build_assets') }}</span>
-      </button>
-    </form>
+        <span>{{ __('app.admin.view_public_homepage') }}</span>
+      </a>
+      <form method="POST" action="{{ route('admin.build') }}" id="buildForm">
+        @csrf
+        <button type="submit" class="px-4 py-2 bg-[#ffb400] text-gray-900 font-semibold rounded-lg hover:bg-[#e6a200] transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>{{ __('app.admin.build_assets') }}</span>
+        </button>
+      </form>
+    </div>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    @php($metricList = isset($categories) && count($categories) ? $categories : [
-      ['label'=>__('app.admin.projects'),'value'=>$projects_count],
-      ['label'=>__('app.admin.certificates'),'value'=>$certificates_count],
-      ['label'=>__('app.admin.labs'),'value'=>$labs_count],
-    ])
-    @foreach($metricList as $m)
-      <div class="bg-yellow-400/10 border-l-4 border-yellow-500 p-4 rounded-lg shadow">
-        <p class="text-sm text-gray-600">{{ $m['label'] }}</p>
-        <p class="text-2xl font-bold text-yellow-600">{{ $m['value'] }}</p>
+    @php
+      // Build metric list from categories if available, otherwise from individual counts
+      $metricList = isset($categories) && count($categories) > 0 ? $categories : [];
+      
+      // Only add fallback metrics if they have values > 0
+      if (empty($metricList)) {
+        if ($projects_count > 0) {
+          $metricList[] = ['label' => __('app.admin.projects'), 'value' => $projects_count];
+        }
+        if ($certificates_count > 0) {
+          $metricList[] = ['label' => __('app.admin.certificates'), 'value' => $certificates_count];
+        }
+        if ($labs_count > 0) {
+          $metricList[] = ['label' => __('app.admin.labs'), 'value' => $labs_count];
+        }
+      }
+    @endphp
+    
+    @if(count($metricList) > 0)
+      @foreach($metricList as $m)
+        <div class="bg-yellow-400/10 border-l-4 border-yellow-500 p-4 rounded-lg shadow">
+          <p class="text-sm text-gray-600">{{ $m['label'] }}</p>
+          <p class="text-2xl font-bold text-yellow-600">{{ $m['value'] }}</p>
+        </div>
+      @endforeach
+    @else
+      <div class="col-span-full p-8 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">Welcome to your dashboard!</h3>
+        <p class="mt-2 text-sm text-gray-500">Get started by adding your first project, certificate, or navigation item.</p>
+        <div class="mt-6 flex justify-center gap-3">
+          <a href="{{ route('admin.nav.index') }}" class="px-4 py-2 bg-[#ffb400] text-gray-900 font-semibold rounded-lg hover:bg-[#e6a200] transition-colors">
+            Customize Sidebar
+          </a>
+          <a href="{{ route('admin.projects.create') }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+            Add Project
+          </a>
+        </div>
       </div>
-    @endforeach
+    @endif
   </div>
 </div>
 

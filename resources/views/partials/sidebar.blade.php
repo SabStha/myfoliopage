@@ -3,7 +3,8 @@
       :class="open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
       class="fixed top-0 left-0 h-full w-[280px] bg-white shadow-lg border-r border-gray-200 flex flex-col items-center py-4 sm:py-8 z-50 transition-transform duration-300 ease-in-out">
     @php
-        $p = \App\Models\Profile::first();
+        $user = Auth::user();
+        $p = $user ? \App\Models\Profile::where('user_id', $user->id)->first() : null;
     @endphp
 
     <div class="flex items-center justify-between w-full px-4 mb-4 lg:hidden">
@@ -15,7 +16,7 @@
         </button>
     </div>
     <img src="{{ ($p && $p->photo_path) ? asset('storage/'.$p->photo_path) : asset('images/profile.jpg') }}" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full shadow-md object-cover" alt="Profile" />
-    <h2 class="mt-2 sm:mt-4 text-base sm:text-xl font-semibold text-gray-900 text-center px-4">{{ $p?->name ?? 'Your Name' }}</h2>
+    <h2 class="mt-2 sm:mt-4 text-base sm:text-xl font-semibold text-gray-900 text-center px-4">{{ $p?->name ?? $user?->name ?? 'Your Name' }}</h2>
     <p class="text-xs sm:text-sm text-gray-500 text-center px-4">{{ $p?->role ?? 'Full-Stack / Security Student' }}</p>
     @if(request()->routeIs('admin.*'))
         <a href="{{ route('admin.profile.edit') }}" class="mt-2 text-xs text-amber-700 hover:underline">{{ __('app.admin.edit_profile') }}</a>
@@ -146,7 +147,17 @@
             </a>
         @endforeach
 
-        <div class="pt-4 border-t border-gray-200 mt-auto">
+        <div class="pt-4 border-t border-gray-200 mt-auto space-y-1">
+            @php
+                $user = Auth::user();
+                $portfolioUrl = $user && $user->username ? route('portfolio.show', $user->username) : route('landing');
+            @endphp
+            <a href="{{ $portfolioUrl }}" target="_blank" class="flex items-center gap-2 sm:gap-3 rounded-xl px-2 sm:px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm sm:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+                <span class="truncate">{{ __('app.admin.view_public_homepage') }}</span>
+            </a>
             <a href="{{ route('admin.nav.index') }}" class="flex items-center gap-2 sm:gap-3 rounded-xl px-2 sm:px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-amber-50 text-sm sm:text-base">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span class="truncate">{{ __('app.admin.customize_sidebar') }}</span>
