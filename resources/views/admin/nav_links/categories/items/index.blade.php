@@ -1835,11 +1835,19 @@
                 cache: 'no-cache'
             })
             .then(async response => {
+                // Debug: Log response details
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                console.log('Response URL:', response.url);
+                console.log('Response redirected:', response.redirected);
+                
                 // Check if we got a 401 Unauthorized response (JSON)
                 if (response.status === 401) {
                     const contentType = response.headers.get('content-type');
+                    console.log('401 response - Content-Type:', contentType);
                     if (contentType && contentType.includes('application/json')) {
                         const data = await response.json();
+                        console.log('401 JSON data:', data);
                         modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">' + (data.message || 'Your session has expired. Please refresh the page and log in again.') + '</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
                         throw new Error(data.message || 'Session expired');
                     }
