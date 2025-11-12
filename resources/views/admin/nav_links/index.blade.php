@@ -246,29 +246,70 @@
             .then(response => {
                 console.log('Response status:', response.status);
                 console.log('Response URL:', response.url);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // Try to get error message from response
+                    return response.text().then(text => {
+                        console.error('Error response body:', text.substring(0, 500));
+                        throw new Error(`HTTP error! status: ${response.status}. Response: ${text.substring(0, 200)}`);
+                    });
                 }
+                
+                // Check content type
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                if (contentType && !contentType.includes('text/html')) {
+                    throw new Error(`Unexpected content type: ${contentType}. Expected text/html`);
+                }
+                
                 return response.text();
             })
             .then(html => {
                 console.log('Received HTML length:', html.length);
-                console.log('HTML preview:', html.substring(0, 200));
+                console.log('HTML preview:', html.substring(0, 500));
                 
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
-                // Verify we got the correct form (NavLink edit form, not NavItem edit form)
-                const form = doc.querySelector('form[action*="nav.links.update"]');
+                // Try multiple selectors to find the form
+                // First try: form with action containing nav/links (the actual URL pattern)
+                let form = doc.querySelector('form[action*="/nav/"][action*="/links/"]');
+                
+                // Second try: form with action containing nav.links.update (route name pattern)
                 if (!form) {
-                    // Check if we got the wrong page
-                    const wrongForm = doc.querySelector('form[action*="nav.update"]');
+                    form = doc.querySelector('form[action*="nav.links.update"]');
+                }
+                
+                // Third try: any form in the content section
+                if (!form) {
+                    const contentSection = doc.querySelector('section.content') || doc.querySelector('[class*="content"]') || doc.body;
+                    form = contentSection.querySelector('form');
+                }
+                
+                // Fourth try: any form at all
+                if (!form) {
+                    form = doc.querySelector('form');
+                }
+                
+                if (!form) {
+                    // Check if we got the wrong page (NavItem edit form)
+                    const wrongForm = doc.querySelector('form[action*="/nav/"][action*="/edit"][action*="nav.update"]') || 
+                                     doc.querySelector('form[action*="nav.update"]');
                     if (wrongForm) {
                         console.error('ERROR: Got NavItem edit form instead of NavLink edit form!');
+                        console.error('Wrong form action:', wrongForm.action);
                         throw new Error('Wrong form returned - got NavItem edit form instead of NavLink edit form');
                     }
+                    
+                    // Log the HTML structure for debugging
+                    console.error('No form found. HTML structure:');
+                    console.error('Body content:', doc.body.innerHTML.substring(0, 1000));
                     throw new Error('Form not found in response');
                 }
+                
+                console.log('Found form with action:', form.action);
                 
                 if (form) {
                     const originalAction = form.action;
@@ -298,7 +339,26 @@
                     }
                     
                     // Get the card or form container
-                    const card = form.closest('x-ui.card') || form.closest('.card') || form.parentElement;
+                    // Try to find the x-ui.card component wrapper
+                    let card = form.closest('[x-data]') || form.closest('x-ui.card') || form.closest('.card');
+                    
+                    // If no card found, try to find the parent div with x-data
+                    if (!card) {
+                        let parent = form.parentElement;
+                        while (parent && parent !== doc.body) {
+                            if (parent.hasAttribute('x-data') || parent.classList.contains('card') || parent.tagName === 'X-UI-CARD') {
+                                card = parent;
+                                break;
+                            }
+                            parent = parent.parentElement;
+                        }
+                    }
+                    
+                    // If still no card, use the form's parent or the form itself
+                    if (!card) {
+                        card = form.parentElement || form;
+                    }
+                    
                     const formContent = card ? card.innerHTML : form.outerHTML;
                     
                     // Set the content

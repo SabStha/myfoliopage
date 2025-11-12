@@ -413,13 +413,15 @@
                                 @change="handleCategoryChange($event)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none" 
                                 size="5">
-                                @foreach($categories as $category)
+                                @forelse($categories ?? [] as $category)
                                     @php
                                         $catNameRaw = $category->getTranslated('name');
                                         $catName = is_string($catNameRaw) ? $catNameRaw : ($category->slug ?? 'Unknown');
                                     @endphp
                                     <option value="{{ $category->id }}">{{ $catName }}</option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No categories available. Please create categories first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.categories_hint') }}</p>
                         </div>
@@ -433,7 +435,7 @@
                                 multiple 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none" 
                                 size="5">
-                                @foreach($sections as $section)
+                                @forelse($sections ?? [] as $section)
                                     @php
                                         $categoryName = 'Unknown';
                                         if ($section->category) {
@@ -444,7 +446,9 @@
                                         $sectionTitle = is_string($sectionTitleRaw) ? $sectionTitleRaw : ($section->slug ?? 'Untitled');
                                     @endphp
                                     <option value="{{ $section->id }}">{{ $categoryName }} → {{ $sectionTitle }}</option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No sections available. Please create sections first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.sections_hint') }}</p>
                         </div>

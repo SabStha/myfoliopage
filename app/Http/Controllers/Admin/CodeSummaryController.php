@@ -59,7 +59,8 @@ class CodeSummaryController extends Controller
                 if (!empty($navItemCategoryIds)) {
                     $categories = Category::where('user_id', $userId)
                         ->whereIn('id', $navItemCategoryIds)
-                        ->orderBy('name')
+                        ->orderBy('position')
+                        ->orderBy('slug')
                         ->get();
                     $sections = CategoryItem::where('user_id', $userId)
                         ->with('category')
@@ -69,7 +70,10 @@ class CodeSummaryController extends Controller
                         ->get();
                 } else {
                     // Fallback to all categories/sections if nav item has none
-                    $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                    $categories = Category::where('user_id', $userId)
+                        ->orderBy('position')
+                        ->orderBy('slug')
+                        ->get();
                     $sections = CategoryItem::where('user_id', $userId)
                         ->with('category')
                         ->orderBy('category_id')
@@ -78,7 +82,10 @@ class CodeSummaryController extends Controller
                 }
             } else {
                 // Nav item not found, show all
-                $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                $categories = Category::where('user_id', $userId)
+                    ->orderBy('position')
+                    ->orderBy('slug')
+                    ->get();
                 $sections = CategoryItem::where('user_id', $userId)
                     ->with('category')
                     ->orderBy('category_id')
@@ -86,7 +93,10 @@ class CodeSummaryController extends Controller
                     ->get();
             }
         } else {
-            $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+            $categories = Category::where('user_id', $userId)
+                ->orderBy('position')
+                ->orderBy('slug')
+                ->get();
             $sections = CategoryItem::where('user_id', $userId)
                 ->with('category')
                 ->orderBy('category_id')
@@ -95,6 +105,14 @@ class CodeSummaryController extends Controller
         }
         
         $allTags = Tag::orderBy('name')->get();
+        
+        // Debug logging
+        \Log::info('CodeSummaryController::create - Categories and Sections', [
+            'categories_count' => $categories->count(),
+            'sections_count' => $sections->count(),
+            'nav_item_id' => $request->get('nav_item_id'),
+            'user_id' => $userId,
+        ]);
         
         // If this is an AJAX request (for modal), return just the form
         if ($request->ajax() || $request->wantsJson()) {

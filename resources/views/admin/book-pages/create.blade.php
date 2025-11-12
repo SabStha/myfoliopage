@@ -697,15 +697,23 @@
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 {{ __('app.admin.code_summary.categories') }}
+                                @if(isset($categories))
+                                    <span class="text-xs text-gray-500">({{ count($categories) }} available)</span>
+                                @endif
                             </label>
                             <select 
                                 name="categories[]" 
                                 multiple 
                                 @change="handleCategoryChange($event)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none min-h-[150px]">
-                                @foreach($categories as $category)
+                                @php
+                                    $categoriesList = $categories ?? collect();
+                                @endphp
+                                @forelse($categoriesList as $category)
                                     <option value="{{ $category->id }}">{{ $category->getTranslated('name') ?: $category->slug }}</option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No categories available. Please create categories first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-2 flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -723,11 +731,13 @@
                                 name="sections[]" 
                                 multiple 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none min-h-[150px]">
-                                @foreach($sections as $section)
+                                @forelse($sections ?? [] as $section)
                                     <option value="{{ $section->id }}">
                                         {{ $section->category->getTranslated('name') ?: $section->category->slug }} → {{ $section->getTranslated('title') ?: $section->slug }}
                                     </option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No sections available. Please create sections first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-2 flex items-center gap-1 mb-3">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -768,9 +778,11 @@
                                         class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none" 
                                         required>
                                         <option value="">{{ __('app.admin.code_summary.select_category') }}</option>
-                                        @foreach($categories as $category)
+                                        @forelse($categories ?? [] as $category)
                                             <option value="{{ $category->id }}">{{ $category->getTranslated('name') ?: $category->slug }}</option>
-                                        @endforeach
+                                        @empty
+                                            <option value="" disabled>No categories available</option>
+                                        @endforelse
                                     </select>
                                 </div>
                                 <div>

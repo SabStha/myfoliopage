@@ -794,11 +794,13 @@
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none min-h-[150px]" 
                                 size="5" 
                                 @change="handleCategoryChange($event)">
-                                @foreach($categories as $category)
+                                @forelse($categories ?? [] as $category)
                                     <option value="{{ $category->id }}" {{ in_array($category->id, old('categories', [])) ? 'selected' : '' }}>
                                         {{ $category->getTranslated('name') ?: $category->slug }}
                                     </option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No categories available. Please create categories first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.code_summary.categories_hint') }}</p>
                         </div>
@@ -812,11 +814,13 @@
                                 multiple 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none min-h-[150px]" 
                                 size="5">
-                                @foreach($sections as $section)
+                                @forelse($sections ?? [] as $section)
                                     <option value="{{ $section->id }}" {{ in_array($section->id, old('sections', [])) ? 'selected' : '' }}>
                                         {{ $section->category->getTranslated('name') ?: $section->category->slug }} → {{ $section->getTranslated('title') ?: $section->slug }}
                                     </option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No sections available. Please create sections first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.code_summary.sections_hint') }}</p>
                             

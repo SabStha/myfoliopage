@@ -847,9 +847,11 @@
                                 @change="handleCategoryChange($event)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none min-h-[150px]"
                             >
-                                @foreach($categories as $category)
+                                @forelse($categories ?? [] as $category)
                                     <option value="{{ $category->id }}">{{ $category->getTranslated('name') ?: $category->slug }}</option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No categories available. Please create categories first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-2">{{ __('app.admin.code_summary.categories_hint') }}</p>
                         </div>
@@ -863,9 +865,11 @@
                                 multiple 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none min-h-[150px]"
                             >
-                                @foreach($sections as $section)
+                                @forelse($sections ?? [] as $section)
                                     <option value="{{ $section->id }}">{{ $section->category->getTranslated('name') ?: $section->category->slug }} → {{ $section->getTranslated('title') ?: $section->slug }}</option>
-                                @endforeach
+                                @empty
+                                    <option value="" disabled>No sections available. Please create sections first.</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-gray-500 mt-2">{{ __('app.admin.code_summary.sections_hint') }}</p>
                             
@@ -899,9 +903,11 @@
                                             required
                                         >
                                             <option value="">{{ __('app.admin.code_summary.select_category') }}</option>
-                                            @foreach($categories as $category)
+                                            @forelse($categories ?? [] as $category)
                                                 <option value="{{ $category->id }}">{{ $category->getTranslated('name') ?: $category->slug }}</option>
-                                            @endforeach
+                                            @empty
+                                                <option value="" disabled>No categories available</option>
+                                            @endforelse
                                         </select>
                                     </div>
                                     <div>

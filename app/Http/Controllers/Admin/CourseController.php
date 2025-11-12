@@ -56,7 +56,8 @@ class CourseController extends Controller
                 if (!empty($navItemCategoryIds)) {
                     $categories = Category::where('user_id', $userId)
                         ->whereIn('id', $navItemCategoryIds)
-                        ->orderBy('name')
+                        ->orderBy('position')
+                        ->orderBy('slug')
                         ->get();
                     $sections = CategoryItem::where('user_id', $userId)
                         ->with('category')
@@ -66,7 +67,10 @@ class CourseController extends Controller
                         ->get();
                 } else {
                     // Fallback to all categories/sections if nav item has none
-                    $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                    $categories = Category::where('user_id', $userId)
+                        ->orderBy('position')
+                        ->orderBy('slug')
+                        ->get();
                     $sections = CategoryItem::where('user_id', $userId)
                         ->with('category')
                         ->orderBy('category_id')
@@ -75,7 +79,10 @@ class CourseController extends Controller
                 }
             } else {
                 // Nav item not found, show all
-                $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                $categories = Category::where('user_id', $userId)
+                    ->orderBy('position')
+                    ->orderBy('slug')
+                    ->get();
                 $sections = CategoryItem::where('user_id', $userId)
                     ->with('category')
                     ->orderBy('category_id')
@@ -83,7 +90,10 @@ class CourseController extends Controller
                     ->get();
             }
         } else {
-            $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+            $categories = Category::where('user_id', $userId)
+                ->orderBy('position')
+                ->orderBy('slug')
+                ->get();
             $sections = CategoryItem::where('user_id', $userId)
                 ->with('category')
                 ->orderBy('category_id')
