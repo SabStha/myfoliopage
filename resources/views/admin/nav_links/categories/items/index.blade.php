@@ -1815,10 +1815,31 @@
                     'Accept': 'text/html'
                 }
             })
-            .then(response => response.text())
+            .then(response => {
+                // Check if we got redirected (status 302, 301, etc.) or error
+                if (response.redirected || response.status === 302 || response.status === 301) {
+                    throw new Error('Redirected - likely authentication required');
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
             .then(html => {
+                // Check if the response is a login page or error page
+                if (html.includes('login') && html.includes('password') || 
+                    html.includes('Logout') && html.includes('form') && !html.includes('book-page') && !html.includes('code-summary') && !html.includes('certificate')) {
+                    throw new Error('Received login/error page instead of form');
+                }
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
+                
+                // Check if this looks like a login page by checking for login form
+                const loginForm = doc.querySelector('form[action*="login"], form input[type="password"][name="password"]');
+                if (loginForm) {
+                    throw new Error('Received login page instead of create form');
+                }
                 
                 // First, execute all scripts to register Alpine components
                 const scripts = doc.querySelectorAll('script');
@@ -1866,6 +1887,23 @@
                     }
                 
                 const form = doc.querySelector('form');
+                
+                // Verify this is actually a create form, not a login/error form
+                if (form) {
+                    // Check if form action contains login or logout
+                    if (form.action && (form.action.includes('/login') || form.action.includes('/logout'))) {
+                        throw new Error('Received login/logout form instead of create form');
+                    }
+                    
+                    // For book-page, code-summary, certificate, etc., check for expected form elements
+                    if (type === 'book-page' && !doc.querySelector('[x-data*="bookPageCreate"], input[name="title"], textarea[name="summary"]')) {
+                        throw new Error('Form does not contain expected book-page create form elements');
+                    } else if (type === 'code-summary' && !doc.querySelector('[x-data*="codeSummaryCreate"], input[name="title"], textarea[name="summary"]')) {
+                        throw new Error('Form does not contain expected code-summary create form elements');
+                    } else if (type === 'certificate' && !doc.querySelector('[x-data*="certificateCreate"], input[name="title"], input[name="provider"]')) {
+                        throw new Error('Form does not contain expected certificate create form elements');
+                    }
+                }
                 
                 if (form) {
                     if (type === 'book-page' || type === 'code-summary' || type === 'room' || type === 'course' || type === 'certificate') {
