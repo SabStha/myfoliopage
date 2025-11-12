@@ -11,6 +11,7 @@ use App\Models\Tag;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -27,7 +28,7 @@ class CertificateController extends Controller
      */
     public function index()
     {
-        $certificates = Certificate::latest('issued_at')->paginate(12);
+        $certificates = Certificate::where('user_id', Auth::id())->latest('issued_at')->paginate(12);
         return view('admin.certificates.index', compact('certificates'));
     }
 
@@ -264,6 +265,9 @@ class CertificateController extends Controller
 
         // Process translation fields
         $data = $this->processTranslations($data, $this->getTranslatableFields());
+        
+        // Set user_id for the certificate
+        $data['user_id'] = Auth::id();
 
         $certificate = Certificate::create($data);
         
@@ -323,6 +327,9 @@ class CertificateController extends Controller
      */
     public function show(Certificate $certificate)
     {
+        if ($certificate->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         return view('admin.certificates.show', compact('certificate'));
     }
 
@@ -331,6 +338,9 @@ class CertificateController extends Controller
      */
     public function edit(Certificate $certificate, Request $request)
     {
+        if ($certificate->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $certificate->load('categories', 'sections', 'tags');
         
         // Filter categories and sections if navigation context is provided
@@ -379,6 +389,9 @@ class CertificateController extends Controller
      */
     public function update(Request $request, Certificate $certificate)
     {
+        if ($certificate->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         // Enhanced validation with quality guardrails
         $data = $request->validate([
             'title' => 'required|array',
@@ -508,6 +521,9 @@ class CertificateController extends Controller
      */
     public function destroy(Certificate $certificate)
     {
+        if ($certificate->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $certificate->delete();
         return redirect()->route('admin.certificates.index')->with('status', 'Certificate deleted');
     }

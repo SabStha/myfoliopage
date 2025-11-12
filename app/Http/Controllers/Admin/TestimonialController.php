@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TestimonialController extends Controller
 {
@@ -13,7 +14,9 @@ class TestimonialController extends Controller
      */
     public function index()
     {
-        $testimonials = Testimonial::ordered()->paginate(20);
+        $testimonials = Testimonial::where('user_id', Auth::id())
+            ->ordered()
+            ->paginate(20);
         return view('admin.testimonials.index', compact('testimonials'));
     }
 
@@ -44,6 +47,7 @@ class TestimonialController extends Controller
 
         $data['is_published'] = $request->has('is_published');
         $data['position'] = $data['position'] ?? 0;
+        $data['user_id'] = Auth::id();
 
         $testimonial = Testimonial::create($data);
 
@@ -64,6 +68,9 @@ class TestimonialController extends Controller
      */
     public function edit(Testimonial $testimonial)
     {
+        if ($testimonial->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         return view('admin.testimonials.edit', compact('testimonial'));
     }
 
@@ -72,6 +79,10 @@ class TestimonialController extends Controller
      */
     public function update(Request $request, Testimonial $testimonial)
     {
+        if ($testimonial->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'company' => 'nullable|string|max:255',
@@ -113,6 +124,10 @@ class TestimonialController extends Controller
      */
     public function destroy(Testimonial $testimonial)
     {
+        if ($testimonial->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         // Delete associated media
         $testimonial->media()->delete();
         

@@ -7,6 +7,7 @@ use App\Models\HomePageSection;
 use App\Models\NavItem;
 use App\Models\NavLink;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomePageSectionController extends Controller
 {
@@ -18,7 +19,9 @@ class HomePageSectionController extends Controller
 
     public function create()
     {
-        $navItems = NavItem::where('visible', true)
+        $userId = Auth::id();
+        $navItems = NavItem::where('user_id', $userId)
+            ->where('visible', true)
             ->orderBy('position')
             ->get();
         
@@ -114,6 +117,7 @@ class HomePageSectionController extends Controller
             $data['subsection_configurations'] = !empty($configs) ? $configs : null;
         }
         
+        $data['user_id'] = Auth::id();
         HomePageSection::create($data);
         
         if ($request->wantsJson()) {
@@ -125,11 +129,18 @@ class HomePageSectionController extends Controller
 
     public function edit(HomePageSection $homePageSection)
     {
-        $navItems = NavItem::where('visible', true)
+        if ($homePageSection->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
+        $userId = Auth::id();
+        $navItems = NavItem::where('user_id', $userId)
+            ->where('visible', true)
             ->orderBy('position')
             ->get();
         
-        $navLinks = NavLink::where('nav_item_id', $homePageSection->nav_item_id)
+        $navLinks = NavLink::where('user_id', $userId)
+            ->where('nav_item_id', $homePageSection->nav_item_id)
             ->orderBy('position')
             ->get();
         
@@ -138,6 +149,10 @@ class HomePageSectionController extends Controller
 
     public function update(Request $request, HomePageSection $homePageSection)
     {
+        if ($homePageSection->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'nav_item_id' => 'required|exists:nav_items,id',
             'position' => 'required|integer|min:0',
@@ -238,6 +253,10 @@ class HomePageSectionController extends Controller
 
     public function toggleEnabled(HomePageSection $homePageSection)
     {
+        if ($homePageSection->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $homePageSection->enabled = !$homePageSection->enabled;
         $homePageSection->save();
         
@@ -247,15 +266,28 @@ class HomePageSectionController extends Controller
 
     public function destroy(HomePageSection $homePageSection)
     {
+        if ($homePageSection->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $homePageSection->delete();
         return redirect()->route('admin.home-page-sections.index')->with('status', 'Home page section deleted successfully');
     }
 
     public function getNavLinks(Request $request, $navItemId)
     {
+        $userId = Auth::id();
+        
+        // Verify NavItem belongs to user
+        $navItem = NavItem::where('user_id', $userId)->find($navItemId);
+        if (!$navItem) {
+            return response()->json([], 403);
+        }
+        
         // ONLY return NavLinks from the database - NO hardcoded items
         // If no NavLinks exist for this NavItem, return empty array
-        $navLinks = NavLink::where('nav_item_id', $navItemId)
+        $navLinks = NavLink::where('user_id', $userId)
+            ->where('nav_item_id', $navItemId)
             ->orderBy('position')
             ->get();
         
@@ -282,7 +314,9 @@ class HomePageSectionController extends Controller
     
     public function getNavItems()
     {
-        $navItems = NavItem::where('visible', true)
+        $userId = Auth::id();
+        $navItems = NavItem::where('user_id', $userId)
+            ->where('visible', true)
             ->orderBy('position')
             ->get();
         

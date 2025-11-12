@@ -10,6 +10,7 @@ use App\Models\CategoryItem;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class CourseController extends Controller
@@ -25,7 +26,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::latest('completed_at')->latest('issued_at')->paginate(12);
+        $courses = Course::where('user_id', Auth::id())->latest('completed_at')->latest('issued_at')->paginate(12);
         return view('admin.courses.index', compact('courses'));
     }
 
@@ -188,6 +189,7 @@ class CourseController extends Controller
         // Process translation fields
         $data = $this->processTranslations($data, $this->getTranslatableFields());
 
+        $data['user_id'] = Auth::id();
         $course = Course::create($data);
         
         // Handle image upload (certificate/proof)

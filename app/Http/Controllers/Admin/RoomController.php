@@ -10,6 +10,7 @@ use App\Models\CategoryItem;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
 {
@@ -24,7 +25,16 @@ class RoomController extends Controller
      */
     public function index()
     {
-        $rooms = Room::with('categories')->latest('completed_at')->paginate(20);
+        $userId = Auth::id();
+        // Get rooms that belong to categories owned by this user
+        $userCategoryIds = Category::where('user_id', $userId)->pluck('id')->toArray();
+        $rooms = Room::whereHas('categories', function($query) use ($userId, $userCategoryIds) {
+            $query->where('user_id', $userId)->orWhereIn('categories.id', $userCategoryIds);
+        })
+        ->orWhere('user_id', $userId)
+        ->with('categories')
+        ->latest('completed_at')
+        ->paginate(20);
         return view('admin.rooms.index', compact('rooms'));
     }
 
@@ -33,20 +43,29 @@ class RoomController extends Controller
      */
     public function create(Request $request)
     {
+        $userId = Auth::id();
+        
         // Filter categories and sections if navigation context is provided
         if ($request->has('nav_item_id')) {
-            $navItem = \App\Models\NavItem::find($request->nav_item_id);
+            $navItem = \App\Models\NavItem::where('user_id', $userId)->find($request->nav_item_id);
             if ($navItem) {
                 // Get categories from this NavItem's NavLinks
-                $navItemCategoryIds = $navItem->links()->with('categories')->get()
+                $navItemCategoryIds = $navItem->links()
+                    ->where('user_id', $userId)
+                    ->with('categories')
+                    ->get()
                     ->pluck('categories')
                     ->flatten()
                     ->pluck('id')
                     ->unique()
                     ->toArray();
                 
-                $categories = Category::whereIn('id', $navItemCategoryIds)->orderBy('name')->get();
-                $sections = CategoryItem::with('category')
+                $categories = Category::where('user_id', $userId)
+                    ->whereIn('id', $navItemCategoryIds)
+                    ->orderBy('name')
+                    ->get();
+                $sections = CategoryItem::where('user_id', $userId)
+                    ->with('category')
                     ->whereIn('category_id', $navItemCategoryIds)
                     ->orderBy('category_id')
                     ->orderBy('position')
@@ -56,8 +75,12 @@ class RoomController extends Controller
                 $sections = collect();
             }
         } else {
-            $categories = Category::orderBy('name')->get();
-            $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+            $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+            $sections = CategoryItem::where('user_id', $userId)
+                ->with('category')
+                ->orderBy('category_id')
+                ->orderBy('position')
+                ->get();
         }
         
         $allTags = Tag::orderBy('name')->get();
@@ -137,6 +160,7 @@ class RoomController extends Controller
 
         // Process translation fields
         $data = $this->processTranslations($data, $this->getTranslatableFields());
+        $data['user_id'] = Auth::id();
 
         $room = Room::create($data);
 
@@ -192,14 +216,22 @@ class RoomController extends Controller
      */
     public function edit(Room $room, Request $request)
     {
+        if ($room->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $room->load('categories', 'sections', 'tags');
+        $userId = Auth::id();
         
         // Filter categories and sections if navigation context is provided
         if ($request->has('nav_item_id')) {
-            $navItem = \App\Models\NavItem::find($request->nav_item_id);
+            $navItem = \App\Models\NavItem::where('user_id', $userId)->find($request->nav_item_id);
             if ($navItem) {
                 // Get categories from this NavItem's NavLinks, plus the room's current categories
-                $navItemCategoryIds = $navItem->links()->with('categories')->get()
+                $navItemCategoryIds = $navItem->links()
+                    ->where('user_id', $userId)
+                    ->with('categories')
+                    ->get()
                     ->pluck('categories')
                     ->flatten()
                     ->pluck('id')
@@ -209,19 +241,31 @@ class RoomController extends Controller
                 $currentCategoryIds = $room->categories->pluck('id')->toArray();
                 $allRelevantCategoryIds = array_unique(array_merge($navItemCategoryIds, $currentCategoryIds));
                 
-                $categories = Category::whereIn('id', $allRelevantCategoryIds)->orderBy('name')->get();
-                $sections = CategoryItem::with('category')
+                $categories = Category::where('user_id', $userId)
+                    ->whereIn('id', $allRelevantCategoryIds)
+                    ->orderBy('name')
+                    ->get();
+                $sections = CategoryItem::where('user_id', $userId)
+                    ->with('category')
                     ->whereIn('category_id', $allRelevantCategoryIds)
                     ->orderBy('category_id')
                     ->orderBy('position')
                     ->get();
             } else {
-                $categories = Category::orderBy('name')->get();
-                $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+                $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                $sections = CategoryItem::where('user_id', $userId)
+                    ->with('category')
+                    ->orderBy('category_id')
+                    ->orderBy('position')
+                    ->get();
             }
         } else {
-            $categories = Category::orderBy('name')->get();
-            $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+            $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+            $sections = CategoryItem::where('user_id', $userId)
+                ->with('category')
+                ->orderBy('category_id')
+                ->orderBy('position')
+                ->get();
         }
         
         $allTags = Tag::orderBy('name')->get();
@@ -239,6 +283,10 @@ class RoomController extends Controller
      */
     public function update(Request $request, Room $room)
     {
+        if ($room->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'title' => 'required|array',
             'title.en' => 'required|string|max:255',
@@ -324,6 +372,9 @@ class RoomController extends Controller
      */
     public function destroy(Room $room)
     {
+        if ($room->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $room->delete();
         return redirect()->route('admin.rooms.index')->with('status', 'Room deleted');
     }

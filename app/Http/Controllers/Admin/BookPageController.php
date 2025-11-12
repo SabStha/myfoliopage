@@ -10,6 +10,7 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 
 class BookPageController extends Controller
 {
@@ -22,8 +23,12 @@ class BookPageController extends Controller
         $bookPages = new LengthAwarePaginator([], 0, 20, 1);
         
         try {
-            // Try to query the table
-            $bookPages = BookPage::with('categories')->orderBy('created_at', 'desc')->paginate(20);
+            // Try to query the table - filter by user_id
+            $userId = Auth::id();
+            $bookPages = BookPage::where('user_id', $userId)
+                ->with('categories')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
         } catch (\Illuminate\Database\QueryException $e) {
             // Table doesn't exist
             return view('admin.book-pages.index', compact('bookPages'))
@@ -43,20 +48,29 @@ class BookPageController extends Controller
      */
     public function create(Request $request)
     {
+        $userId = Auth::id();
+        
         // Filter categories and sections if navigation context is provided
         if ($request->has('nav_item_id')) {
-            $navItem = \App\Models\NavItem::find($request->nav_item_id);
+            $navItem = \App\Models\NavItem::where('user_id', $userId)->find($request->nav_item_id);
             if ($navItem) {
                 // Get categories from this NavItem's NavLinks
-                $navItemCategoryIds = $navItem->links()->with('categories')->get()
+                $navItemCategoryIds = $navItem->links()
+                    ->where('user_id', $userId)
+                    ->with('categories')
+                    ->get()
                     ->pluck('categories')
                     ->flatten()
                     ->pluck('id')
                     ->unique()
                     ->toArray();
                 
-                $categories = Category::whereIn('id', $navItemCategoryIds)->orderBy('name')->get();
-                $sections = CategoryItem::with('category')
+                $categories = Category::where('user_id', $userId)
+                    ->whereIn('id', $navItemCategoryIds)
+                    ->orderBy('name')
+                    ->get();
+                $sections = CategoryItem::where('user_id', $userId)
+                    ->with('category')
                     ->whereIn('category_id', $navItemCategoryIds)
                     ->orderBy('category_id')
                     ->orderBy('position')
@@ -66,8 +80,12 @@ class BookPageController extends Controller
                 $sections = collect();
             }
         } else {
-            $categories = Category::orderBy('name')->get();
-            $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+            $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+            $sections = CategoryItem::where('user_id', $userId)
+                ->with('category')
+                ->orderBy('category_id')
+                ->orderBy('position')
+                ->get();
         }
         
         $allTags = Tag::orderBy('name')->get();
@@ -184,6 +202,7 @@ class BookPageController extends Controller
             }
         }
 
+        $data['user_id'] = Auth::id();
         $bookPage = BookPage::create($data);
 
         // Sync categories
@@ -238,14 +257,22 @@ class BookPageController extends Controller
      */
     public function edit(BookPage $bookPage, Request $request)
     {
+        if ($bookPage->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $bookPage->load('categories', 'sections', 'tags');
+        $userId = Auth::id();
         
         // Filter categories and sections if navigation context is provided
         if ($request->has('nav_item_id')) {
-            $navItem = \App\Models\NavItem::find($request->nav_item_id);
+            $navItem = \App\Models\NavItem::where('user_id', $userId)->find($request->nav_item_id);
             if ($navItem) {
                 // Get categories from this NavItem's NavLinks, plus the bookPage's current categories
-                $navItemCategoryIds = $navItem->links()->with('categories')->get()
+                $navItemCategoryIds = $navItem->links()
+                    ->where('user_id', $userId)
+                    ->with('categories')
+                    ->get()
                     ->pluck('categories')
                     ->flatten()
                     ->pluck('id')
@@ -255,19 +282,31 @@ class BookPageController extends Controller
                 $currentCategoryIds = $bookPage->categories->pluck('id')->toArray();
                 $allRelevantCategoryIds = array_unique(array_merge($navItemCategoryIds, $currentCategoryIds));
                 
-                $categories = Category::whereIn('id', $allRelevantCategoryIds)->orderBy('name')->get();
-                $sections = CategoryItem::with('category')
+                $categories = Category::where('user_id', $userId)
+                    ->whereIn('id', $allRelevantCategoryIds)
+                    ->orderBy('name')
+                    ->get();
+                $sections = CategoryItem::where('user_id', $userId)
+                    ->with('category')
                     ->whereIn('category_id', $allRelevantCategoryIds)
                     ->orderBy('category_id')
                     ->orderBy('position')
                     ->get();
             } else {
-                $categories = Category::orderBy('name')->get();
-                $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+                $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                $sections = CategoryItem::where('user_id', $userId)
+                    ->with('category')
+                    ->orderBy('category_id')
+                    ->orderBy('position')
+                    ->get();
             }
         } else {
-            $categories = Category::orderBy('name')->get();
-            $sections = CategoryItem::with('category')->orderBy('category_id')->orderBy('position')->get();
+            $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+            $sections = CategoryItem::where('user_id', $userId)
+                ->with('category')
+                ->orderBy('category_id')
+                ->orderBy('position')
+                ->get();
         }
         
         $allTags = Tag::orderBy('name')->get();
@@ -287,6 +326,10 @@ class BookPageController extends Controller
      */
     public function update(Request $request, BookPage $bookPage)
     {
+        if ($bookPage->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         // Enhanced validation with quality guardrails
         $data = $request->validate([
             'title' => 'nullable|array',
@@ -390,6 +433,9 @@ class BookPageController extends Controller
      */
     public function destroy(BookPage $bookPage)
     {
+        if ($bookPage->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $bookPage->delete();
         return redirect()->route('admin.book-pages.index')->with('status', 'Book page deleted');
     }

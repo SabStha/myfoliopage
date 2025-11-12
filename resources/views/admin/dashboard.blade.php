@@ -103,12 +103,16 @@
         <canvas id="overallChart" height="160"></canvas>
       </div>
       <div>
-        @php($list = $metricList)
-        <ul class="space-y-2 text-sm text-gray-600">
-          @foreach($list as $row)
-            <li class="flex items-center justify-between"><span>{{ $row['label'] }}</span><span class="font-semibold text-gray-800">{{ $row['value'] }}</span></li>
-          @endforeach
-        </ul>
+        @php($list = isset($categories) && count($categories) > 0 ? $categories : (count($metricList) > 0 ? $metricList : []))
+        @if(count($list) > 0)
+          <ul class="space-y-2 text-sm text-gray-600">
+            @foreach($list as $row)
+              <li class="flex items-center justify-between"><span>{{ $row['label'] }}</span><span class="font-semibold text-gray-800">{{ $row['value'] }}</span></li>
+            @endforeach
+          </ul>
+        @else
+          <p class="text-sm text-gray-500 text-center py-4">No data available yet</p>
+        @endif
       </div>
     </div>
   </x-card>

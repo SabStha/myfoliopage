@@ -7,28 +7,45 @@ use App\Models\NavItem;
 use App\Models\NavLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class NavLinkController extends Controller
 {
     public function index(NavItem $nav)
     {
-        // Load categories using the many-to-many relationship
-        $links = $nav->links()->with('categories')->orderBy('position')->get();
+        if ($nav->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
+        // Load categories using the many-to-many relationship, filtered by user
+        $links = $nav->links()
+            ->where('user_id', Auth::id())
+            ->with('categories')
+            ->orderBy('position')
+            ->get();
         
         return view('admin.nav_links.index', compact('nav','links'));
     }
 
     public function create(NavItem $nav)
     {
-        // Only show categories that are already used by other NavLinks in this NavItem
-        $categoryIds = $nav->links()->with('categories')->get()
+        if ($nav->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
+        // Only show categories that belong to this user and are already used by other NavLinks in this NavItem
+        $categoryIds = $nav->links()
+            ->where('user_id', Auth::id())
+            ->with('categories')
+            ->get()
             ->pluck('categories')
             ->flatten()
             ->pluck('id')
             ->unique()
             ->toArray();
         
-        $categories = \App\Models\Category::whereIn('id', $categoryIds)
+        $categories = \App\Models\Category::where('user_id', Auth::id())
+            ->whereIn('id', $categoryIds)
             ->orderBy('position')
             ->get();
         
@@ -37,6 +54,10 @@ class NavLinkController extends Controller
 
     public function store(Request $request, NavItem $nav)
     {
+        if ($nav->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'title' => 'required|array',
             'title.en' => 'nullable|string|max:255',
@@ -79,6 +100,7 @@ class NavLinkController extends Controller
         // Store the NavLink first, then sync categories
         $categories = $data['categories'] ?? [];
         unset($data['categories']);
+        $data['user_id'] = Auth::id();
         $navLink = $nav->links()->create($data);
         
         // Sync categories (many-to-many)
@@ -97,6 +119,10 @@ class NavLinkController extends Controller
 
     public function edit(NavItem $nav, NavLink $link, Request $request)
     {
+        if ($nav->user_id !== Auth::id() || $link->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $link->load('categories');
         // Only show categories that are used by NavLinks in this NavItem
         $categoryIds = $nav->links()->with('categories')->get()
@@ -125,6 +151,10 @@ class NavLinkController extends Controller
 
     public function update(Request $request, NavItem $nav, NavLink $link)
     {
+        if ($nav->user_id !== Auth::id() || $link->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'title' => 'required|array',
             'title.en' => 'nullable|string|max:255',
@@ -187,6 +217,9 @@ class NavLinkController extends Controller
 
     public function destroy(NavItem $nav, NavLink $link)
     {
+        if ($nav->user_id !== Auth::id() || $link->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $link->delete();
         return redirect()->route('admin.nav.links.index', $nav)->with('status','Sub-nav deleted');
     }

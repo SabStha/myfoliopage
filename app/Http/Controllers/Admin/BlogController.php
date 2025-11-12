@@ -8,6 +8,7 @@ use App\Models\Blog;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class BlogController extends Controller
 {
@@ -22,7 +23,10 @@ class BlogController extends Controller
      */
     public function index()
     {
-        $blogs = Blog::latest('published_at')->latest('created_at')->paginate(12);
+        $blogs = Blog::where('user_id', Auth::id())
+            ->latest('published_at')
+            ->latest('created_at')
+            ->paginate(12);
         return view('admin.blogs.index', compact('blogs'));
     }
 
@@ -75,6 +79,7 @@ class BlogController extends Controller
         $data = $this->processTranslations($data, $this->getTranslatableFields());
 
         $data['is_published'] = $request->has('is_published');
+        $data['user_id'] = Auth::id();
         
         $blog = Blog::create($data);
 
@@ -111,6 +116,9 @@ class BlogController extends Controller
      */
     public function edit(Blog $blog)
     {
+        if ($blog->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $allTags = Tag::orderBy('name')->get();
         $blogTags = $blog->tags->pluck('name')->join(', ');
         return view('admin.blogs.edit', compact('blog', 'allTags', 'blogTags'));
@@ -121,6 +129,10 @@ class BlogController extends Controller
      */
     public function update(Request $request, Blog $blog)
     {
+        if ($blog->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'title' => 'required|array',
             'title.en' => 'required|string|max:255',
@@ -174,6 +186,9 @@ class BlogController extends Controller
      */
     public function destroy(Blog $blog)
     {
+        if ($blog->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $blog->delete();
         return redirect()->route('admin.blogs.index')->with('status', 'Blog post deleted');
     }

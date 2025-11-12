@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Media;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
@@ -15,7 +16,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::latest('created_at')->paginate(12);
+        $projects = Project::where('user_id', Auth::id())->latest('created_at')->paginate(12);
         return view('admin.projects.index', compact('projects'));
     }
 
@@ -44,6 +45,7 @@ class ProjectController extends Controller
             'tags' => 'nullable|string',
             'image' => 'nullable|image|max:4096',
         ]);
+        $data['user_id'] = Auth::id();
         $project = Project::create($data);
 
         // Sync tags from comma-separated list
@@ -70,6 +72,9 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        if ($project->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         return view('admin.projects.show', compact('project'));
     }
 
@@ -78,6 +83,9 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
+        if ($project->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $allTags = Tag::orderBy('name')->get();
         return view('admin.projects.edit', compact('project', 'allTags'));
     }
@@ -87,6 +95,9 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        if ($project->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:projects,slug,' . $project->id,
@@ -125,6 +136,9 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
+        if ($project->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $project->delete();
         return redirect()->route('admin.projects.index')->with('status', 'Project deleted');
     }

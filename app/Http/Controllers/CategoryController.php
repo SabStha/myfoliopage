@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('navLinksMany')->orderBy('position')->paginate(20);
+        $categories = Category::where('user_id', Auth::id())
+            ->withCount('navLinksMany')
+            ->orderBy('position')
+            ->paginate(20);
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -30,6 +34,7 @@ class CategoryController extends Controller
                 'position' => 'nullable|integer',
             ]);
             if (empty($data['slug'])) $data['slug'] = str()->slug($data['name']);
+            $data['user_id'] = Auth::id();
             $created = Category::create($data);
             Log::info('Category created', ['id' => $created->id]);
             return redirect()->route('admin.categories.index')->with('status','Category created');
@@ -41,12 +46,19 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
+        if ($category->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $category->load('navLinksMany.navItem');
         return view('admin.categories.edit', compact('category'));
     }
 
     public function update(Request $request, Category $category)
     {
+        if ($category->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         Log::info('CategoryController@update called', ['id'=>$category->id, 'payload'=>$request->all()]);
         try {
             $data = $request->validate([
@@ -67,6 +79,9 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        if ($category->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
         $category->delete();
         return redirect()->route('admin.categories.index')->with('status','Category deleted');
     }

@@ -9,6 +9,7 @@ use App\Models\PageSection;
 use App\Traits\HandlesTranslations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class HeroSectionController extends Controller
 {
@@ -26,10 +27,11 @@ class HeroSectionController extends Controller
     }
     public function edit()
     {
-        $heroSection = HeroSection::first();
+        $userId = Auth::id();
+        $heroSection = HeroSection::where('user_id', $userId)->first();
         if (!$heroSection) {
             // Create with factory defaults from migration
-            $heroSection = HeroSection::create();
+            $heroSection = HeroSection::create(['user_id' => $userId]);
             // Set default text values that are nullable in migration
             $heroSection->update([
                 'heading_text' => json_encode(['en' => '1️⃣ Typing Animation (Developer-style intro)', 'ja' => '1️⃣ タイピングアニメーション（開発者スタイルの紹介）']),
@@ -100,12 +102,15 @@ class HeroSectionController extends Controller
 
     public function update(Request $request)
     {
+        $userId = Auth::id();
+        
         // Get existing hero section or create a new one
-        $heroSection = HeroSection::first();
+        $heroSection = HeroSection::where('user_id', $userId)->first();
         
         if (!$heroSection) {
             // Create new hero section - it will have an ID after save
             $heroSection = new HeroSection();
+            $heroSection->user_id = $userId;
             $heroSection->save();
             // Reload from database to ensure we have all default values and ID
             $heroSection = HeroSection::find($heroSection->id);
@@ -181,10 +186,11 @@ class HeroSectionController extends Controller
         if ($request->hasFile('profile_images')) {
             // Double-check that we have a valid ID before creating media
             // Reload hero section from database to ensure we have the latest ID
-            $heroSection = HeroSection::find($heroSectionId);
+            $userId = Auth::id();
+            $heroSection = HeroSection::where('user_id', $userId)->find($heroSectionId);
             if (!$heroSection || !$heroSection->id) {
-                // If find fails, try to get the first one
-                $heroSection = HeroSection::first();
+                // If find fails, try to get the user's first one
+                $heroSection = HeroSection::where('user_id', $userId)->first();
                 if (!$heroSection || !$heroSection->id) {
                     return redirect()->route('admin.hero.edit')
                         ->withErrors(['error' => 'Hero section not found. Cannot upload images.']);
@@ -319,11 +325,12 @@ class HeroSectionController extends Controller
 
     public function reset()
     {
-        $heroSection = HeroSection::first();
+        $userId = Auth::id();
+        $heroSection = HeroSection::where('user_id', $userId)->first();
         
         if (!$heroSection) {
             // If no hero section exists, create one with defaults
-            $heroSection = HeroSection::create();
+            $heroSection = HeroSection::create(['user_id' => $userId]);
             return redirect()->route('admin.hero.edit')->with('status', 'Hero section created with factory defaults');
         }
         

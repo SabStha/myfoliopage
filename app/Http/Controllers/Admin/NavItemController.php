@@ -6,16 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\NavItem;
 use App\Models\HomePageSection;
 use Illuminate\Support\Facades\Route as RouteFacade;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class NavItemController extends Controller
 {
     public function index() { 
-        $items = NavItem::withCount('links')->orderBy('position')->get(); 
-        $sections = HomePageSection::with('navItem')
+        $userId = Auth::id();
+        $items = NavItem::where('user_id', $userId)->withCount('links')->orderBy('position')->get(); 
+        $sections = HomePageSection::where('user_id', $userId)->with('navItem')
             ->orderBy('position')
             ->get();
-        $availableNavItems = NavItem::where('visible', true)
+        $availableNavItems = NavItem::where('user_id', $userId)
+            ->where('visible', true)
             ->orderBy('position')
             ->get();
         return view('admin.nav.index', compact('items', 'sections', 'availableNavItems')); 
@@ -42,6 +45,7 @@ class NavItemController extends Controller
         ];
         
         $data['visible'] = (bool)($data['visible'] ?? true);
+        $data['user_id'] = Auth::id();
         
         // Use English label for route derivation
         $labelForDerivation = $data['label']['en'] ?: $data['label']['ja'];
@@ -49,8 +53,17 @@ class NavItemController extends Controller
         NavItem::create(array_merge($data, $derived));
         return redirect()->route('admin.nav.index')->with('status','Nav item created');
     }
-    public function edit(NavItem $nav) { return view('admin.nav.edit', ['item'=>$nav]); }
+    public function edit(NavItem $nav) { 
+        if ($nav->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        return view('admin.nav.edit', ['item'=>$nav]); 
+    }
     public function update(Request $request, NavItem $nav) {
+        if ($nav->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        
         $data = $request->validate([
             'label' => 'required|array',
             'label.en' => 'nullable|string|max:255',
@@ -83,7 +96,13 @@ class NavItemController extends Controller
         }
         return redirect()->route('admin.nav.index')->with('status','Nav item updated');
     }
-    public function destroy(NavItem $nav) { $nav->delete(); return redirect()->route('admin.nav.index')->with('status','Nav item deleted'); }
+    public function destroy(NavItem $nav) { 
+        if ($nav->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access');
+        }
+        $nav->delete(); 
+        return redirect()->route('admin.nav.index')->with('status','Nav item deleted'); 
+    }
 
     private function deriveFromLabel(string $label): array
     {
