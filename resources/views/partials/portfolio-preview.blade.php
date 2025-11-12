@@ -135,7 +135,23 @@
                 />
               @endforeach
             @else
-              <img src="{{ ($profile && $profile->photo_path) ? asset('storage/'.$profile->photo_path) : asset('images/profile_main.png') }}" alt="Profile" class="w-full h-full object-cover object-center select-none" style="object-position: center;" onerror="this.src='{{ asset('images/profile_main.png') }}';" />
+              @php
+                  $fallbackPhotoUrl = null;
+                  if ($profile && $profile->photo_path) {
+                      if (strpos($profile->photo_path, 'images/') === 0) {
+                          $fallbackPhotoUrl = asset($profile->photo_path);
+                      } elseif (strpos($profile->photo_path, 'storage/') === 0 || strpos($profile->photo_path, '/storage/') === 0) {
+                          $fallbackPhotoUrl = asset($profile->photo_path);
+                      } elseif (strpos($profile->photo_path, 'http') === 0) {
+                          $fallbackPhotoUrl = $profile->photo_path;
+                      } else {
+                          $fallbackPhotoUrl = asset('storage/' . $profile->photo_path);
+                      }
+                  } else {
+                      $fallbackPhotoUrl = asset('images/profile_main.png');
+                  }
+              @endphp
+              <img src="{{ $fallbackPhotoUrl }}" alt="Profile" class="w-full h-full object-cover object-center select-none" style="object-position: center;" onerror="this.src='{{ asset('images/profile_main.png') }}';" />
             @endif
           </div>
          </div>

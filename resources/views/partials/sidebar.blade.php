@@ -15,7 +15,23 @@
             </svg>
         </button>
     </div>
-    <img src="{{ ($p && $p->photo_path) ? asset('storage/'.$p->photo_path) : asset('images/profile.jpg') }}" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full shadow-md object-cover" alt="Profile" />
+    @php
+        $profilePhotoUrl = null;
+        if ($p && $p->photo_path) {
+            if (strpos($p->photo_path, 'images/') === 0) {
+                $profilePhotoUrl = asset($p->photo_path);
+            } elseif (strpos($p->photo_path, 'storage/') === 0 || strpos($p->photo_path, '/storage/') === 0) {
+                $profilePhotoUrl = asset($p->photo_path);
+            } elseif (strpos($p->photo_path, 'http') === 0) {
+                $profilePhotoUrl = $p->photo_path;
+            } else {
+                $profilePhotoUrl = asset('storage/' . $p->photo_path);
+            }
+        } else {
+            $profilePhotoUrl = asset('images/profile.jpg');
+        }
+    @endphp
+    <img src="{{ $profilePhotoUrl }}" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full shadow-md object-cover" alt="Profile" />
     <h2 class="mt-2 sm:mt-4 text-base sm:text-xl font-semibold text-gray-900 text-center px-4">{{ $p?->name ?? $user?->name ?? 'Your Name' }}</h2>
     <p class="text-xs sm:text-sm text-gray-500 text-center px-4">{{ $p?->role ?? 'Full-Stack / Security Student' }}</p>
     @if(request()->routeIs('admin.*'))

@@ -51,7 +51,24 @@ class PortfolioController extends Controller
         
         // Fallback to default video if no video uploaded
         if (!$engagementVideo) {
-            $engagementVideo = asset('storage/videos/engagement-01.mp4');
+            // Check multiple possible locations for the fallback video
+            $fallbackPaths = [
+                'storage/videos/engagement-01.mp4',
+                'engagement/engagement-01.mp4',
+                'videos/engagement-01.mp4',
+            ];
+            
+            foreach ($fallbackPaths as $fallbackPath) {
+                if (file_exists(public_path($fallbackPath))) {
+                    $engagementVideo = asset($fallbackPath);
+                    break;
+                }
+            }
+            
+            // If still not found, use the default path (will show 404 but won't break)
+            if (!$engagementVideo) {
+                $engagementVideo = asset('storage/videos/engagement-01.mp4');
+            }
         }
         
         // Get hero section profile images

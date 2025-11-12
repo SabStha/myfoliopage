@@ -537,7 +537,24 @@ Route::get('/', function () {
     
     // Fallback to default video if no video uploaded
     if (!$engagementVideo) {
-        $engagementVideo = asset('storage/videos/engagement-01.mp4');
+        // Check multiple possible locations for the fallback video
+        $fallbackPaths = [
+            'storage/videos/engagement-01.mp4',
+            'engagement/engagement-01.mp4',
+            'videos/engagement-01.mp4',
+        ];
+        
+        foreach ($fallbackPaths as $fallbackPath) {
+            if (file_exists(public_path($fallbackPath))) {
+                $engagementVideo = asset($fallbackPath);
+                break;
+            }
+        }
+        
+        // If still not found, use the default path (will show 404 but won't break)
+        if (!$engagementVideo) {
+            $engagementVideo = asset('storage/videos/engagement-01.mp4');
+        }
     }
     
     // Get hero section profile images
@@ -593,8 +610,26 @@ Route::get('/', function () {
     }
     
     // If we have the old photo_path, add it too
-    if ($profile && $profile->photo_path && !in_array(asset('storage/' . $profile->photo_path), $profileImages)) {
-        $profileImages[] = asset('storage/' . $profile->photo_path);
+    if ($profile && $profile->photo_path) {
+        // Handle different path formats
+        $photoPath = $profile->photo_path;
+        if (strpos($photoPath, 'images/') === 0) {
+            // Path starts with images/ - it's in public/images/, use asset() directly
+            $photoUrl = asset($photoPath);
+        } elseif (strpos($photoPath, 'storage/') === 0 || strpos($photoPath, '/storage/') === 0) {
+            // Path already includes storage/, use as-is
+            $photoUrl = asset($photoPath);
+        } elseif (strpos($photoPath, 'http') === 0) {
+            // Full URL, use directly
+            $photoUrl = $photoPath;
+        } else {
+            // Relative path in storage, prepend storage/
+            $photoUrl = asset('storage/' . $photoPath);
+        }
+        
+        if (!in_array($photoUrl, $profileImages)) {
+            $profileImages[] = $photoUrl;
+        }
     }
     
     // Fallback to default image if no images found

@@ -20,7 +20,23 @@
       <input type="file" name="photo" accept="image/*" />
       @if(optional($profile)->photo_path)
         <div class="mt-3 flex items-center gap-4">
-          <img src="{{ asset('storage/'. $profile->photo_path) }}" class="w-24 h-24 rounded-full object-cover" />
+          @php
+              $photoUrl = null;
+              if ($profile->photo_path) {
+                  if (strpos($profile->photo_path, 'images/') === 0) {
+                      $photoUrl = asset($profile->photo_path);
+                  } elseif (strpos($profile->photo_path, 'storage/') === 0 || strpos($profile->photo_path, '/storage/') === 0) {
+                      $photoUrl = asset($profile->photo_path);
+                  } elseif (strpos($profile->photo_path, 'http') === 0) {
+                      $photoUrl = $profile->photo_path;
+                  } else {
+                      $photoUrl = asset('storage/' . $profile->photo_path);
+                  }
+              }
+          @endphp
+          @if($photoUrl)
+          <img src="{{ $photoUrl }}" class="w-24 h-24 rounded-full object-cover" />
+          @endif
           <label class="inline-flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" name="remove_photo" value="1" class="rounded"> Remove current photo</label>
         </div>
       @endif
