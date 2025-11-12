@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ __('app.auth.login') ?? 'Login' }} - {{ config('app.name', 'Portfolio') }}</title>
+        <title>{{ trans('app.auth.login', [], app()->getLocale()) ?: 'Login' }} - {{ config('app.name', 'Portfolio') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -61,7 +61,7 @@
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
-                        {{ __('app.auth.back_to_home') }}
+                        {{ trans('app.auth.back_to_home', [], app()->getLocale()) ?: 'Back to Home' }}
                     </a>
                 </div>
             </div>

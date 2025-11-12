@@ -9,23 +9,28 @@ use App\Models\Lab;
 use App\Models\Category;
 use App\Models\NavLink;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        $userId = Auth::id();
+        
         // dynamic categories from NavLink.category_id; fallback to core counts
-        $categoryCounts = Category::orderBy('position')->get()->map(function($c){
+        $categoryCounts = Category::orderBy('position')->get()->map(function($c) use ($userId) {
             return [
                 'label' => $c->getTranslated('name'),
-                'value' => NavLink::where('category_id', $c->id)->count(),
+                'value' => NavLink::where('category_id', $c->id)
+                    ->where('user_id', $userId)
+                    ->count(),
                 'color' => $c->color,
             ];
         });
         if ($categoryCounts->isEmpty()) {
             $categoryCounts = collect([
-                ['label' => 'Projects', 'value' => Project::count()],
-                ['label' => 'Certificates', 'value' => Certificate::count()],
+                ['label' => 'Projects', 'value' => Project::where('user_id', $userId)->count()],
+                ['label' => 'Certificates', 'value' => Certificate::where('user_id', $userId)->count()],
                 ['label' => 'Labs', 'value' => Lab::count()],
             ]);
         }
@@ -38,7 +43,8 @@ class DashboardController extends Controller
             $labels[] = $month->format('M');
             $start = $month->copy();
             $end = $month->copy()->endOfMonth();
-            $count = NavLink::where(function($q) use ($start, $end) {
+            $count = NavLink::where('user_id', $userId)
+                ->where(function($q) use ($start, $end) {
                     $q->whereBetween('issued_at', [$start, $end])
                       ->orWhere(function($q2) use ($start, $end) {
                           $q2->whereNull('issued_at')->whereBetween('created_at', [$start, $end]);
@@ -49,8 +55,8 @@ class DashboardController extends Controller
         $chart = [ 'labels' => $labels, 'data' => $data ];
 
         // Preserve old keys for the existing view while also sending categories
-        $projects_count = Project::count();
-        $certificates_count = Certificate::count();
+        $projects_count = Project::where('user_id', $userId)->count();
+        $certificates_count = Certificate::where('user_id', $userId)->count();
         $labs_count = Lab::count();
         $overall = [
             'labels' => $categoryCounts->pluck('label')->all(),

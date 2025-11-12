@@ -103,3 +103,4 @@ After seeding, you can:
 - Check database connection
 - Review error messages in `storage/logs/laravel.log`
 
+

@@ -1,7 +1,12 @@
+@php
+    // Debug: Check if translations are loading
+    $testKey = trans('app.auth.create_account', [], app()->getLocale());
+    $locale = app()->getLocale();
+@endphp
 <x-guest-layout>
     <div class="mb-8 text-center">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ __('app.auth.create_account') }}</h2>
-        <p class="text-gray-600">{{ __('app.auth.register_subtitle') }}</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ trans('app.auth.create_account', [], $locale) ?: 'Create Your Account' }}</h2>
+        <p class="text-gray-600">{{ trans('app.auth.register_subtitle', [], $locale) ?: 'Join us and start building your portfolio' }}</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-6">
@@ -10,7 +15,7 @@
         <!-- Name -->
         <div>
             <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('app.auth.name') }}
+                {{ trans('app.auth.name', [], $locale) ?: 'Full Name' }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -26,7 +31,7 @@
                     required 
                     autofocus 
                     autocomplete="name"
-                    placeholder="{{ __('app.auth.name_placeholder') }}"
+                    placeholder="{{ trans('app.auth.name_placeholder', [], $locale) ?: 'Enter your full name' }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -36,7 +41,7 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('app.auth.email') }}
+                {{ trans('app.auth.email', [], $locale) ?: 'Email Address' }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -51,7 +56,7 @@
                     value="{{ old('email') }}" 
                     required 
                     autocomplete="username"
-                    placeholder="{{ __('app.auth.email_placeholder') }}"
+                    placeholder="{{ trans('app.auth.email_placeholder', [], $locale) ?: 'Enter your email' }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -61,7 +66,7 @@
         <!-- Password -->
         <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('app.auth.password') }}
+                {{ trans('app.auth.password', [], $locale) ?: 'Password' }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -75,7 +80,7 @@
                     name="password" 
                     required 
                     autocomplete="new-password"
-                    placeholder="{{ __('app.auth.password_placeholder') }}"
+                    placeholder="{{ trans('app.auth.password_placeholder', [], $locale) ?: 'Enter your password' }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -85,7 +90,7 @@
         <!-- Confirm Password -->
         <div>
             <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('app.auth.confirm_password') }}
+                {{ trans('app.auth.confirm_password', [], $locale) ?: 'Confirm Password' }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -99,7 +104,7 @@
                     name="password_confirmation" 
                     required 
                     autocomplete="new-password"
-                    placeholder="{{ __('app.auth.confirm_password_placeholder') }}"
+                    placeholder="{{ trans('app.auth.confirm_password_placeholder', [], $locale) ?: 'Confirm your password' }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -111,23 +116,23 @@
             type="submit" 
             class="w-full bg-gradient-to-r from-[#ffb400] to-[#ff9500] text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ffb400] focus:ring-offset-2"
         >
-            {{ __('app.auth.register') }}
+            {{ trans('app.auth.register', [], $locale) ?: 'Register' }}
         </button>
     </form>
 
     <!-- Divider -->
     <div class="mt-8 flex items-center">
         <div class="flex-1 border-t border-gray-300"></div>
-        <span class="px-4 text-sm text-gray-500">{{ __('app.auth.or') }}</span>
+        <span class="px-4 text-sm text-gray-500">{{ trans('app.auth.or', [], $locale) ?: 'or' }}</span>
         <div class="flex-1 border-t border-gray-300"></div>
     </div>
 
     <!-- Login Link -->
     <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
-            {{ __('app.auth.already_registered') }}
+            {{ trans('app.auth.already_registered', [], $locale) ?: 'Already registered?' }}
             <a href="{{ route('login') }}" class="font-semibold text-[#ffb400] hover:text-[#ff9500] transition-colors duration-200">
-                {{ __('app.auth.sign_in') }}
+                {{ trans('app.auth.sign_in', [], $locale) ?: 'Sign In' }}
             </a>
         </p>
     </div>

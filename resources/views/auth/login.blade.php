@@ -1,10 +1,13 @@
+@php
+    $locale = app()->getLocale();
+@endphp
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <div class="mb-8 text-center">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ __('app.auth.welcome_back') }}</h2>
-        <p class="text-gray-600">{{ __('app.auth.login_subtitle') }}</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ trans('app.auth.welcome_back', [], $locale) ?: 'Welcome Back' }}</h2>
+        <p class="text-gray-600">{{ trans('app.auth.login_subtitle', [], $locale) ?: 'Sign in to your account to continue' }}</p>
     </div>
 
     <form method="POST" action="{{ route('login') }}" class="space-y-6">
@@ -13,7 +16,7 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('app.auth.email') }}
+                {{ trans('app.auth.email', [], $locale) ?: 'Email Address' }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -29,7 +32,7 @@
                     required 
                     autofocus 
                     autocomplete="username"
-                    placeholder="{{ __('app.auth.email_placeholder') }}"
+                    placeholder="{{ trans('app.auth.email_placeholder', [], $locale) ?: 'Enter your email' }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -39,7 +42,7 @@
         <!-- Password -->
         <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
-                {{ __('app.auth.password') }}
+                {{ trans('app.auth.password', [], $locale) ?: 'Password' }}
             </label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -53,7 +56,7 @@
                     name="password" 
                     required 
                     autocomplete="current-password"
-                    placeholder="{{ __('app.auth.password_placeholder') }}"
+                    placeholder="{{ trans('app.auth.password_placeholder', [], $locale) ?: 'Enter your password' }}"
                     class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#ffb400] focus:border-[#ffb400] transition-all duration-200 text-gray-900 placeholder-gray-400"
                 />
             </div>
@@ -69,7 +72,7 @@
                     name="remember" 
                     class="w-4 h-4 text-[#ffb400] bg-gray-100 border-gray-300 rounded focus:ring-[#ffb400] focus:ring-2"
                 />
-                <span class="ml-2 text-sm text-gray-600">{{ __('app.auth.remember_me') }}</span>
+                <span class="ml-2 text-sm text-gray-600">{{ trans('app.auth.remember_me', [], $locale) ?: 'Remember me' }}</span>
             </label>
 
             @if (Route::has('password.request'))
@@ -77,7 +80,7 @@
                     href="{{ route('password.request') }}" 
                     class="text-sm font-medium text-[#ffb400] hover:text-[#ff9500] transition-colors duration-200"
                 >
-                    {{ __('app.auth.forgot_password') }}
+                    {{ trans('app.auth.forgot_password', [], $locale) ?: 'Forgot your password?' }}
                 </a>
             @endif
         </div>
@@ -87,23 +90,23 @@
             type="submit" 
             class="w-full bg-gradient-to-r from-[#ffb400] to-[#ff9500] text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ffb400] focus:ring-offset-2"
         >
-            {{ __('app.auth.login') }}
+            {{ trans('app.auth.login', [], $locale) ?: 'Log In' }}
         </button>
     </form>
 
     <!-- Divider -->
     <div class="mt-8 flex items-center">
         <div class="flex-1 border-t border-gray-300"></div>
-        <span class="px-4 text-sm text-gray-500">{{ __('app.auth.or') }}</span>
+        <span class="px-4 text-sm text-gray-500">{{ trans('app.auth.or', [], $locale) ?: 'or' }}</span>
         <div class="flex-1 border-t border-gray-300"></div>
     </div>
 
     <!-- Register Link -->
     <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
-            {{ __('app.auth.dont_have_account') }}
+            {{ trans('app.auth.dont_have_account', [], $locale) ?: "Don't have an account?" }}
             <a href="{{ route('register') }}" class="font-semibold text-[#ffb400] hover:text-[#ff9500] transition-colors duration-200">
-                {{ __('app.auth.create_one') }}
+                {{ trans('app.auth.create_one', [], $locale) ?: 'Create one' }}
             </a>
         </p>
     </div>
