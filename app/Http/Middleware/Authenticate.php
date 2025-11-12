@@ -29,18 +29,27 @@ class Authenticate extends Middleware
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
+    /**
+     * Handle an unauthenticated user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  array  $guards
+     * @return void
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
     protected function unauthenticated($request, array $guards)
     {
         // Check if this is an AJAX request - be very specific
         $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest';
         
         if ($isAjax) {
-            // Return JSON response directly instead of throwing exception
-            abort(response()->json([
-                'error' => 'Unauthenticated',
-                'message' => 'Your session has expired. Please log in again.',
-                'redirect' => route('login')
-            ], 401));
+            // Throw exception but with a custom message that exception handler can catch
+            throw new AuthenticationException(
+                'Unauthenticated.',
+                $guards,
+                $this->redirectTo($request)
+            );
         }
 
         // For regular requests, throw exception to trigger redirect
@@ -49,12 +58,6 @@ class Authenticate extends Middleware
             $guards,
             $this->redirectTo($request)
         );
-    }
-    
-    public function handle($request, Closure $next, ...$guards)
-    {
-        // Use parent's handle method which will call our unauthenticated method
-        return parent::handle($request, $next, ...$guards);
     }
 
     /**
