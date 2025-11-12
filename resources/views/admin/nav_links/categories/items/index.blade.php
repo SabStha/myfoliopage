@@ -1786,6 +1786,9 @@
             const modalContent = document.getElementById('create-modal-content');
             const modalTitle = document.getElementById('create-modal-title');
             
+            // Show loading state
+            modalContent.innerHTML = '<div class="flex items-center justify-center py-12"><div class="text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><p class="mt-2 text-gray-600">{{ __('app.admin.categories.loading_form') }}</p></div></div>';
+            
             const typeNames = {
                 'book-page': '{{ __('app.admin.categories.book_page') }}',
                 'code-summary': '{{ __('app.admin.categories.code_summary') }}',
@@ -1809,15 +1812,31 @@
             const navItemId = {{ $nav->id }};
             const routeUrl = routes[type] + (routes[type].includes('?') ? '&' : '?') + 'nav_item_id=' + navItemId;
             
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            if (!csrfToken) {
+                modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600">CSRF token not found. Please refresh the page.</p></div>';
+                return;
+            }
+            
             fetch(routeUrl, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html',
+                    'Accept': 'text/html,application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 credentials: 'same-origin' // Include cookies/session
             })
-            .then(response => {
+            .then(async response => {
+                // Check if we got a 401 Unauthorized response (JSON)
+                if (response.status === 401) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        throw new Error(data.message || 'Session expired - please log in again');
+                    }
+                }
+                
                 // Check if we got redirected (status 302, 301, etc.) or error
                 if (response.redirected || response.status === 302 || response.status === 301) {
                     throw new Error('Redirected - likely authentication required');

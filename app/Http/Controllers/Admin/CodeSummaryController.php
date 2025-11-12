@@ -30,6 +30,14 @@ class CodeSummaryController extends Controller
      */
     public function create(Request $request)
     {
+        // Ensure user is authenticated
+        if (!Auth::check()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Unauthorized', 'message' => 'Please log in to continue'], 401);
+            }
+            return redirect()->route('login');
+        }
+        
         $userId = Auth::id();
         
         // Filter categories and sections if navigation context is provided
