@@ -1,5 +1,12 @@
 <aside x-data="{ open: false }" 
-      @toggle-sidebar.window="open = !open"
+      x-init="
+        window.addEventListener('toggle-sidebar', () => {
+            open = !open;
+        });
+        window.addEventListener('close-sidebar', () => {
+            open = false;
+        });
+      "
       :class="open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
       class="fixed top-0 left-0 h-full w-[280px] bg-white shadow-lg border-r border-gray-200 flex flex-col items-center py-4 sm:py-8 z-50 transition-transform duration-300 ease-in-out">
     @php

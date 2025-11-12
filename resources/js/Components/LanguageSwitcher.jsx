@@ -57,7 +57,7 @@ const LanguageSwitcher = () => {
         <button
             onClick={handleToggle}
             disabled={isChanging}
-            className="fixed top-4 right-4 z-50 bg-[#ffb400] hover:bg-[#e6a200] text-[#111] px-4 py-2 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#ffb400] hover:bg-[#e6a200] text-[#111] px-3 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 font-semibold text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             title={t('language.switch')}
             style={{
                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',

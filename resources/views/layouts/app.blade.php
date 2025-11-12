@@ -20,6 +20,30 @@
             height: 100%;
           }
           [x-cloak] { display: none !important; }
+          
+          /* Ensure translation button doesn't overlap content */
+          #translation-button-root {
+            pointer-events: none;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 30;
+          }
+          
+          #translation-button-root button {
+            pointer-events: auto;
+            max-width: calc(100vw - 2rem);
+          }
+          
+          /* Ensure modals and overlays are above the button */
+          [class*="modal"], [class*="overlay"], [id*="modal"] {
+            z-index: 50 !important;
+          }
+          
+          /* Ensure dropdowns and popovers are above the button */
+          [class*="dropdown"], [class*="popover"] {
+            z-index: 40 !important;
+          }
         </style>
     </head>
     <body class="min-h-screen bg-[#f5f6fa] text-[#111]">
@@ -31,10 +55,17 @@
             @if($isAdmin)
                 {{-- Mobile backdrop overlay --}}
                 <div x-data="{ open: false }" 
-                     @toggle-sidebar.window="open = !open"
+                     x-init="
+                        window.addEventListener('toggle-sidebar', () => {
+                            open = !open;
+                        });
+                        window.addEventListener('close-sidebar', () => {
+                            open = false;
+                        });
+                     "
                      x-show="open"
                      x-cloak
-                     @click="$dispatch('toggle-sidebar')"
+                     @click="open = false; window.dispatchEvent(new CustomEvent('close-sidebar'))"
                      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300"></div>
                 
                 @include('partials.sidebar')
@@ -47,7 +78,7 @@
                     <header class="lg:ml-[280px] sticky top-2 z-30">
                         <div class="mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
                             <div class="flex items-center gap-3">
-                                <button @click="$dispatch('toggle-sidebar')" class="lg:hidden p-2 rounded-lg hover:bg-gray-100">
+                                <button @click="window.dispatchEvent(new CustomEvent('toggle-sidebar'))" class="lg:hidden p-2 rounded-lg hover:bg-gray-100">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                                     </svg>

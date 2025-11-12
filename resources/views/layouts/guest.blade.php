@@ -31,6 +31,30 @@
                 background-size: 400% 400%;
                 animation: gradient-shift 15s ease infinite;
             }
+            
+            /* Ensure translation button doesn't overlap content */
+            #translation-button-root {
+                pointer-events: none;
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
+                z-index: 30;
+            }
+            
+            #translation-button-root button {
+                pointer-events: auto;
+                max-width: calc(100vw - 2rem);
+            }
+            
+            /* Ensure modals and overlays are above the button */
+            [class*="modal"], [class*="overlay"], [id*="modal"] {
+                z-index: 50 !important;
+            }
+            
+            /* Ensure dropdowns and popovers are above the button */
+            [class*="dropdown"], [class*="popover"] {
+                z-index: 40 !important;
+            }
         </style>
     </head>
     <body class="font-sans antialiased">
