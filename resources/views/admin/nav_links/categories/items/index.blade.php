@@ -1942,11 +1942,37 @@
                         }
                     }
                 
-                const form = doc.querySelector('form');
+                // Find the create form - look for forms with expected create form elements, NOT the logout form
+                // For book-page, look for form with book-page specific inputs
+                let form = null;
+                if (type === 'book-page') {
+                    // Find form that contains book-page create form elements
+                    const bookPageForm = doc.querySelector('form input[name="title"], form input[name="book_title"], form textarea[name="summary"]');
+                    if (bookPageForm) {
+                        form = bookPageForm.closest('form');
+                    }
+                } else if (type === 'code-summary') {
+                    const codeSummaryForm = doc.querySelector('form input[name="title"], form textarea[name="summary"]');
+                    if (codeSummaryForm) {
+                        form = codeSummaryForm.closest('form');
+                    }
+                } else if (type === 'certificate') {
+                    const certificateForm = doc.querySelector('form input[name="title"], form input[name="provider"]');
+                    if (certificateForm) {
+                        form = certificateForm.closest('form');
+                    }
+                } else {
+                    // For other types, find any form that's NOT the logout form
+                    const allForms = doc.querySelectorAll('form');
+                    form = Array.from(allForms).find(f => {
+                        const action = f.action || '';
+                        return !action.includes('/logout') && !action.includes('/login');
+                    });
+                }
                 
                 // Verify this is actually a create form, not a login/error form
                 if (form) {
-                    // Check if form action contains login or logout
+                    // Double-check: form action should NOT contain login or logout
                     if (form.action && (form.action.includes('/login') || form.action.includes('/logout'))) {
                         throw new Error('Received login/logout form instead of create form');
                     }
@@ -1959,6 +1985,8 @@
                     } else if (type === 'certificate' && !doc.querySelector('[x-data*="certificateCreate"], input[name="title"], input[name="provider"]')) {
                         throw new Error('Form does not contain expected certificate create form elements');
                     }
+                } else {
+                    throw new Error('Create form not found in response');
                 }
                 
                 if (form) {
