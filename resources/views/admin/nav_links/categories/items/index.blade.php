@@ -1148,6 +1148,63 @@
             'App\\Models\\Certificate': @js($certificatesForJs ?? []),
             'App\\Models\\Course': @js($coursesForJs ?? [])
         };
+
+        function resolveItemTitle(item, fallbackIdentifier = '') {
+            if (!item) return fallbackIdentifier || 'Untitled';
+            if (typeof item.display_title === 'string' && item.display_title.trim().length > 0) {
+                return item.display_title;
+            }
+            if (typeof item.title === 'string') {
+                return item.title;
+            }
+            if (item.title && typeof item.title === 'object') {
+                const titleObj = item.title;
+                const candidates = [
+                    titleObj[currentLocale],
+                    titleObj.en,
+                    titleObj.ja,
+                ].filter(value => typeof value === 'string' && value.trim().length > 0);
+                if (candidates.length > 0) {
+                    return candidates[0];
+                }
+            }
+            if (typeof item.name === 'string' && item.name.trim().length > 0) {
+                return item.name;
+            }
+            if (item.name && typeof item.name === 'object') {
+                const nameObj = item.name;
+                const candidates = [
+                    nameObj[currentLocale],
+                    nameObj.en,
+                    nameObj.ja,
+                ].filter(value => typeof value === 'string' && value.trim().length > 0);
+                if (candidates.length > 0) {
+                    return candidates[0];
+                }
+            }
+            if (typeof item.slug === 'string' && item.slug.trim().length > 0) {
+                return item.slug;
+            }
+            if (typeof fallbackIdentifier === 'string' && fallbackIdentifier.trim().length > 0) {
+                return fallbackIdentifier;
+            }
+            if (typeof item.id !== 'undefined') {
+                return `Item #${item.id}`;
+            }
+            return 'Untitled';
+        }
+
+        function escapeHtml(str) {
+            if (typeof str !== 'string') {
+                return str;
+            }
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
         
         // Auto-populate URLs when Model Type and ID are selected
         function setupAutoUrlPopulate() {
@@ -1212,17 +1269,7 @@
                 // Use slug for BookPage, CodeSummary, Room; use ID for Certificate, Course
                 const identifier = item.slug || item.id;
                 option.value = identifier;
-                let optionTitle = '';
-                if (item.display_title) {
-                    optionTitle = item.display_title;
-                } else if (item.title && typeof item.title === 'object') {
-                    optionTitle = item.title[currentLocale] || item.title.en || item.title.ja || identifier || `Item #${item.id}`;
-                } else if (typeof item.title === 'string') {
-                    optionTitle = item.title;
-                } else {
-                    optionTitle = identifier || `Item #${item.id}`;
-                }
-                option.textContent = optionTitle;
+                option.textContent = resolveItemTitle(item, identifier ? String(identifier) : '');
                 selectElement.appendChild(option);
             });
         }
@@ -1354,8 +1401,11 @@
                     if (data.bookPages && data.bookPages.length > 0) {
                         html += '<div><p class="text-xs font-semibold text-gray-600 uppercase mb-1">Book Pages (' + data.bookPages.length + ')</p>';
                         data.bookPages.forEach(item => {
+                            const identifier = item.slug || item.id;
+                            const title = resolveItemTitle(item, identifier ? String(identifier) : '');
+                            const safeTitle = escapeHtml(title);
                             html += `<div class="flex items-center justify-between p-2 bg-blue-50 rounded text-sm">
-                                <span class="text-gray-900">${item.title}</span>
+                                <span class="text-gray-900">${safeTitle}</span>
                                 <form action="{{ route('admin.sections.detach', ':section') }}" method="POST" class="inline" onsubmit="return confirm('Remove this item from section?')">
                                     @csrf
                                     @method('DELETE')
@@ -1372,8 +1422,11 @@
                     if (data.codeSummaries && data.codeSummaries.length > 0) {
                         html += '<div><p class="text-xs font-semibold text-gray-600 uppercase mb-1">Code Summaries (' + data.codeSummaries.length + ')</p>';
                         data.codeSummaries.forEach(item => {
+                            const identifier = item.slug || item.id;
+                            const title = resolveItemTitle(item, identifier ? String(identifier) : '');
+                            const safeTitle = escapeHtml(title);
                             html += `<div class="flex items-center justify-between p-2 bg-purple-50 rounded text-sm">
-                                <span class="text-gray-900">${item.title}</span>
+                                <span class="text-gray-900">${safeTitle}</span>
                                 <form action="{{ route('admin.sections.detach', ':section') }}" method="POST" class="inline" onsubmit="return confirm('Remove this item from section?')">
                                     @csrf
                                     @method('DELETE')
@@ -1390,8 +1443,11 @@
                     if (data.rooms && data.rooms.length > 0) {
                         html += '<div><p class="text-xs font-semibold text-gray-600 uppercase mb-1">Rooms (' + data.rooms.length + ')</p>';
                         data.rooms.forEach(item => {
+                            const identifier = item.slug || item.id;
+                            const title = resolveItemTitle(item, identifier ? String(identifier) : '');
+                            const safeTitle = escapeHtml(title);
                             html += `<div class="flex items-center justify-between p-2 bg-green-50 rounded text-sm">
-                                <span class="text-gray-900">${item.title}</span>
+                                <span class="text-gray-900">${safeTitle}</span>
                                 <form action="{{ route('admin.sections.detach', ':section') }}" method="POST" class="inline" onsubmit="return confirm('Remove this item from section?')">
                                     @csrf
                                     @method('DELETE')
@@ -1408,8 +1464,11 @@
                     if (data.certificates && data.certificates.length > 0) {
                         html += '<div><p class="text-xs font-semibold text-gray-600 uppercase mb-1">Certificates (' + data.certificates.length + ')</p>';
                         data.certificates.forEach(item => {
+                            const identifier = item.slug || item.id;
+                            const title = resolveItemTitle(item, identifier ? String(identifier) : '');
+                            const safeTitle = escapeHtml(title);
                             html += `<div class="flex items-center justify-between p-2 bg-yellow-50 rounded text-sm">
-                                <span class="text-gray-900">${item.title}</span>
+                                <span class="text-gray-900">${safeTitle}</span>
                                 <form action="{{ route('admin.sections.detach', ':section') }}" method="POST" class="inline" onsubmit="return confirm('Remove this item from section?')">
                                     @csrf
                                     @method('DELETE')
@@ -1426,8 +1485,11 @@
                     if (data.courses && data.courses.length > 0) {
                         html += '<div><p class="text-xs font-semibold text-gray-600 uppercase mb-1">Courses (' + data.courses.length + ')</p>';
                         data.courses.forEach(item => {
+                            const identifier = item.slug || item.id;
+                            const title = resolveItemTitle(item, identifier ? String(identifier) : '');
+                            const safeTitle = escapeHtml(title);
                             html += `<div class="flex items-center justify-between p-2 bg-cyan-50 rounded text-sm">
-                                <span class="text-gray-900">${item.title}</span>
+                                <span class="text-gray-900">${safeTitle}</span>
                                 <form action="{{ route('admin.sections.detach', ':section') }}" method="POST" class="inline" onsubmit="return confirm('Remove this item from section?')">
                                     @csrf
                                     @method('DELETE')
