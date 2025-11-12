@@ -1618,8 +1618,27 @@ Route::get('/debug-auth', function () {
         ] : null,
         'session_id' => session()->getId(),
         'session_data' => session()->all(),
+        'cookies' => request()->cookies->all(),
+        'headers' => [
+            'cookie' => request()->header('Cookie'),
+            'user-agent' => request()->header('User-Agent'),
+        ],
     ]);
 })->name('debug.auth');
+
+// Debug route WITH auth middleware to test if middleware works
+Route::middleware('auth')->get('/debug-auth-protected', function () {
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'user_id' => Auth::id(),
+        'user' => Auth::user() ? [
+            'id' => Auth::user()->id,
+            'name' => Auth::user()->name,
+            'email' => Auth::user()->email,
+        ] : null,
+        'message' => 'This route requires authentication and you accessed it successfully!',
+    ]);
+})->name('debug.auth.protected');
 
 // Admin routes (simple fallback until Filament)
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
