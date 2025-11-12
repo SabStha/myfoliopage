@@ -180,8 +180,80 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span class="truncate">{{ __('app.admin.customize_sidebar') }}</span>
             </a>
+            <form method="POST" action="{{ route('logout') }}" class="w-full">
+                @csrf
+                <button type="submit" class="w-full flex items-center gap-2 sm:gap-3 rounded-xl px-2 sm:px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 text-sm sm:text-base transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    <span class="truncate">{{ __('app.admin.logout') ?: 'Logout' }}</span>
+                </button>
+            </form>
+            <button 
+                type="button" 
+                @click="$dispatch('open-delete-account-modal')"
+                class="w-full flex items-center gap-2 sm:gap-3 rounded-xl px-2 sm:px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 text-sm sm:text-base transition-colors mt-1"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span class="truncate">{{ __('app.admin.delete_account') ?: 'Delete Account' }}</span>
+            </button>
         </div>
     </nav>
 </aside>
+
+{{-- Delete Account Modal --}}
+<div 
+    x-data="{ open: false }"
+    @open-delete-account-modal.window="open = true"
+    x-show="open"
+    x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    style="display: none;"
+    @click.away="open = false"
+>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" @click.stop>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('app.admin.delete_account') ?: 'Delete Account' }}</h3>
+        <p class="text-sm text-gray-600 mb-6">
+            {{ __('app.admin.delete_account_warning') ?: 'Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently deleted.' }}
+        </p>
+        <form method="POST" action="{{ route('profile.destroy') }}" class="space-y-4">
+            @csrf
+            @method('DELETE')
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ __('app.admin.confirm_password') ?: 'Confirm Password' }}
+                </label>
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="password"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="{{ __('app.admin.enter_password_to_confirm') ?: 'Enter your password to confirm' }}"
+                />
+                @error('password', 'userDeletion')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button 
+                    type="button" 
+                    @click="open = false"
+                    class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                    {{ __('app.common.cancel') ?: 'Cancel' }}
+                </button>
+                <button 
+                    type="submit" 
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                    {{ __('app.admin.delete_account') ?: 'Delete Account' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 

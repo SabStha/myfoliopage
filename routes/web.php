@@ -1655,9 +1655,10 @@ Route::get('/rooms/{room:slug}', function (\App\Models\Room $room) {
 Route::view('/timeline', 'pages.timeline')->name('timeline');
 Route::view('/contact', 'pages.contact')->name('contact');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Removed /dashboard route - using /admin/dashboard instead
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -27,6 +27,9 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        
+        // Ensure session is saved
+        $request->session()->save();
 
         // Always redirect to admin dashboard after login
         return redirect(route('admin.dashboard', absolute: false));
