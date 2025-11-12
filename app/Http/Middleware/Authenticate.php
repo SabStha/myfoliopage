@@ -20,40 +20,41 @@ class Authenticate extends Middleware
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function handle($request, Closure $next, ...$guards)
+    /**
+     * Handle an unauthenticated user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  array  $guards
+     * @return void
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
+    protected function unauthenticated($request, array $guards)
     {
-        // Check if user is authenticated
-        if (empty($guards)) {
-            $guards = [null];
-        }
-
-        foreach ($guards as $guard) {
-            if (Auth::guard($guard)->check()) {
-                Auth::shouldUse($guard);
-                return $next($request);
-            }
-        }
-
-        // Check if this is an AJAX request - be more specific
-        // Only check for X-Requested-With header or explicit JSON accept
-        $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest' ||
-                  ($request->expectsJson() && !$request->acceptsHtml());
-
-        // If not authenticated and it's an AJAX request, return JSON directly
+        // Check if this is an AJAX request - be very specific
+        $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest';
+        
         if ($isAjax) {
-            return response()->json([
+            // Return JSON response directly instead of throwing exception
+            abort(response()->json([
                 'error' => 'Unauthenticated',
                 'message' => 'Your session has expired. Please log in again.',
                 'redirect' => route('login')
-            ], 401)->header('Content-Type', 'application/json');
+            ], 401));
         }
 
-        // For regular requests, use parent's unauthenticated method to trigger redirect
+        // For regular requests, throw exception to trigger redirect
         throw new AuthenticationException(
             'Unauthenticated.',
             $guards,
             $this->redirectTo($request)
         );
+    }
+    
+    public function handle($request, Closure $next, ...$guards)
+    {
+        // Use parent's handle method which will call our unauthenticated method
+        return parent::handle($request, $next, ...$guards);
     }
 
     /**

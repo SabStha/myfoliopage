@@ -17,13 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
         $middleware->trustProxies(at: '*');
-        // Use custom Authenticate middleware
+        // Use custom Authenticate middleware - override the default auth middleware
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
-        ]);
-        // Register custom AJAX auth middleware
-        $middleware->alias([
-            'ajax.auth' => \App\Http\Middleware\EnsureAjaxAuth::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
@@ -31,14 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Handle authentication exceptions for AJAX requests
+        // This catches ALL AuthenticationException instances, including from default middleware
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
-            // Check multiple ways if this is an AJAX request
-            $isAjax = $request->expectsJson() || 
-                     $request->ajax() || 
-                     $request->wantsJson() ||
-                     $request->header('X-Requested-With') === 'XMLHttpRequest' ||
-                     str_contains($request->header('Accept', ''), 'application/json') ||
-                     $request->header('Accept') === 'text/html,application/json';
+            // Check if this is an AJAX request - be very specific
+            $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest';
             
             if ($isAjax) {
                 return response()->json([
