@@ -21,6 +21,16 @@ class Authenticate extends Middleware
      */
     protected function unauthenticated($request, array $guards)
     {
+        // Debug logging
+        \Log::info('Authenticate middleware: unauthenticated', [
+            'isAjax' => $request->header('X-Requested-With') === 'XMLHttpRequest',
+            'header' => $request->header('X-Requested-With'),
+            'url' => $request->url(),
+            'session_id' => $request->session()->getId(),
+            'has_session' => $request->hasSession(),
+            'auth_check' => \Illuminate\Support\Facades\Auth::check(),
+        ]);
+        
         // Check if this is an AJAX request - be very specific
         $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest';
         

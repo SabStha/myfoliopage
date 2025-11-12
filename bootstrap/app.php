@@ -29,6 +29,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // Handle authentication exceptions for AJAX requests
         // This catches ALL AuthenticationException instances, including from default middleware
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            // Log for debugging
+            \Log::info('AuthenticationException caught', [
+                'isAjax' => $request->header('X-Requested-With') === 'XMLHttpRequest',
+                'header' => $request->header('X-Requested-With'),
+                'accept' => $request->header('Accept'),
+                'url' => $request->url(),
+                'user' => \Illuminate\Support\Facades\Auth::check() ? \Illuminate\Support\Facades\Auth::id() : null,
+            ]);
+            
             // Check if this is an AJAX request - be very specific
             $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest';
             

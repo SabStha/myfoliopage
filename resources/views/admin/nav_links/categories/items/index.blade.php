@@ -1819,6 +1819,11 @@
                 return;
             }
             
+            // Debug: Log before fetch
+            console.log('Fetching create form:', routeUrl);
+            console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]')?.content);
+            console.log('Cookies:', document.cookie);
+            
             fetch(routeUrl, {
                 method: 'GET',
                 headers: {
