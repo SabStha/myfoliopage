@@ -1812,8 +1812,10 @@
             fetch(routeUrl, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
+                    'Accept': 'text/html',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                credentials: 'same-origin' // Include cookies/session
             })
             .then(response => {
                 // Check if we got redirected (status 302, 301, etc.) or error
@@ -1827,9 +1829,17 @@
             })
             .then(html => {
                 // Check if the response is a login page or error page
-                if (html.includes('login') && html.includes('password') || 
-                    html.includes('Logout') && html.includes('form') && !html.includes('book-page') && !html.includes('code-summary') && !html.includes('certificate')) {
-                    throw new Error('Received login/error page instead of form');
+                // More comprehensive check for login page
+                const isLoginPage = html.includes('login') && (html.includes('password') || html.includes('email') || html.includes('Login')) ||
+                                   html.includes('Forgot your password') ||
+                                   html.includes('Remember me') ||
+                                   (html.includes('Logout') && html.includes('form') && !html.includes('book-page') && !html.includes('code-summary') && !html.includes('certificate') && !html.includes('x-data'));
+                
+                if (isLoginPage) {
+                    // Session likely expired - reload page to trigger login redirect
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '{{ route("login") }}';
+                    throw new Error('Session expired - redirecting to login');
                 }
                 
                 const parser = new DOMParser();
@@ -2226,12 +2236,15 @@
                             }
                     }, 500);
                 } else {
-                    modalContent.innerHTML = '<div class="text-center py-12 text-red-600">{{ __('app.admin.categories.error_loading_form') }}</div>';
+                    modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4">{{ __('app.admin.categories.error_loading_form') }}</p><p class="text-sm text-gray-600">No form found in the response. Please try refreshing the page.</p></div>';
                 }
             })
             .catch(error => {
                 console.error('Error loading form:', error);
-                modalContent.innerHTML = '<div class="text-center py-12 text-red-600">{{ __('app.admin.categories.error_loading_form') }}</div>';
+                const errorMessage = error.message && (error.message.includes('Session expired') || error.message.includes('authentication') || error.message.includes('Redirected')) 
+                    ? '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please log in again.</p><a href="{{ route("login") }}" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Go to Login Page</a></div>'
+                    : '<div class="text-center py-12"><p class="text-red-600 mb-4">{{ __('app.admin.categories.error_loading_form') }}</p><p class="text-sm text-gray-600 mb-4">' + (error.message || 'An unexpected error occurred') + '</p><button onclick="closeModal(\'create-content-modal\')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">Close</button></div>';
+                modalContent.innerHTML = errorMessage;
             });
         }
         
