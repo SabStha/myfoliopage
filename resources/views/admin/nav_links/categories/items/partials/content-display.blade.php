@@ -52,7 +52,7 @@
                         @foreach($bookPages as $bookPage)
                             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-start justify-between mb-2">
-                                    <h4 class="font-semibold text-gray-900">{{ $bookPage->title }}</h4>
+                                    <h4 class="font-semibold text-gray-900">{{ $bookPage->getTranslated('title') ?: $bookPage->slug }}</h4>
                                     <div class="flex items-center gap-2">
                                         <button onclick="openEditContentModal('book-page', '{{ $bookPage->slug }}')" class="text-blue-600 hover:text-blue-700">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,16 +72,16 @@
                                         </form>
                                     </div>
                                 </div>
-                                @if($bookPage->summary)
-                                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ Str::limit($bookPage->summary, 100) }}</p>
+                                @if($bookPage->getTranslated('summary'))
+                                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ Str::limit($bookPage->getTranslated('summary'), 100) }}</p>
                                 @endif
                                 @if($bookPage->sections && $bookPage->sections->isNotEmpty())
                                     <div class="mt-2 pt-2 border-t border-gray-100">
                                         <p class="text-xs text-gray-500 mb-1">{{ __('app.admin.categories.sections_label') }}</p>
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($bookPage->sections as $section)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->title }}">
-                                                    {{ $section->title }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->getTranslated('title') ?: $section->slug }}">
+                                                    {{ $section->getTranslated('title') ?: $section->slug }}
                                                     @if($section->id === $item->id)
                                                         <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -188,8 +188,8 @@
                                         <p class="text-xs text-gray-500 mb-1">{{ __('app.admin.categories.sections_label') }}</p>
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($codeSummary->sections as $section)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->title }}">
-                                                    {{ $section->title }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->getTranslated('title') ?: $section->slug }}">
+                                                    {{ $section->getTranslated('title') ?: $section->slug }}
                                                     @if($section->id === $item->id)
                                                         <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -268,7 +268,7 @@
                         @foreach($rooms as $room)
                             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-start justify-between mb-2">
-                                    <h4 class="font-semibold text-gray-900">{{ $room->title }}</h4>
+                                    <h4 class="font-semibold text-gray-900">{{ $room->getTranslated('title') ?: $room->slug }}</h4>
                                     <div class="flex items-center gap-2">
                                         <button onclick="openEditContentModal('room', '{{ $room->slug }}')" class="text-blue-600 hover:text-blue-700">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,8 +293,8 @@
                                         <p class="text-xs text-gray-500 mb-1">{{ __('app.admin.categories.sections_label') }}</p>
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($room->sections as $section)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->title }}">
-                                                    {{ $section->title }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->getTranslated('title') ?: $section->slug }}">
+                                                    {{ $section->getTranslated('title') ?: $section->slug }}
                                                     @if($section->id === $item->id)
                                                         <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -373,7 +373,7 @@
                         @foreach($certificates as $certificate)
                             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-start justify-between mb-2">
-                                    <h4 class="font-semibold text-gray-900">{{ $certificate->title }}</h4>
+                                    <h4 class="font-semibold text-gray-900">{{ $certificate->getTranslated('title') ?: $certificate->slug }}</h4>
                                     <div class="flex items-center gap-2">
                                         <button onclick="openEditContentModal('certificate', {{ $certificate->id }})" class="text-blue-600 hover:text-blue-700">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -398,8 +398,8 @@
                                         <p class="text-xs text-gray-500 mb-1">{{ __('app.admin.categories.sections_label') }}</p>
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($certificate->sections as $section)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->title }}">
-                                                    {{ $section->title }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->getTranslated('title') ?: $section->slug }}">
+                                                    {{ $section->getTranslated('title') ?: $section->slug }}
                                                     @if($section->id === $item->id)
                                                         <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -478,7 +478,7 @@
                         @foreach($courses as $course)
                             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-start justify-between mb-2">
-                                    <h4 class="font-semibold text-gray-900">{{ $course->title }}</h4>
+                                    <h4 class="font-semibold text-gray-900">{{ $course->getTranslated('title') ?: $course->slug }}</h4>
                                     <div class="flex items-center gap-2">
                                         <button onclick="openEditContentModal('course', {{ $course->id }})" class="text-blue-600 hover:text-blue-700">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -506,8 +506,8 @@
                                         <p class="text-xs text-gray-500 mb-1">{{ __('app.admin.categories.sections_label') }}</p>
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($course->sections as $section)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->title }}">
-                                                    {{ $section->title }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $section->id === $item->id ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700' }}" title="{{ $section->getTranslated('title') ?: $section->slug }}">
+                                                    {{ $section->getTranslated('title') ?: $section->slug }}
                                                     @if($section->id === $item->id)
                                                         <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
