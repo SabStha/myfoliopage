@@ -608,6 +608,71 @@ class NavLinkController extends Controller
         }, function($query) {
             return $query;
         })->orderBy('title')->get(['id', 'title']);
+
+        $currentLocale = app()->getLocale();
+        $bookPagesForJs = $allBookPages->map(function($page) use ($currentLocale) {
+            $titleTranslations = is_array($page->title) ? $page->title : (json_decode($page->title, true) ?? []);
+            $displayTitle = $page->getTranslated('title', $currentLocale) 
+                ?: ($titleTranslations[$currentLocale] ?? $titleTranslations['en'] ?? $titleTranslations['ja'] ?? $page->slug ?? ('Item #' . $page->id));
+            return [
+                'id' => $page->id,
+                'slug' => $page->slug,
+                'title' => $titleTranslations,
+                'display_title' => $displayTitle,
+            ];
+        });
+        $codeSummariesForJs = $allCodeSummaries->map(function($summary) use ($currentLocale) {
+            $titleTranslations = is_array($summary->title) ? $summary->title : (json_decode($summary->title, true) ?? []);
+            $displayTitle = $summary->getTranslated('title', $currentLocale) 
+                ?: ($titleTranslations[$currentLocale] ?? $titleTranslations['en'] ?? $titleTranslations['ja'] ?? $summary->slug ?? ('Item #' . $summary->id));
+            return [
+                'id' => $summary->id,
+                'slug' => $summary->slug,
+                'title' => $titleTranslations,
+                'display_title' => $displayTitle,
+            ];
+        });
+        $roomsForJs = $allRooms->map(function($room) use ($currentLocale) {
+            $titleTranslations = is_array($room->title) ? $room->title : (json_decode($room->title, true) ?? []);
+            $displayTitle = $room->getTranslated('title', $currentLocale) 
+                ?: ($titleTranslations[$currentLocale] ?? $titleTranslations['en'] ?? $titleTranslations['ja'] ?? $room->slug ?? ('Item #' . $room->id));
+            return [
+                'id' => $room->id,
+                'slug' => $room->slug,
+                'title' => $titleTranslations,
+                'display_title' => $displayTitle,
+            ];
+        });
+        $certificatesForJs = $allCertificates->map(function($certificate) use ($currentLocale) {
+            $titleTranslations = is_array($certificate->title) ? $certificate->title : (json_decode($certificate->title, true) ?? []);
+            $displayTitle = method_exists($certificate, 'getTranslated')
+                ? $certificate->getTranslated('title', $currentLocale)
+                : null;
+            if (!is_string($displayTitle) || trim($displayTitle) === '') {
+                $displayTitle = $titleTranslations[$currentLocale] ?? $titleTranslations['en'] ?? $titleTranslations['ja'] ?? ('Certificate #' . $certificate->id);
+            }
+            return [
+                'id' => $certificate->id,
+                'slug' => $certificate->slug ?? null,
+                'title' => $titleTranslations,
+                'display_title' => $displayTitle,
+            ];
+        });
+        $coursesForJs = $allCourses->map(function($course) use ($currentLocale) {
+            $titleTranslations = is_array($course->title) ? $course->title : (json_decode($course->title, true) ?? []);
+            $displayTitle = method_exists($course, 'getTranslated')
+                ? $course->getTranslated('title', $currentLocale)
+                : null;
+            if (!is_string($displayTitle) || trim($displayTitle) === '') {
+                $displayTitle = $titleTranslations[$currentLocale] ?? $titleTranslations['en'] ?? $titleTranslations['ja'] ?? ('Course #' . $course->id);
+            }
+            return [
+                'id' => $course->id,
+                'slug' => $course->slug ?? null,
+                'title' => $titleTranslations,
+                'display_title' => $displayTitle,
+            ];
+        });
         
         // Load content for all sections to display in unified view
         $sectionsWithContent = [];
@@ -631,7 +696,8 @@ class NavLinkController extends Controller
         return view('admin.nav_links.categories.items.index', compact(
             'nav', 'link', 'category', 'navLinks',
             'allBookPages', 'allCodeSummaries', 'allRooms', 'allCertificates', 'allCourses',
-            'sectionsWithContent'
+            'sectionsWithContent',
+            'bookPagesForJs', 'codeSummariesForJs', 'roomsForJs', 'certificatesForJs', 'coursesForJs'
         ));
     }
     

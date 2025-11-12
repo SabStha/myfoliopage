@@ -20,7 +20,7 @@
                             <p class="text-sm text-gray-600">{{ $bookPages->count() }} {{ __('app.admin.categories.items_count') }}</p>
                         </div>
                     </div>
-                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors border border-blue-200">
+                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors border border-blue-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -33,7 +33,7 @@
                     <div class="text-center py-8">
                         <p class="text-gray-500 mb-4">{{ __('app.admin.categories.no_book_pages_yet') }}</p>
                         <div class="flex items-center justify-center gap-3">
-                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-lg transition-colors border border-blue-200">
+                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-lg transition-colors border border-blue-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -96,7 +96,7 @@
                         @endforeach
                     </div>
                     <div class="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-200">
-                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-lg transition-colors border border-blue-200">
+                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-lg transition-colors border border-blue-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -128,7 +128,7 @@
                             <p class="text-sm text-gray-600">{{ $codeSummaries->count() }} {{ __('app.admin.categories.items_count') }}</p>
                         </div>
                     </div>
-                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 transition-colors border border-purple-200">
+                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 transition-colors border border-purple-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -141,7 +141,7 @@
                     <div class="text-center py-8">
                         <p class="text-gray-500 mb-4">{{ __('app.admin.categories.no_code_summaries_yet') }}</p>
                         <div class="flex items-center justify-center gap-3">
-                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-lg transition-colors border border-purple-200">
+                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-lg transition-colors border border-purple-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -204,7 +204,7 @@
                         @endforeach
                     </div>
                     <div class="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-200">
-                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-lg transition-colors border border-purple-200">
+                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-lg transition-colors border border-purple-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -236,7 +236,7 @@
                             <p class="text-sm text-gray-600">{{ $rooms->count() }} {{ __('app.admin.categories.items_count') }}</p>
                         </div>
                     </div>
-                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors border border-green-200">
+                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors border border-green-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -249,7 +249,7 @@
                     <div class="text-center py-8">
                         <p class="text-gray-500 mb-4">{{ __('app.admin.categories.no_rooms_yet') }}</p>
                         <div class="flex items-center justify-center gap-3">
-                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-lg transition-colors border border-green-200">
+                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-lg transition-colors border border-green-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -309,7 +309,7 @@
                         @endforeach
                     </div>
                     <div class="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-200">
-                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-lg transition-colors border border-green-200">
+                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-lg transition-colors border border-green-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -341,7 +341,7 @@
                             <p class="text-sm text-gray-600">{{ $certificates->count() }} {{ __('app.admin.categories.items_count') }}</p>
                         </div>
                     </div>
-                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 transition-colors border border-yellow-200">
+                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 transition-colors border border-yellow-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -354,7 +354,7 @@
                     <div class="text-center py-8">
                         <p class="text-gray-500 mb-4">{{ __('app.admin.categories.no_certificates_yet') }}</p>
                         <div class="flex items-center justify-center gap-3">
-                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-sm font-medium rounded-lg transition-colors border border-yellow-200">
+                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-sm font-medium rounded-lg transition-colors border border-yellow-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -414,7 +414,7 @@
                         @endforeach
                     </div>
                     <div class="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-200">
-                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-sm font-medium rounded-lg transition-colors border border-yellow-200">
+                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-sm font-medium rounded-lg transition-colors border border-yellow-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -446,7 +446,7 @@
                             <p class="text-sm text-gray-600">{{ $courses->count() }} {{ __('app.admin.categories.items_count') }}</p>
                         </div>
                     </div>
-                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-cyan-200">
+                    <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-cyan-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -459,7 +459,7 @@
                     <div class="text-center py-8">
                         <p class="text-gray-500 mb-4">{{ __('app.admin.categories.no_courses_yet') }}</p>
                         <div class="flex items-center justify-center gap-3">
-                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-sm font-medium rounded-lg transition-colors border border-cyan-200">
+                            <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-sm font-medium rounded-lg transition-colors border border-cyan-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -522,7 +522,7 @@
                         @endforeach
                     </div>
                     <div class="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-200">
-                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->title) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-sm font-medium rounded-lg transition-colors border border-cyan-200">
+                        <button onclick="openAddContentModal({{ $item->id }}, {{ json_encode($item->getTranslated('title') ?: $item->slug) }})" class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-sm font-medium rounded-lg transition-colors border border-cyan-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>

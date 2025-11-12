@@ -1036,6 +1036,7 @@
             noContentItemsLinked: @json(__('app.admin.categories.no_content_items_linked')),
             errorLoadingContentItems: @json(__('app.admin.categories.error_loading_content_items')),
         };
+        const currentLocale = @json(app()->getLocale());
         
         function openEditItemModal(id, title, slug, navLinkId, url, summary, downloadUrl, viewUrl, visitUrl, position, imagePath, showTitle, showDescription, showSlug, showButtons, buttonSettings, linkedModelType, linkedModelId) {
             // Handle title - can be string or array
@@ -1141,11 +1142,11 @@
 
         // Available items data
         const availableItems = {
-            'App\\Models\\BookPage': @js($allBookPages ?? []),
-            'App\\Models\\CodeSummary': @js($allCodeSummaries ?? []),
-            'App\\Models\\Room': @js($allRooms ?? []),
-            'App\\Models\\Certificate': @js($allCertificates ?? []),
-            'App\\Models\\Course': @js($allCourses ?? [])
+            'App\\Models\\BookPage': @js($bookPagesForJs ?? []),
+            'App\\Models\\CodeSummary': @js($codeSummariesForJs ?? []),
+            'App\\Models\\Room': @js($roomsForJs ?? []),
+            'App\\Models\\Certificate': @js($certificatesForJs ?? []),
+            'App\\Models\\Course': @js($coursesForJs ?? [])
         };
         
         // Auto-populate URLs when Model Type and ID are selected
@@ -1211,7 +1212,17 @@
                 // Use slug for BookPage, CodeSummary, Room; use ID for Certificate, Course
                 const identifier = item.slug || item.id;
                 option.value = identifier;
-                option.textContent = item.title || `Item #${item.id}`;
+                let optionTitle = '';
+                if (item.display_title) {
+                    optionTitle = item.display_title;
+                } else if (item.title && typeof item.title === 'object') {
+                    optionTitle = item.title[currentLocale] || item.title.en || item.title.ja || identifier || `Item #${item.id}`;
+                } else if (typeof item.title === 'string') {
+                    optionTitle = item.title;
+                } else {
+                    optionTitle = identifier || `Item #${item.id}`;
+                }
+                option.textContent = optionTitle;
                 selectElement.appendChild(option);
             });
         }
