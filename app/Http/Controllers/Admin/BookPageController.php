@@ -113,7 +113,18 @@ class BookPageController extends Controller
         $sectionsByCategory = $sections->groupBy('category_id');
         
         // If this is an AJAX request (for modal), return just the form
-        if ($request->ajax() || $request->wantsJson()) {
+        // Check for AJAX request by checking the X-Requested-With header directly
+        $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->ajax() || $request->wantsJson();
+        
+        \Log::info('BookPageController::create - checking AJAX', [
+            'isAjax' => $isAjax,
+            'ajax_method' => $request->ajax(),
+            'wantsJson' => $request->wantsJson(),
+            'header' => $request->header('X-Requested-With'),
+            'accept' => $request->header('Accept'),
+        ]);
+        
+        if ($isAjax) {
             return view('admin.book-pages.create', compact('categories', 'allTags', 'sections', 'sectionsByCategory'))
                 ->render();
         }
