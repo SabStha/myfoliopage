@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\CheckSessionCookie::class,
         ]);
         $middleware->trustProxies(at: '*');
         // Use custom Authenticate middleware - override the default auth middleware

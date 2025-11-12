@@ -28,11 +28,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
         
-        // Ensure session is saved
+        // Ensure session is saved and committed
+        $request->session()->save();
+        
+        // Force session to be written to storage
+        $request->session()->put('authenticated', true);
         $request->session()->save();
 
         // Always redirect to admin dashboard after login
-        return redirect(route('admin.dashboard', absolute: false));
+        return redirect(route('admin.dashboard', absolute: false))
+            ->withCookie(cookie()->forever('laravel_session_test', 'active'));
     }
 
     /**

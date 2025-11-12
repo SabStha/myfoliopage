@@ -199,7 +199,7 @@ return [
     |
     */
 
-    'same_site' => env('SESSION_SAME_SITE', 'lax'), // 'lax' allows cookies to be sent on top-level navigations
+    'same_site' => env('SESSION_SAME_SITE', 'lax'), // 'lax' allows cookies to be sent on top-level navigations and same-site requests
 
     /*
     |--------------------------------------------------------------------------
