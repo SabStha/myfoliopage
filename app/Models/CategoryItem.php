@@ -11,7 +11,7 @@ class CategoryItem extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'category_id',
+        'user_id', 'category_id',
         'nav_link_id',
         'title',
         'slug',

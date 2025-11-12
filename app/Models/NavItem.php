@@ -11,7 +11,7 @@ class NavItem extends Model
     use HasTranslations;
     
     protected $fillable = [
-        'label', 'route', 'url', 'active_pattern', 'icon_svg', 'position', 'visible',
+        'user_id', 'label', 'route', 'url', 'active_pattern', 'icon_svg', 'position', 'visible',
     ];
 
     protected $casts = [

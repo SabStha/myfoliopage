@@ -12,7 +12,7 @@ class Category extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'name',
+        'user_id', 'name',
         'slug',
         'color',
         'position',

@@ -10,7 +10,7 @@ class Testimonial extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'name', 'company', 'title', 'quote', 'photo_url', 'sns_url', 'position', 'is_published',
+        'user_id', 'name', 'company', 'title', 'quote', 'photo_url', 'sns_url', 'position', 'is_published',
     ];
 
     protected $casts = [

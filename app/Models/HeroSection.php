@@ -10,7 +10,7 @@ class HeroSection extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'background_color',
+        'user_id', 'background_color',
         'badge_text',
         'badge_color',
         'heading_text',

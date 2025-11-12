@@ -10,7 +10,7 @@ class HomePageSection extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'nav_item_id',
+        'user_id', 'nav_item_id',
         'position',
         'text_alignment', // 'left' or 'right'
         'animation_style', // 'grid_editorial_collage', 'list_alternating_cards', 'carousel_scroll_left', 'carousel_scroll_right'

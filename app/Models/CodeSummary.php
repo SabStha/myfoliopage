@@ -11,7 +11,7 @@ class CodeSummary extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'slug', 'code', 'summary', 'language', 'repository_url', 'file_path',
+        'user_id', 'title', 'slug', 'code', 'summary', 'language', 'repository_url', 'file_path',
         // Context & Purpose
         'problem_statement', 'learning_goal', 'use_case',
         // Proof & Reproducibility

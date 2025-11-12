@@ -12,7 +12,7 @@ class NavLink extends Model
     use HasTranslations;
     
     protected $fillable = [
-        'nav_item_id','title','url','proof_url','progress','issued_at','notes','position','category_id','image_path','document_path'
+        'user_id', 'nav_item_id','title','url','proof_url','progress','issued_at','notes','position','category_id','image_path','document_path'
     ];
 
     protected $casts = [

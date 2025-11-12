@@ -12,7 +12,7 @@ class Certificate extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'provider', 'issued_by', 'credential_id', 'verify_url', 
+        'user_id', 'title', 'provider', 'issued_by', 'credential_id', 'verify_url', 
         'issued_at', 'expiry_date', 'has_expiry', 'level', 'learning_hours',
         'learning_outcomes', 'reflection', 'status', 'project_id',
     ];

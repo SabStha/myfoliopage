@@ -11,7 +11,7 @@ class Project extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'slug', 'summary', 'tech_stack', 'repo_url', 'demo_url', 'completed_at',
+        'user_id', 'title', 'slug', 'summary', 'tech_stack', 'repo_url', 'demo_url', 'completed_at',
     ];
     
     protected $casts = [

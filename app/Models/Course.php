@@ -11,7 +11,7 @@ class Course extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'provider', 'course_url', 'instructor_organization', 'difficulty',
+        'user_id', 'title', 'provider', 'course_url', 'instructor_organization', 'difficulty',
         'estimated_hours', 'prerequisites', 'key_skills', 'module_outline',
         'assessments_grading', 'artifacts_assignments', 'highlight_project_title',
         'highlight_project_goal', 'highlight_project_link', 'proof_completion_url',

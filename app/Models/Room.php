@@ -11,7 +11,7 @@ class Room extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'slug', 'description', 'summary', 'platform', 'room_url', 'difficulty', 'completed_at',
+        'user_id', 'title', 'slug', 'description', 'summary', 'platform', 'room_url', 'difficulty', 'completed_at',
         // Learning & Purpose
         'objective_goal', 'key_techniques_used', 'tools_commands_used', 'attack_vector_summary',
         'flag_evidence_proof', 'time_spent', 'reflection_takeaways', 'difficulty_confirmation',

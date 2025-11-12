@@ -11,7 +11,7 @@ class BookPage extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'slug', 'content', 'summary', 'author', 'book_title', 'page_number', 'read_at',
+        'user_id', 'title', 'slug', 'content', 'summary', 'author', 'book_title', 'page_number', 'read_at',
         'key_objectives', 'reflection', 'applied_snippet', 'references',
         'how_to_run', 'result_evidence', 'difficulty', 'time_spent', 'status',
     ];

@@ -11,7 +11,7 @@ class Blog extends Model
 {
     use HasTranslations;
     protected $fillable = [
-        'title', 'slug', 'excerpt', 'content', 'category', 'published_at', 'is_published',
+        'user_id', 'title', 'slug', 'excerpt', 'content', 'category', 'published_at', 'is_published',
         'linkedin_post_id', 'linkedin_url', 'auto_sync_from_linkedin', 'auto_post_to_linkedin',
     ];
 
