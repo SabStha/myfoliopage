@@ -36,8 +36,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->save();
 
         // Always redirect to admin dashboard after login
-        return redirect(route('admin.dashboard', absolute: false))
-            ->withCookie(cookie()->forever('laravel_session_test', 'active'));
+        return redirect(route('admin.dashboard', absolute: false));
     }
 
     /**
