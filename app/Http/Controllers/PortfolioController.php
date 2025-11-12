@@ -80,8 +80,21 @@ class PortfolioController extends Controller
                     $heroProfileImages[] = asset($path);
                 } elseif (strpos($path, 'http') === 0) {
                     $heroProfileImages[] = $path;
+                } elseif (strpos($path, 'images/') === 0) {
+                    // Handle images in public/images directory
+                    $heroProfileImages[] = asset($path);
                 } else {
                     $heroProfileImages[] = asset('storage/' . $path);
+                }
+            }
+        }
+        
+        // If no hero images, try default images from public/images/
+        if (empty($heroProfileImages)) {
+            for ($i = 1; $i <= 3; $i++) {
+                $defaultImage = "images/pp{$i}.jpg";
+                if (file_exists(public_path($defaultImage))) {
+                    $heroProfileImages[] = asset($defaultImage);
                 }
             }
         }
@@ -95,8 +108,21 @@ class PortfolioController extends Controller
                     $profileImages[] = asset($path);
                 } elseif (strpos($path, 'http') === 0) {
                     $profileImages[] = $path;
+                } elseif (strpos($path, 'images/') === 0) {
+                    // Handle images in public/images directory
+                    $profileImages[] = asset($path);
                 } else {
                     $profileImages[] = asset('storage/' . $path);
+                }
+            }
+        }
+        
+        // Also scan for profile images in public/images/ directory (pp1.jpg, pp2.jpg, pp3.jpg)
+        if (empty($profileImages)) {
+            for ($i = 1; $i <= 3; $i++) {
+                $defaultImage = "images/pp{$i}.jpg";
+                if (file_exists(public_path($defaultImage))) {
+                    $profileImages[] = asset($defaultImage);
                 }
             }
         }
