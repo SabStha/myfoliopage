@@ -1868,25 +1868,31 @@
             })
             .then(html => {
                 // Check if the response is a login page or error page
-                // More comprehensive check for login page
-                const isLoginPage = html.includes('login') && (html.includes('password') || html.includes('email') || html.includes('Login')) ||
-                                   html.includes('Forgot your password') ||
-                                   html.includes('Remember me') ||
-                                   (html.includes('Logout') && html.includes('form') && !html.includes('book-page') && !html.includes('code-summary') && !html.includes('certificate') && !html.includes('x-data'));
-                
-                if (isLoginPage) {
-                    // Session likely expired - show error in modal instead of redirecting
-                    modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please refresh the page and log in again.</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
-                    throw new Error('Session expired - login page detected');
-                }
-                
+                // More specific check for login page - must have login form with specific characteristics
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
                 // Check if this looks like a login page by checking for login form
-                const loginForm = doc.querySelector('form[action*="login"], form input[type="password"][name="password"]');
-                if (loginForm) {
-                    // Don't redirect immediately - just show error and close modal
+                // Login form should have action="/login" or action containing "login" AND be the main form (not sidebar logout)
+                const loginForm = doc.querySelector('form[action*="/login"], form[action*="login"]');
+                const passwordInput = doc.querySelector('form input[type="password"][name="password"]');
+                const emailInput = doc.querySelector('form input[type="email"][name="email"]');
+                
+                // Check if it's actually a login page (has login form AND password input AND email input)
+                // AND doesn't have the expected create form elements
+                const hasCreateFormElements = doc.querySelector('input[name="title"], input[name="book_title"], textarea[name="summary"]');
+                const isLoginPage = loginForm && passwordInput && emailInput && !hasCreateFormElements;
+                
+                console.log('Checking for login page:', {
+                    hasLoginForm: !!loginForm,
+                    hasPasswordInput: !!passwordInput,
+                    hasEmailInput: !!emailInput,
+                    hasCreateFormElements: !!hasCreateFormElements,
+                    isLoginPage: isLoginPage
+                });
+                
+                if (isLoginPage) {
+                    // Session likely expired - show error in modal instead of redirecting
                     modalContent.innerHTML = '<div class="text-center py-12"><p class="text-red-600 mb-4 font-semibold text-lg">Session Expired</p><p class="text-sm text-gray-600 mb-4">Your session has expired. Please refresh the page and log in again.</p><button onclick="window.location.reload()" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Refresh Page</button></div>';
                     throw new Error('Received login page instead of create form - session expired');
                 }
