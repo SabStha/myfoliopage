@@ -233,20 +233,42 @@
                 </div>
             `;
             
-            // Fetch the edit form
-            fetch(`{{ route('admin.nav.links.edit', [$nav, ':link']) }}`.replace(':link', linkId), {
+            // Fetch the edit form - ensure we're using the correct route for NavLink, not NavItem
+            const editUrl = `{{ route('admin.nav.links.edit', [$nav, ':link']) }}`.replace(':link', linkId);
+            console.log('Fetching edit form from:', editUrl);
+            
+            fetch(editUrl, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'text/html'
                 }
             })
-            .then(response => response.text())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response URL:', response.url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
             .then(html => {
+                console.log('Received HTML length:', html.length);
+                console.log('HTML preview:', html.substring(0, 200));
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
-                // Find the form
-                const form = doc.querySelector('form');
+                // Verify we got the correct form (NavLink edit form, not NavItem edit form)
+                const form = doc.querySelector('form[action*="nav.links.update"]');
+                if (!form) {
+                    // Check if we got the wrong page
+                    const wrongForm = doc.querySelector('form[action*="nav.update"]');
+                    if (wrongForm) {
+                        console.error('ERROR: Got NavItem edit form instead of NavLink edit form!');
+                        throw new Error('Wrong form returned - got NavItem edit form instead of NavLink edit form');
+                    }
+                    throw new Error('Form not found in response');
+                }
                 
                 if (form) {
                     const originalAction = form.action;

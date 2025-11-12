@@ -93,5 +93,33 @@
         
         {{-- Translation Button --}}
         <div id="translation-button-root"></div>
+        
+        <script>
+            // Suppress browser extension errors (they don't affect functionality)
+            window.addEventListener('error', function(e) {
+                // Ignore errors from browser extensions
+                if (e.filename && (
+                    e.filename.includes('chrome-extension://') ||
+                    e.filename.includes('content_script.js') ||
+                    e.filename.includes('extensionState.js') ||
+                    e.filename.includes('utils.js')
+                )) {
+                    e.preventDefault();
+                    return true;
+                }
+            }, true);
+            
+            // Suppress unhandled promise rejections from extensions
+            window.addEventListener('unhandledrejection', function(e) {
+                const error = e.reason;
+                if (error && error.stack && (
+                    error.stack.includes('chrome-extension://') ||
+                    error.stack.includes('content_script.js')
+                )) {
+                    e.preventDefault();
+                    return true;
+                }
+            });
+        </script>
     </body>
 </html>

@@ -55,19 +55,35 @@ class CodeSummaryController extends Controller
                     ->unique()
                     ->toArray();
                 
-                $categories = Category::where('user_id', $userId)
-                    ->whereIn('id', $navItemCategoryIds)
-                    ->orderBy('name')
-                    ->get();
+                // If nav item has categories, filter by them; otherwise show all
+                if (!empty($navItemCategoryIds)) {
+                    $categories = Category::where('user_id', $userId)
+                        ->whereIn('id', $navItemCategoryIds)
+                        ->orderBy('name')
+                        ->get();
+                    $sections = CategoryItem::where('user_id', $userId)
+                        ->with('category')
+                        ->whereIn('category_id', $navItemCategoryIds)
+                        ->orderBy('category_id')
+                        ->orderBy('position')
+                        ->get();
+                } else {
+                    // Fallback to all categories/sections if nav item has none
+                    $categories = Category::where('user_id', $userId)->orderBy('name')->get();
+                    $sections = CategoryItem::where('user_id', $userId)
+                        ->with('category')
+                        ->orderBy('category_id')
+                        ->orderBy('position')
+                        ->get();
+                }
+            } else {
+                // Nav item not found, show all
+                $categories = Category::where('user_id', $userId)->orderBy('name')->get();
                 $sections = CategoryItem::where('user_id', $userId)
                     ->with('category')
-                    ->whereIn('category_id', $navItemCategoryIds)
                     ->orderBy('category_id')
                     ->orderBy('position')
                     ->get();
-            } else {
-                $categories = collect();
-                $sections = collect();
             }
         } else {
             $categories = Category::where('user_id', $userId)->orderBy('name')->get();

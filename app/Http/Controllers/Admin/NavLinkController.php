@@ -119,8 +119,18 @@ class NavLinkController extends Controller
 
     public function edit(NavItem $nav, NavLink $link, Request $request)
     {
+        // Ensure we're editing a NavLink, not a NavItem
+        if (!$link instanceof \App\Models\NavLink) {
+            abort(404, 'NavLink not found');
+        }
+        
         if ($nav->user_id !== Auth::id() || $link->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access');
+        }
+        
+        // Verify the link belongs to this nav item
+        if ($link->nav_item_id !== $nav->id) {
+            abort(404, 'NavLink does not belong to this NavItem');
         }
         
         $link->load('categories');
@@ -141,7 +151,7 @@ class NavLinkController extends Controller
             ->get();
         
         // If this is an AJAX request (for modal), return just the form content
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return view('admin.nav_links.edit', compact('nav','link','categories'))
                 ->render();
         }
