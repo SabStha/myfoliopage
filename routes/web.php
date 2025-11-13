@@ -689,19 +689,38 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         
         // If we have translations array, prioritize the requested locale
         if ($translations && is_array($translations)) {
+            // Debug: Log what we have
+            \Log::info("Extracting {$field} for locale {$locale}", [
+                'has_ja' => isset($translations['ja']),
+                'has_en' => isset($translations['en']),
+                'ja_empty' => isset($translations['ja']) ? empty(trim($translations['ja'])) : 'N/A',
+                'ja_preview' => isset($translations['ja']) ? substr($translations['ja'], 0, 50) : 'N/A',
+            ]);
+            
             // If requesting Japanese and it exists and is not empty, use it
-            if ($locale === 'ja' && isset($translations['ja']) && !empty(trim($translations['ja'])) && !str_contains($translations['ja'], 'QUERY LENGTH LIMIT')) {
+            if ($locale === 'ja' && isset($translations['ja'])) {
                 $jaContent = $translations['ja'];
-                // Decode if it's a nested JSON string
-                if (is_string($jaContent) && (strpos($jaContent, '{') !== false || strpos($jaContent, '"{') === 0)) {
-                    $decoded = json_decode($jaContent, true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                        $jaContent = $decoded['ja'] ?? $decoded['en'] ?? $jaContent;
+                
+                // Check if it's empty or just whitespace
+                if (!empty(trim($jaContent)) && !str_contains($jaContent, 'QUERY LENGTH LIMIT')) {
+                    // Decode if it's a nested JSON string
+                    if (is_string($jaContent) && (strpos($jaContent, '{') !== false || strpos($jaContent, '"{') === 0)) {
+                        $decoded = json_decode($jaContent, true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                            $jaContent = $decoded['ja'] ?? $decoded['en'] ?? $jaContent;
+                        }
                     }
+                    app()->setLocale($originalLocale);
+                    \Log::info("Returning Japanese content for {$field}", ['length' => strlen($jaContent)]);
+                    return $jaContent;
+                } else {
+                    \Log::warning("Japanese content for {$field} is empty or contains error", [
+                        'empty' => empty(trim($jaContent)),
+                        'has_error' => str_contains($jaContent, 'QUERY LENGTH LIMIT'),
+                    ]);
                 }
-                app()->setLocale($originalLocale);
-                return $jaContent;
             }
+            
             // If requesting English or Japanese is empty, use English
             if (isset($translations['en']) && !empty(trim($translations['en'])) && !str_contains($translations['en'], 'QUERY LENGTH LIMIT')) {
                 $enContent = $translations['en'];
@@ -714,8 +733,12 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
                 }
                 app()->setLocale($originalLocale);
                 // Only return English if we're not specifically requesting Japanese
-                // OR if Japanese doesn't exist
+                // OR if Japanese doesn't exist or is empty
                 if ($locale === 'en' || !isset($translations['ja']) || empty(trim($translations['ja']))) {
+                    \Log::info("Returning English content for {$field} (locale: {$locale})", [
+                        'has_ja' => isset($translations['ja']),
+                        'ja_empty' => isset($translations['ja']) ? empty(trim($translations['ja'])) : true,
+                    ]);
                     return $enContent;
                 }
             }
