@@ -672,7 +672,56 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         $originalLocale = app()->getLocale();
         app()->setLocale($locale);
         
-        // First try getTranslated - this handles array casts properly
+        // Get raw value from database before casting
+        $rawValue = $blog->getRawOriginal($field);
+        
+        // Get the translations array to check what actually exists
+        $translations = null;
+        
+        if (is_string($rawValue)) {
+            $decoded = json_decode($rawValue, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $translations = $decoded;
+            }
+        } elseif (is_array($rawValue)) {
+            $translations = $rawValue;
+        }
+        
+        // If we have translations array, prioritize the requested locale
+        if ($translations && is_array($translations)) {
+            // If requesting Japanese and it exists and is not empty, use it
+            if ($locale === 'ja' && isset($translations['ja']) && !empty(trim($translations['ja'])) && !str_contains($translations['ja'], 'QUERY LENGTH LIMIT')) {
+                $jaContent = $translations['ja'];
+                // Decode if it's a nested JSON string
+                if (is_string($jaContent) && (strpos($jaContent, '{') !== false || strpos($jaContent, '"{') === 0)) {
+                    $decoded = json_decode($jaContent, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $jaContent = $decoded['ja'] ?? $decoded['en'] ?? $jaContent;
+                    }
+                }
+                app()->setLocale($originalLocale);
+                return $jaContent;
+            }
+            // If requesting English or Japanese is empty, use English
+            if (isset($translations['en']) && !empty(trim($translations['en'])) && !str_contains($translations['en'], 'QUERY LENGTH LIMIT')) {
+                $enContent = $translations['en'];
+                // Decode if it's a nested JSON string
+                if (is_string($enContent) && (strpos($enContent, '{') !== false || strpos($enContent, '"{') === 0)) {
+                    $decoded = json_decode($enContent, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $enContent = $decoded['en'] ?? $enContent;
+                    }
+                }
+                app()->setLocale($originalLocale);
+                // Only return English if we're not specifically requesting Japanese
+                // OR if Japanese doesn't exist
+                if ($locale === 'en' || !isset($translations['ja']) || empty(trim($translations['ja']))) {
+                    return $enContent;
+                }
+            }
+        }
+        
+        // Fallback: try getTranslated - this handles array casts properly
         $translated = $blog->getTranslated($field, $locale);
         
         // Restore original locale
@@ -681,9 +730,6 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         if (!empty($translated) && trim($translated) !== '' && !str_contains($translated, 'QUERY LENGTH LIMIT')) {
             return $translated;
         }
-        
-        // Get raw value from database before casting
-        $rawValue = $blog->getRawOriginal($field);
         
         // If null or empty, return empty
         if (is_null($rawValue) || $rawValue === '') {
