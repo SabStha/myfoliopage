@@ -13,11 +13,53 @@
             if (!this.slug) return;
             this.loading = true;
             try {
-                // Get current locale from cookie or default to 'en'
-                const locale = document.cookie.match(/locale=([^;]+)/)?.[1] || 'en';
+                // Get current locale from multiple sources (priority order)
+                let locale = 'en';
+                
+                // Priority 1: URL parameter (most reliable, set by language switcher)
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlLang = urlParams.get('lang');
+                if (urlLang && (urlLang === 'en' || urlLang === 'ja')) {
+                    locale = urlLang;
+                }
+                
+                // Priority 2: Cookie (set by Laravel middleware)
+                if (locale === 'en') {
+                    const cookieMatch = document.cookie.match(/locale=([^;]+)/);
+                    if (cookieMatch) {
+                        const cookieLocale = cookieMatch[1].trim();
+                        if (cookieLocale === 'en' || cookieLocale === 'ja') {
+                            locale = cookieLocale;
+                        }
+                    }
+                }
+                
+                // Priority 3: sessionStorage (set by language switcher)
+                if (locale === 'en') {
+                    const sessionLang = sessionStorage.getItem('locale');
+                    if (sessionLang && (sessionLang === 'en' || sessionLang === 'ja')) {
+                        locale = sessionLang;
+                    }
+                }
+                
+                // Priority 4: localStorage (set by i18n service)
+                if (locale === 'en') {
+                    const localLang = localStorage.getItem('app-locale');
+                    if (localLang && (localLang === 'en' || localLang === 'ja')) {
+                        locale = localLang;
+                    }
+                }
+                
+                // Ensure locale is valid
+                if (locale !== 'en' && locale !== 'ja') {
+                    locale = 'en';
+                }
+                
+                console.log('Loading blog with locale:', locale, 'from slug:', this.slug);
                 const response = await fetch(`/api/blogs/${this.slug}?lang=${locale}`);
                 if (response.ok) {
                     this.blog = await response.json();
+                    console.log('Blog loaded - Title:', this.blog?.title, 'Content length:', this.blog?.content?.length);
                 } else {
                     console.error('Blog not found');
                     this.$dispatch('close-modal', 'blog-detail-modal');
