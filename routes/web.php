@@ -79,19 +79,110 @@ Route::post('/api/translate', function (Request $request) {
     }
     
     // Fallback: Use MyMemory Translation API (free tier)
+    // MyMemory has a 500 character limit, so we need to chunk long text
     try {
-        $url = 'https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=' . $from . '|' . $to;
-        $context = stream_context_create([
-            'http' => [
-                'timeout' => 10,
-                'user_agent' => 'Mozilla/5.0',
-            ]
-        ]);
-        $response = @file_get_contents($url, false, $context);
-        if ($response !== false) {
-            $data = json_decode($response, true);
-            if (isset($data['responseData']['translatedText']) && !empty(trim($data['responseData']['translatedText']))) {
-                return response()->json(['translated' => $data['responseData']['translatedText']]);
+        $maxChunkSize = 450; // Use 450 to be safe (500 limit)
+        $translatedParts = [];
+        
+        // If text is short enough, translate directly
+        if (mb_strlen($text) <= $maxChunkSize) {
+            $url = 'https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=' . $from . '|' . $to;
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'user_agent' => 'Mozilla/5.0',
+                ]
+            ]);
+            $response = @file_get_contents($url, false, $context);
+            if ($response !== false) {
+                $data = json_decode($response, true);
+                if (isset($data['responseData']['translatedText']) && !empty(trim($data['responseData']['translatedText']))) {
+                    $translated = trim($data['responseData']['translatedText']);
+                    // Check if it's an error message
+                    if (stripos($translated, 'QUERY LENGTH LIMIT') === false && 
+                        stripos($translated, 'ERROR') === false &&
+                        stripos($translated, 'EXCEEDED') === false) {
+                        return response()->json(['translated' => $translated]);
+                    }
+                }
+            }
+        } else {
+            // Split text into chunks (try to split at sentence boundaries)
+            $chunks = [];
+            $currentChunk = '';
+            
+            // Split by sentences first (periods, exclamation, question marks)
+            $sentences = preg_split('/([.!?]+\s+)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+            
+            foreach ($sentences as $sentence) {
+                if (mb_strlen($currentChunk . $sentence) <= $maxChunkSize) {
+                    $currentChunk .= $sentence;
+                } else {
+                    if (!empty($currentChunk)) {
+                        $chunks[] = trim($currentChunk);
+                    }
+                    // If single sentence is too long, split by words
+                    if (mb_strlen($sentence) > $maxChunkSize) {
+                        $words = preg_split('/\s+/', $sentence);
+                        $wordChunk = '';
+                        foreach ($words as $word) {
+                            if (mb_strlen($wordChunk . ' ' . $word) <= $maxChunkSize) {
+                                $wordChunk .= ($wordChunk ? ' ' : '') . $word;
+                            } else {
+                                if (!empty($wordChunk)) {
+                                    $chunks[] = trim($wordChunk);
+                                }
+                                $wordChunk = $word;
+                            }
+                        }
+                        if (!empty($wordChunk)) {
+                            $currentChunk = $wordChunk;
+                        } else {
+                            $currentChunk = '';
+                        }
+                    } else {
+                        $currentChunk = $sentence;
+                    }
+                }
+            }
+            
+            if (!empty($currentChunk)) {
+                $chunks[] = trim($currentChunk);
+            }
+            
+            // Translate each chunk
+            foreach ($chunks as $chunk) {
+                if (empty(trim($chunk))) continue;
+                
+                $url = 'https://api.mymemory.translated.net/get?q=' . urlencode($chunk) . '&langpair=' . $from . '|' . $to;
+                $context = stream_context_create([
+                    'http' => [
+                        'timeout' => 10,
+                        'user_agent' => 'Mozilla/5.0',
+                    ]
+                ]);
+                $response = @file_get_contents($url, false, $context);
+                if ($response !== false) {
+                    $data = json_decode($response, true);
+                    if (isset($data['responseData']['translatedText']) && !empty(trim($data['responseData']['translatedText']))) {
+                        $translated = trim($data['responseData']['translatedText']);
+                        // Check if it's an error message
+                        if (stripos($translated, 'QUERY LENGTH LIMIT') === false && 
+                            stripos($translated, 'ERROR') === false &&
+                            stripos($translated, 'EXCEEDED') === false) {
+                            $translatedParts[] = $translated;
+                        } else {
+                            // If we get an error, skip this chunk
+                            \Log::warning('Translation API returned error for chunk: ' . substr($chunk, 0, 50) . '...');
+                        }
+                    }
+                }
+                // Small delay to avoid rate limiting
+                usleep(200000); // 0.2 seconds
+            }
+            
+            if (!empty($translatedParts)) {
+                return response()->json(['translated' => implode(' ', $translatedParts)]);
             }
         }
     } catch (\Exception $e) {

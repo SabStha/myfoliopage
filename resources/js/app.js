@@ -82,11 +82,21 @@ Alpine.data('dualLanguageInput', () => ({
             
             if (response.ok) {
                 const data = await response.json();
-                if (data.translated) {
+                if (data.translated && data.translated.trim() !== '') {
+                    // Check if the translation is an error message
+                    const translated = data.translated.trim();
+                    if (translated.includes('QUERY LENGTH LIMIT') || 
+                        translated.includes('ERROR') || 
+                        translated.includes('EXCEEDED')) {
+                        console.warn('Translation API returned an error message, skipping...');
+                        // Don't update the value if it's an error message
+                        return;
+                    }
+                    
                     if (toLang === 'en') {
-                        this.enValue = data.translated;
+                        this.enValue = translated;
                     } else {
-                        this.jaValue = data.translated;
+                        this.jaValue = translated;
                     }
                 }
             }
