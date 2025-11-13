@@ -24,18 +24,33 @@
                     <form method="POST" action="{{ route('admin.linkedin.import') }}" class="space-y-4">
                         @csrf
                         <div>
-                            <label class="block text-sm mb-1">Post Title <span class="text-red-500">*</span></label>
-                            <input type="text" name="title" value="{{ old('title') }}" class="w-full rounded border-gray-300" required placeholder="e.g., My Daily Learning Journey" />
+                            <x-dual-language-input 
+                                name="title" 
+                                label="Post Title" 
+                                :value="old('title') ? (is_array(old('title')) ? old('title') : ['en' => old('title'), 'ja' => '']) : null"
+                                required="true"
+                            />
                             @error('title')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('title.en')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         
                         <div>
-                            <label class="block text-sm mb-1">Post Content <span class="text-red-500">*</span></label>
-                            <textarea name="content" rows="6" class="w-full rounded border-gray-300" required placeholder="Paste your LinkedIn post content here...">{{ old('content') }}</textarea>
-                            <p class="text-xs text-gray-500 mt-1">Just copy and paste your LinkedIn post text here</p>
+                            <x-dual-language-input 
+                                name="content" 
+                                label="Post Content" 
+                                :value="old('content') ? (is_array(old('content')) ? old('content') : ['en' => old('content'), 'ja' => '']) : null"
+                                rows="6"
+                                required="true"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">Just copy and paste your LinkedIn post text here. Type in English and it will auto-translate to Japanese.</p>
                             @error('content')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('content.en')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
