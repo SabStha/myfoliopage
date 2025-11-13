@@ -82,11 +82,14 @@
           }
           
           .testimonial-card:hover .testimonial-image {
-            transform: scale(1.05);
+            transform: none;
           }
           
           .testimonial-image {
             transition: transform 0.5s ease-in-out;
+            object-fit: contain;
+            object-position: center;
+            background-color: #f5f5f5;
           }
         </style>
         <div class="testimonials-carousel-container" style="width: 200%; display: flex;">
@@ -122,7 +125,8 @@
                   <img 
                     src="{{ $photoUrl }}" 
                     alt="{{ $testimonial->name }}"
-                    class="testimonial-image w-full h-full object-cover"
+                    class="testimonial-image w-full h-full"
+                    style="object-fit: contain; object-position: center; background-color: #f5f5f5;"
                     x-on:error="$el.src='https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70)"
                   />
                 </div>
@@ -185,7 +189,8 @@
                   <img 
                     src="{{ $photoUrl }}" 
                     alt="{{ $testimonial->name }}"
-                    class="testimonial-image w-full h-full object-cover"
+                    class="testimonial-image w-full h-full"
+                    style="object-fit: contain; object-position: center; background-color: #f5f5f5;"
                     x-on:error="$el.src='https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70)"
                   />
                 </div>

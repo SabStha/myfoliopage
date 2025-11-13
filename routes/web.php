@@ -517,11 +517,18 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     
     // Helper function to extract content from various formats
     $extractContent = function($field) use ($blog) {
-        $rawValue = $blog->getAttribute($field); // Get raw attribute before casting
+        // Get raw value from database before casting
+        $rawValue = $blog->getRawOriginal($field) ?? $blog->getAttribute($field);
         
-        // If it's already a string (not JSON), return it
-        if (is_string($rawValue) && !is_numeric($rawValue)) {
-            // Check if it's JSON
+        // If null or empty, return empty
+        if (is_null($rawValue) || $rawValue === '') {
+            // Try getTranslated as fallback
+            $translated = $blog->getTranslated($field);
+            return $translated ?: '';
+        }
+        
+        // If it's already a string, check if it's JSON
+        if (is_string($rawValue)) {
             $decoded = json_decode($rawValue, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 // It's JSON, extract translation
@@ -539,7 +546,7 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
             return $rawValue[$locale] ?? $rawValue['en'] ?? ($rawValue['ja'] ?? '');
         }
         
-        // Try getTranslated as fallback
+        // Try getTranslated as final fallback
         $translated = $blog->getTranslated($field);
         if (!empty($translated) && trim($translated) !== '') {
             return $translated;

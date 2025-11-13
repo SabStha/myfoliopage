@@ -78,10 +78,15 @@
 
                 <!-- Blog Content -->
                 <div class="prose prose-lg dark:prose-invert max-w-none mb-8">
-                    <div 
-                        class="text-gray-800 dark:text-gray-200 leading-relaxed text-base md:text-lg" 
-                        x-html="blog?.content ? blog.content.replace(/\n/g, '<br>') : '<p class=\"text-gray-500 italic\">No content available.</p>'"
-                    ></div>
+                    <template x-if="blog && blog.content">
+                        <div 
+                            class="text-gray-800 dark:text-gray-200 leading-relaxed text-base md:text-lg" 
+                            x-html="blog.content.replace(/\n/g, '<br>')"
+                        ></div>
+                    </template>
+                    <template x-if="!blog || !blog.content">
+                        <p class="text-gray-500 italic">No content available.</p>
+                    </template>
                 </div>
 
                 <!-- Divider -->
