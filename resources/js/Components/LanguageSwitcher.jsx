@@ -66,12 +66,7 @@ const LanguageSwitcher = () => {
             {isChanging ? (
                 <span className="animate-spin">⟳</span>
             ) : (
-                <>
-                    <span>{locale === 'en' ? '🇯🇵 JA' : '🇬🇧 EN'}</span>
-                    <span className="hidden sm:inline">
-                        {locale === 'en' ? t('language.japanese') : t('language.english')}
-                    </span>
-                </>
+                <span>{locale === 'en' ? '日本語' : 'EN'}</span>
             )}
         </button>
     );

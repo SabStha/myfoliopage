@@ -36,14 +36,19 @@
             #translation-button-root {
                 pointer-events: none;
                 position: fixed;
-                top: 1rem;
+                bottom: 1rem;
                 right: 1rem;
                 z-index: 30;
+                margin: 0;
+                padding: 0;
+                max-width: calc(100vw - 2rem);
+                max-height: calc(100vh - 2rem);
             }
             
             #translation-button-root button {
                 pointer-events: auto;
-                max-width: calc(100vw - 2rem);
+                max-width: 100%;
+                max-height: 100%;
             }
             
             /* Ensure modals and overlays are above the button */

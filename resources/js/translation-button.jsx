@@ -90,15 +90,18 @@ const TranslationButton = () => {
     return (
         <>
             <style>{`
-                /* Container: positioned but doesn't block clicks */
+                /* Container: positioned but doesn't block clicks or overlap content */
                 #translation-button-root {
                     position: fixed;
-                    bottom: 0;
-                    right: 0;
-                    z-index: 40;
+                    bottom: 1rem;
+                    right: 1rem;
+                    z-index: 30;
                     pointer-events: none;
-                    padding: 1rem;
                     margin: 0;
+                    padding: 0;
+                    /* Ensure it never overlaps content */
+                    max-width: calc(100vw - 2rem);
+                    max-height: calc(100vh - 2rem);
                 }
                 /* Button: only this element receives clicks */
                 #translation-button-root button {
@@ -109,17 +112,15 @@ const TranslationButton = () => {
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
+                    /* Ensure button doesn't overflow viewport */
+                    max-width: 100%;
+                    max-height: 100%;
                 }
-                /* Ensure button stays in safe corner area */
-                @media (min-width: 641px) {
-                    #translation-button-root {
-                        padding: 1.25rem;
-                    }
-                }
-                /* Mobile: smaller padding and button */
+                /* Mobile: smaller button and more spacing from edges */
                 @media (max-width: 640px) {
                     #translation-button-root {
-                        padding: 0.75rem;
+                        bottom: 0.75rem;
+                        right: 0.75rem;
                     }
                     #translation-button-root button {
                         min-width: 44px !important;
@@ -128,15 +129,22 @@ const TranslationButton = () => {
                         font-size: 0.8125rem !important;
                     }
                 }
+                /* Tablet and up: standard spacing */
+                @media (min-width: 641px) {
+                    #translation-button-root {
+                        bottom: 1.25rem;
+                        right: 1.25rem;
+                    }
+                }
                 /* Lower z-index when modals are open (modals use z-50) */
                 body:has([class*="z-50"]:not([class*="translation"])) #translation-button-root {
-                    z-index: 30;
+                    z-index: 20;
                 }
                 /* Ensure it doesn't interfere with admin sidebar on large screens */
                 @media (min-width: 1024px) {
                     /* Admin pages have sidebar, button stays in corner */
                     body:has([class*="lg:ml-\\[280px\\]"]) #translation-button-root {
-                        right: 0;
+                        right: 1rem;
                     }
                 }
             `}</style>
