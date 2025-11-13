@@ -116,8 +116,12 @@ class BlogController extends Controller
      */
     public function edit(Blog $blog)
     {
-        if ($blog->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized access');
+        // If blog has no owner, assign it to current user (for backward compatibility)
+        if ($blog->user_id === null) {
+            $blog->user_id = Auth::id();
+            $blog->save();
+        } elseif ($blog->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access. This blog belongs to another user.');
         }
         $allTags = Tag::orderBy('name')->get();
         $blogTags = $blog->tags->pluck('name')->join(', ');
