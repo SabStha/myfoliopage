@@ -111,11 +111,11 @@
     }
   </style>
    @if(($heroSection->nav_visible ?? true) && !empty($heroSection->navigation_links))
-   <nav class="absolute right-3 top-3 sm:right-6 sm:top-6 z-30 hidden md:flex items-center gap-4 lg:gap-10 text-gray-700 font-medium text-sm lg:text-base">
+   <nav class="absolute right-3 top-3 sm:right-6 sm:top-6 z-30 hidden md:flex items-center gap-4 lg:gap-10 font-medium text-sm lg:text-base" style="color: {{ $heroSection->navigation_text_color ?? '#374151' }};">
      @foreach($heroSection->getTranslatedNavigationLinks() as $navLink)
        <a href="#{{ $navLink['section_id'] ?? '' }}" 
           onclick="event.preventDefault(); document.getElementById('{{ $navLink['section_id'] ?? '' }}').scrollIntoView({ behavior: 'smooth', block: 'start' });" 
-          class="hover:text-gray-900 transition-colors">
+          class="hover:opacity-80 transition-opacity" style="color: {{ $heroSection->navigation_text_color ?? '#374151' }};">
          {{ $navLink['text'] ?? 'Link' }}
        </a>
      @endforeach
@@ -165,10 +165,10 @@
          $badgeBgColor = $heroSection->badge_color ?? '#ffb400';
        @endphp
        <p class="uppercase tracking-widest {{ $badgeMobileSize }} sm:{{ $badgeTabletSize }} md:{{ $badgeDesktopSize }} font-semibold mb-2 sm:mb-3 md:mb-4 relative z-10 hero-badge-offset" style="color: {{ $badgeTextColor }}; background-color: {{ $badgeBgColor }}; padding: 0.25rem 0.5rem; border-radius: 0.25rem; display: inline-block; transform: translateX({{ $badgeOffset }}px);">{{ $heroSection ? $heroSection->getTranslated('badge_text') : __('app.hero.badge') }}</p>
-      <h1 class="{{ $heroSection->heading_size_mobile ?? 'text-2xl' }} {{ $heroSection->heading_size_tablet ?? 'min-[375px]:text-3xl sm:text-4xl md:text-5xl' }} {{ $heroSection->heading_size_desktop ?? 'lg:text-6xl' }} font-extrabold leading-tight text-gray-900 break-words hyphens-auto">
+      <h1 class="{{ $heroSection->heading_size_mobile ?? 'text-2xl' }} {{ $heroSection->heading_size_tablet ?? 'min-[375px]:text-3xl sm:text-4xl md:text-5xl' }} {{ $heroSection->heading_size_desktop ?? 'lg:text-6xl' }} font-extrabold leading-tight break-words hyphens-auto" style="color: {{ $heroSection->heading_text_color ?? '#111827' }};">
         <span id="typed-head" class="headline" aria-label="{{ $heroSection ? $heroSection->getTranslated('heading_text') : __('app.hero.title') }}"></span>
       </h1>
-      <p class="mt-3 sm:mt-4 md:mt-6 text-xs min-[375px]:text-sm sm:text-base text-gray-500 max-w-full sm:max-w-xl">{{ $heroSection ? $heroSection->getTranslated('subheading_text') : __('app.hero.description') }}</p>
+      <p class="mt-3 sm:mt-4 md:mt-6 text-xs min-[375px]:text-sm sm:text-base max-w-full sm:max-w-xl" style="color: {{ $heroSection->subheading_text_color ?? '#6b7280' }};">{{ $heroSection ? $heroSection->getTranslated('subheading_text') : __('app.hero.description') }}</p>
        <div class="mt-4 sm:mt-6 md:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 md:gap-4">
         @if(($heroSection->button1_visible ?? true))
         <a href="{{ $heroSection->button1_link ?? route('projects') }}" class="inline-flex items-center justify-center px-3 py-2 min-[375px]:px-4 min-[375px]:py-2.5 sm:px-5 sm:py-3 rounded-md font-semibold shadow btn-lift text-xs min-[375px]:text-sm sm:text-base w-full sm:w-auto" style="background-color: {{ $heroSection->button1_bg_color ?? '#ffb400' }}; color: {{ $heroSection->button1_text_color ?? '#111827' }};">{{ $heroSection ? $heroSection->getTranslated('button1_text') : __('app.nav.projects') }}</a>

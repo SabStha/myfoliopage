@@ -141,9 +141,11 @@ class HeroSectionController extends Controller
             'heading_size_mobile' => 'nullable|string|max:50',
             'heading_size_tablet' => 'nullable|string|max:50',
             'heading_size_desktop' => 'nullable|string|max:50',
+            'heading_text_color' => 'nullable|string|max:7',
             'subheading_text' => 'nullable|array',
             'subheading_text.en' => 'nullable|string',
             'subheading_text.ja' => 'nullable|string',
+            'subheading_text_color' => 'nullable|string|max:7',
             'button1_text' => 'nullable|array',
             'button1_text.en' => 'nullable|string|max:255',
             'button1_text.ja' => 'nullable|string|max:255',
@@ -160,6 +162,7 @@ class HeroSectionController extends Controller
             'button2_border_color' => 'nullable|string|max:7',
             'button2_visible' => 'nullable|boolean',
             'nav_visible' => 'nullable|boolean',
+            'navigation_text_color' => 'nullable|string|max:7',
                 'navigation_links' => 'nullable|array',
                 'navigation_links.*.id' => 'nullable|integer',
                 'navigation_links.*.text' => 'required|array',
@@ -281,19 +284,22 @@ class HeroSectionController extends Controller
             'heading_size_mobile' => $data['heading_size_mobile'] ?? $heroSection->heading_size_mobile,
             'heading_size_tablet' => $data['heading_size_tablet'] ?? $heroSection->heading_size_tablet,
             'heading_size_desktop' => $data['heading_size_desktop'] ?? $heroSection->heading_size_desktop,
+            'heading_text_color' => $data['heading_text_color'] ?? $heroSection->heading_text_color ?? '#111827',
             'subheading_text' => $data['subheading_text'] ?? $heroSection->subheading_text,
+            'subheading_text_color' => $data['subheading_text_color'] ?? $heroSection->subheading_text_color ?? '#6b7280',
             'button1_text' => $data['button1_text'] ?? $heroSection->button1_text,
-            'button1_link' => $data['button1_link'] ?? $heroSection->button1_link,
+            'button1_link' => $this->normalizeUrl($data['button1_link'] ?? $heroSection->button1_link),
             'button1_bg_color' => $data['button1_bg_color'] ?? $heroSection->button1_bg_color,
             'button1_text_color' => $data['button1_text_color'] ?? $heroSection->button1_text_color,
             'button1_visible' => $request->has('button1_visible') ? (bool)$request->input('button1_visible') : $heroSection->button1_visible,
             'button2_text' => $data['button2_text'] ?? $heroSection->button2_text,
-            'button2_link' => $data['button2_link'] ?? $heroSection->button2_link,
+            'button2_link' => $this->normalizeUrl($data['button2_link'] ?? $heroSection->button2_link),
             'button2_bg_color' => $data['button2_bg_color'] ?? $heroSection->button2_bg_color,
             'button2_text_color' => $data['button2_text_color'] ?? $heroSection->button2_text_color,
             'button2_border_color' => $data['button2_border_color'] ?? $heroSection->button2_border_color,
             'button2_visible' => $request->has('button2_visible') ? (bool)$request->input('button2_visible') : $heroSection->button2_visible,
             'nav_visible' => isset($data['nav_visible']) ? (bool)$data['nav_visible'] : $heroSection->nav_visible,
+            'navigation_text_color' => $data['navigation_text_color'] ?? $heroSection->navigation_text_color ?? '#374151',
             'navigation_links' => $request->has('navigation_links') ? array_values(array_filter(array_map(function($link) {
                 // Ensure text is an array with en/ja keys
                 if (isset($link['text']) && is_array($link['text'])) {
@@ -362,7 +368,9 @@ class HeroSectionController extends Controller
             'heading_size_mobile' => 'text-4xl',
             'heading_size_tablet' => 'text-5xl',
             'heading_size_desktop' => 'text-6xl',
+            'heading_text_color' => '#111827',
             'subheading_text' => json_encode(['en' => null, 'ja' => null]), // Migration has nullable
+            'subheading_text_color' => '#6b7280',
             'button1_text' => json_encode(['en' => 'Projects', 'ja' => 'プロジェクト']),
             'button1_link' => route('projects'),
             'button1_bg_color' => '#ffb400',
@@ -375,6 +383,7 @@ class HeroSectionController extends Controller
             'button2_border_color' => '#d1d5db',
             'button2_visible' => true,
                 'nav_visible' => true,
+                'navigation_text_color' => '#374151',
                 'navigation_links' => [
                     ['id' => 1, 'text' => ['en' => 'About', 'ja' => ''], 'section_id' => 'discover', 'order' => 1],
                     ['id' => 2, 'text' => ['en' => 'Projects', 'ja' => ''], 'section_id' => 'my-works', 'order' => 2],
@@ -390,5 +399,43 @@ class HeroSectionController extends Controller
         ]);
         
         return redirect()->route('admin.hero.edit')->with('status', '✅ Hero section successfully reset to factory defaults! Background color changed to #e0e7ff (Light Blue-Gray). All uploaded images have been removed.');
+    }
+
+    /**
+     * Normalize URL to ensure it's a valid absolute URL
+     * Adds https:// if missing and handles relative URLs
+     */
+    private function normalizeUrl(?string $url): ?string
+    {
+        if (empty($url)) {
+            return $url;
+        }
+
+        // Trim whitespace
+        $url = trim($url);
+
+        // If it's already a full URL (starts with http:// or https://), return as is
+        if (preg_match('/^https?:\/\//i', $url)) {
+            return $url;
+        }
+
+        // If it starts with //, add https:
+        if (strpos($url, '//') === 0) {
+            return 'https:' . $url;
+        }
+
+        // If it's a relative URL (starts with # or /), return as is (for internal links)
+        if (strpos($url, '#') === 0 || strpos($url, '/') === 0) {
+            return $url;
+        }
+
+        // If it looks like a domain (contains a dot and doesn't start with special chars), add https://
+        // This handles cases like "www.linkedin.com/..." or "linkedin.com/..."
+        if (strpos($url, '.') !== false && !preg_match('/^[#\/]/', $url)) {
+            return 'https://' . $url;
+        }
+
+        // For any other case, return as is (might be a route name or invalid)
+        return $url;
     }
 }

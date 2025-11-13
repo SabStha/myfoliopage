@@ -156,20 +156,36 @@
                         </select>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.text_color') }}</label>
+                    <div class="flex items-center gap-2">
+                        <input type="color" name="heading_text_color" value="{{ old('heading_text_color', $heroSection->heading_text_color ?? '#111827') }}" class="h-10 w-20 rounded border border-gray-300">
+                        <input type="text" value="{{ old('heading_text_color', $heroSection->heading_text_color ?? '#111827') }}" oninput="this.previousElementSibling.value=this.value" class="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="#111827">
+                    </div>
+                </div>
             </div>
         </x-card>
 
         {{-- Subheading Section --}}
         <x-card class="p-6">
             <h2 class="text-xl font-semibold mb-4 text-gray-900">{{ __('app.admin.hero.subheading') }}</h2>
-            <div>
-                <x-dual-language-input 
-                    name="subheading_text" 
-                    label="{{ __('app.admin.hero.subheading_text') }}" 
-                    :value="$heroSection->getTranslations('subheading_text')"
-                    placeholder="Each letter &quot;types in,&quot; like a command line. Feels personal and smart."
-                    :rows="2"
-                />
+            <div class="space-y-4">
+                <div>
+                    <x-dual-language-input 
+                        name="subheading_text" 
+                        label="{{ __('app.admin.hero.subheading_text') }}" 
+                        :value="$heroSection->getTranslations('subheading_text')"
+                        placeholder="Each letter &quot;types in,&quot; like a command line. Feels personal and smart."
+                        :rows="2"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.text_color') }}</label>
+                    <div class="flex items-center gap-2">
+                        <input type="color" name="subheading_text_color" value="{{ old('subheading_text_color', $heroSection->subheading_text_color ?? '#6b7280') }}" class="h-10 w-20 rounded border border-gray-300">
+                        <input type="text" value="{{ old('subheading_text_color', $heroSection->subheading_text_color ?? '#6b7280') }}" oninput="this.previousElementSibling.value=this.value" class="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="#6b7280">
+                    </div>
+                </div>
             </div>
         </x-card>
 
@@ -271,6 +287,13 @@
                     <input type="checkbox" name="nav_visible" value="1" {{ ($heroSection->nav_visible ?? true) ? 'checked' : '' }} class="rounded">
                     <span class="text-sm font-medium text-gray-700">{{ __('app.admin.hero.show_navigation') }}</span>
                 </label>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.text_color') }}</label>
+                <div class="flex items-center gap-2">
+                    <input type="color" name="navigation_text_color" value="{{ old('navigation_text_color', $heroSection->navigation_text_color ?? '#374151') }}" class="h-10 w-20 rounded border border-gray-300">
+                    <input type="text" value="{{ old('navigation_text_color', $heroSection->navigation_text_color ?? '#374151') }}" oninput="this.previousElementSibling.value=this.value" class="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="#374151">
+                </div>
             </div>
             
             <div 
