@@ -114,7 +114,9 @@ return [
     'progress.no_subsections' => 'サブセクションがありません',
     'progress.no_subsections_configured' => 'サブセクションが設定されていません。管理パネルでサブセクションを選択してください。',
     'progress.no_categories' => 'このサブナビゲーションにカテゴリーが割り当てられていません。',
-    'progress.select_category' => '左からカテゴリーを選択してアイテムを表示してください。',
+    'progress.select_category_title' => '探索する準備はできましたか？',
+    'progress.select_category' => '👈 左からカテゴリーを選んで、素晴らしいコンテンツを発見しましょう！',
+    'progress.select_category_hint' => '各カテゴリーには特別なものが待っています ✨',
     'progress.no_items' => 'このカテゴリーにアイテムが見つかりませんでした。',
     
     // Footer

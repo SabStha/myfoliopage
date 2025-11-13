@@ -3225,10 +3225,71 @@ const CertificatesSection = ({
                      
                      // Display placeholder - categories should be selected from the left sidebar
                      return (
-                       <div className="flex items-center justify-center h-full">
-                         <p className="text-neutral-500 text-center">
-                           {window.translations?.progress?.select_category || 'Select a category from the left to view items.'}
+                       <div className="flex flex-col items-center justify-center h-full px-4 py-12">
+                         <div className="relative mb-6">
+                           {/* Animated icon */}
+                           <div className="relative w-24 h-24 mx-auto">
+                             <svg 
+                               className="w-full h-full text-[#ffb400] animate-bounce-slow" 
+                               fill="none" 
+                               stroke="currentColor" 
+                               viewBox="0 0 24 24"
+                               style={{
+                                 animation: 'float 3s ease-in-out infinite',
+                               }}
+                             >
+                               <path 
+                                 strokeLinecap="round" 
+                                 strokeLinejoin="round" 
+                                 strokeWidth={1.5} 
+                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" 
+                               />
+                             </svg>
+                             {/* Decorative circles */}
+                             <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
+                             <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-yellow-300 rounded-full animate-pulse"></div>
+                           </div>
+                         </div>
+                         <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-[#ffb400] to-[#ff9500] bg-clip-text text-transparent">
+                           {window.translations?.progress?.select_category_title || 'Ready to Explore?'}
+                         </h3>
+                         <p className="text-lg md:text-xl text-gray-600 text-center max-w-md mb-2 leading-relaxed">
+                           {window.translations?.progress?.select_category || '👈 Pick a category from the left to discover amazing content!'}
                          </p>
+                         <p className="text-sm text-gray-400 text-center max-w-sm">
+                           {window.translations?.progress?.select_category_hint || 'Each category has something special waiting for you ✨'}
+                         </p>
+                         {/* Animated arrow pointing left */}
+                         <div className="mt-6 flex items-center gap-2 text-[#ffb400] animate-pulse">
+                           <svg 
+                             className="w-6 h-6 animate-bounce-x" 
+                             fill="none" 
+                             stroke="currentColor" 
+                             viewBox="0 0 24 24"
+                             style={{
+                               animation: 'slide-left 1.5s ease-in-out infinite',
+                             }}
+                           >
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                           </svg>
+                           <span className="text-sm font-semibold">Categories</span>
+                         </div>
+                         <style>{`
+                           @keyframes float {
+                             0%, 100% { transform: translateY(0px); }
+                             50% { transform: translateY(-10px); }
+                           }
+                           @keyframes slide-left {
+                             0%, 100% { transform: translateX(0px); }
+                             50% { transform: translateX(-8px); }
+                           }
+                           .animate-bounce-slow {
+                             animation: float 3s ease-in-out infinite;
+                           }
+                           .animate-bounce-x {
+                             animation: slide-left 1.5s ease-in-out infinite;
+                           }
+                         `}</style>
                        </div>
                      );
                    })()

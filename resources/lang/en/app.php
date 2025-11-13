@@ -114,7 +114,9 @@ return [
     'progress.no_subsections' => 'No subsections available',
     'progress.no_subsections_configured' => 'No subsections configured. Please select subsections in the admin panel.',
     'progress.no_categories' => 'No categories assigned to this sub-navigation yet.',
-    'progress.select_category' => 'Select a category from the left to view items.',
+    'progress.select_category_title' => 'Ready to Explore?',
+    'progress.select_category' => '👈 Pick a category from the left to discover amazing content!',
+    'progress.select_category_hint' => 'Each category has something special waiting for you ✨',
     'progress.no_items' => 'No items found in this category.',
     
     // Footer
