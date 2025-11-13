@@ -13,20 +13,89 @@
             </div>
             @endif
 
-            <!-- Tabs -->
-            <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
-                <nav class="flex space-x-8" aria-label="Tabs">
-                    <button onclick="showTab('blogs')" id="tab-blogs" class="tab-button py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
-                        {{ __('app.admin.blog.all_blog_posts') }}
-                    </button>
-                    <button onclick="showTab('linkedin')" id="tab-linkedin" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                        {{ __('app.admin.blog.linkedin_sync') }}
-                    </button>
-                </nav>
+            <!-- Import from LinkedIn Section -->
+            <div class="mb-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-semibold mb-4">📥 Import from LinkedIn</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Copy your LinkedIn post content and paste it here to create a blog post.
+                    </p>
+                    
+                    <form method="POST" action="{{ route('admin.linkedin.import') }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-sm mb-1">Post Title <span class="text-red-500">*</span></label>
+                            <input type="text" name="title" value="{{ old('title') }}" class="w-full rounded border-gray-300" required placeholder="e.g., My Daily Learning Journey" />
+                            @error('title')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm mb-1">Post Content <span class="text-red-500">*</span></label>
+                            <textarea name="content" rows="6" class="w-full rounded border-gray-300" required placeholder="Paste your LinkedIn post content here...">{{ old('content') }}</textarea>
+                            <p class="text-xs text-gray-500 mt-1">Just copy and paste your LinkedIn post text here</p>
+                            @error('content')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm mb-1">LinkedIn Post URL (optional)</label>
+                                <input type="url" name="linkedin_url" value="{{ old('linkedin_url') }}" class="w-full rounded border-gray-300" placeholder="https://www.linkedin.com/feed/update/..." />
+                                <p class="text-xs text-gray-500 mt-1">Copy the URL from your LinkedIn post</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm mb-1">Category (optional)</label>
+                                <input type="text" name="category" value="{{ old('category', 'LinkedIn Post') }}" class="w-full rounded border-gray-300" placeholder="e.g., Daily Learning" />
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm mb-1">Published Date</label>
+                            <input type="date" name="published_at" value="{{ old('published_at', date('Y-m-d')) }}" class="w-full rounded border-gray-300" />
+                        </div>
+                        
+                        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+                            Import as Blog Post
+                        </button>
+                    </form>
+                </div>
             </div>
 
-            <!-- Blog Posts Tab -->
-            <div id="content-blogs" class="tab-content">
+            <!-- Copy for LinkedIn Section -->
+            <div class="mb-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-semibold mb-4">📤 Copy for LinkedIn</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Select a blog post below and click "Copy for LinkedIn" to get formatted text ready to paste.
+                    </p>
+                    
+                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-4">
+                        <label class="block text-sm mb-2">Select a blog post:</label>
+                        <select id="blog-select" class="w-full rounded border-gray-300">
+                            <option value="">Choose a blog post...</option>
+                            @foreach(\App\Models\Blog::where('is_published', true)->where('user_id', Auth::id())->latest('published_at')->get() as $blog)
+                                <option value="{{ $blog->id }}" data-slug="{{ $blog->slug }}">{{ $blog->getTranslated('title') }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <button id="copy-linkedin-btn" onclick="copyToLinkedIn()" disabled class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        📋 Copy for LinkedIn
+                    </button>
+                    
+                    <div id="linkedin-content" class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hidden">
+                        <p class="text-sm font-semibold mb-2">Formatted content (copied to clipboard):</p>
+                        <pre id="linkedin-text" class="text-sm whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Blog Posts -->
+            <div class="mb-6">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <table class="w-full text-sm">
@@ -52,7 +121,12 @@
                                         <td class="py-2">{{ $blog->published_at ? $blog->published_at->format('M d, Y') : '-' }}</td>
                                         <td class="py-2 text-right space-x-2">
                                             @if($blog->linkedin_url)
-                                                <a href="{{ $blog->linkedin_url }}" target="_blank" class="text-blue-600 hover:underline" title="View on LinkedIn">🔗 LinkedIn</a>
+                                                <a href="{{ $blog->linkedin_url }}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded bg-blue-50 text-blue-600 hover:bg-blue-100" title="View on LinkedIn">
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                                    </svg>
+                                                    View LinkedIn
+                                                </a>
                                             @endif
                                             <a href="{{ route('admin.blogs.edit', $blog) }}" class="text-blue-600 hover:underline">{{ __('app.admin.blog.edit') }}</a>
                                             <form method="POST" action="{{ route('admin.blogs.destroy', $blog) }}" class="inline">
@@ -72,181 +146,10 @@
                 </div>
             </div>
 
-            <!-- LinkedIn Sync Tab -->
-            <div id="content-linkedin" class="tab-content hidden space-y-6">
-                <!-- Import from LinkedIn -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <h3 class="text-lg font-semibold mb-4">{{ __('app.admin.blog.import_from_linkedin') }}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            {{ __('app.admin.blog.import_description') }}
-                        </p>
-                        
-                        <form method="POST" action="{{ route('admin.linkedin.import') }}" class="space-y-4">
-                            @csrf
-                            <div>
-                                <label class="block text-sm mb-1">{{ __('app.admin.blog.post_title') }} <span class="text-red-500">*</span></label>
-                                <input type="text" name="title" value="{{ old('title') }}" class="w-full rounded border-gray-300" required placeholder="{{ __('app.admin.blog.post_title_placeholder') }}" />
-                                @error('title')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm mb-1">{{ __('app.admin.blog.post_content') }} <span class="text-red-500">*</span></label>
-                                <textarea name="content" rows="8" class="w-full rounded border-gray-300" required placeholder="{{ __('app.admin.blog.post_content_placeholder') }}">{{ old('content') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.blog.post_content_hint') }}</p>
-                                @error('content')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm mb-1">{{ __('app.admin.blog.linkedin_url') }}</label>
-                                    <input type="url" name="linkedin_url" value="{{ old('linkedin_url') }}" class="w-full rounded border-gray-300" placeholder="{{ __('app.admin.blog.linkedin_url_placeholder') }}" />
-                                    <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.blog.linkedin_url_hint') }}</p>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm mb-1">{{ __('app.admin.blog.category_optional') }}</label>
-                                    <input type="text" name="category" value="{{ old('category', 'LinkedIn Post') }}" class="w-full rounded border-gray-300" placeholder="e.g., Daily Learning" />
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm mb-1">{{ __('app.admin.blog.published_date') }}</label>
-                                <input type="date" name="published_at" value="{{ old('published_at', date('Y-m-d')) }}" class="w-full rounded border-gray-300" />
-                            </div>
-                            
-                            <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
-                                {{ __('app.admin.blog.import_as_blog_post') }}
-                            </button>
-                        </form>
-                        
-                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                            <h4 class="font-semibold text-sm mb-2">{{ __('app.admin.blog.how_to_use') }}</h4>
-                            <ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                                <li>{{ __('app.admin.blog.how_to_1') }}</li>
-                                <li>{{ __('app.admin.blog.how_to_2') }}</li>
-                                <li>{{ __('app.admin.blog.how_to_3') }}</li>
-                                <li>{{ __('app.admin.blog.how_to_4') }}</li>
-                                <li>{{ __('app.admin.blog.how_to_5') }}</li>
-                                <li>{{ __('app.admin.blog.how_to_6') }}</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Copy for LinkedIn -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <h3 class="text-lg font-semibold mb-4">{{ __('app.admin.blog.copy_for_linkedin') }}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            {{ __('app.admin.blog.copy_description') }}
-                        </p>
-                        
-                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-4">
-                            <label class="block text-sm mb-2">{{ __('app.admin.blog.select_blog_post') }}</label>
-                            <select id="blog-select" class="w-full rounded border-gray-300">
-                                <option value="">{{ __('app.admin.blog.choose_blog_post') }}</option>
-                                @foreach(\App\Models\Blog::where('is_published', true)->latest('published_at')->get() as $blog)
-                                    <option value="{{ $blog->id }}" data-slug="{{ $blog->slug }}">{{ $blog->getTranslated('title') }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <button id="copy-linkedin-btn" onclick="copyToLinkedIn()" disabled class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                            {{ __('app.admin.blog.copy_button') }}
-                        </button>
-                        
-                        <div id="linkedin-content" class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hidden">
-                            <p class="text-sm font-semibold mb-2">{{ __('app.admin.blog.formatted_content') }}</p>
-                            <pre id="linkedin-text" class="text-sm whitespace-pre-wrap"></pre>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Previously Imported Posts -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <h3 class="text-lg font-semibold mb-4">{{ __('app.admin.blog.previously_imported') }}</h3>
-                        
-                        @php
-                            $linkedinBlogs = \App\Models\Blog::whereNotNull('linkedin_url')
-                                ->latest('published_at')
-                                ->paginate(15);
-                        @endphp
-                        
-                        @if($linkedinBlogs->count() > 0)
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="text-left border-b border-gray-200 dark:border-gray-700">
-                                        <th class="py-2">{{ __('app.admin.blog.title') }}</th>
-                                        <th class="py-2">{{ __('app.admin.blog.published') }}</th>
-                                        <th class="py-2">{{ __('app.admin.blog.view_on_linkedin') }}</th>
-                                        <th class="py-2"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($linkedinBlogs as $blog)
-                                        <tr class="border-b border-gray-100 dark:border-gray-700">
-                                            <td class="py-2">
-                                                <a href="{{ route('admin.blogs.edit', $blog) }}" class="text-blue-600 hover:underline">
-                                                    {{ $blog->getTranslated('title') }}
-                                                </a>
-                                            </td>
-                                            <td class="py-2">
-                                                {{ $blog->published_at ? $blog->published_at->format('M d, Y') : '-' }}
-                                            </td>
-                                            <td class="py-2">
-                                                @if($blog->linkedin_url)
-                                                    <a href="{{ $blog->linkedin_url }}" target="_blank" class="text-blue-600 hover:underline">
-                                                        {{ __('app.admin.blog.view_on_linkedin') }}
-                                                    </a>
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
-                                            <td class="py-2 text-right">
-                                                <a href="{{ route('admin.blogs.edit', $blog) }}" class="text-blue-600 hover:underline">{{ __('app.admin.blog.edit') }}</a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <div class="mt-4">{{ $linkedinBlogs->links() }}</div>
-                        @else
-                            <p class="text-gray-500">{{ __('app.admin.blog.no_linkedin_posts') }}</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
     <script>
-        function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active styles from all tabs
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('border-blue-500', 'text-blue-600');
-                button.classList.add('border-transparent', 'text-gray-500');
-            });
-            
-            // Show selected tab content
-            document.getElementById('content-' + tabName).classList.remove('hidden');
-            
-            // Add active styles to selected tab
-            const activeTab = document.getElementById('tab-' + tabName);
-            activeTab.classList.remove('border-transparent', 'text-gray-500');
-            activeTab.classList.add('border-blue-500', 'text-blue-600');
-        }
-
         // LinkedIn copy functionality
         const blogSelect = document.getElementById('blog-select');
         const copyBtn = document.getElementById('copy-linkedin-btn');

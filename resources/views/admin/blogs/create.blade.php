@@ -65,6 +65,14 @@
                             </div>
                         </div>
                         <div>
+                            <label class="block text-sm mb-1">LinkedIn Post URL (optional)</label>
+                            <input type="url" name="linkedin_url" value="{{ old('linkedin_url') }}" class="w-full rounded border-gray-300" placeholder="https://www.linkedin.com/feed/update/..." />
+                            <p class="text-xs text-gray-500 mt-1">Add the LinkedIn post URL if this blog is related to a LinkedIn post</p>
+                            @error('linkedin_url')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
                             <label class="block text-sm mb-1">Tags (comma separated)</label>
                             <input name="tags" value="{{ old('tags') }}" class="w-full rounded border-gray-300" placeholder="Laravel, PHP, Security" />
                             <p class="text-xs text-gray-500 mt-1">Enter tags separated by commas</p>

@@ -69,6 +69,19 @@
                             </div>
                         </div>
                         <div>
+                            <label class="block text-sm mb-1">LinkedIn Post URL (optional)</label>
+                            <input type="url" name="linkedin_url" value="{{ old('linkedin_url', $blog->linkedin_url) }}" class="w-full rounded border-gray-300" placeholder="https://www.linkedin.com/feed/update/..." />
+                            <p class="text-xs text-gray-500 mt-1">Add the LinkedIn post URL if this blog is related to a LinkedIn post</p>
+                            @if($blog->linkedin_url)
+                                <p class="text-xs text-blue-600 mt-1">
+                                    <a href="{{ $blog->linkedin_url }}" target="_blank" class="hover:underline">🔗 View LinkedIn Post</a>
+                                </p>
+                            @endif
+                            @error('linkedin_url')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
                             <label class="block text-sm mb-1">Tags (comma separated)</label>
                             <input name="tags" value="{{ old('tags', $blogTags) }}" class="w-full rounded border-gray-300" placeholder="Laravel, PHP, Security" />
                             <p class="text-xs text-gray-500 mt-1">Enter tags separated by commas</p>

@@ -60,6 +60,7 @@ class BlogController extends Controller
             'is_published' => 'boolean',
             'tags' => 'nullable|string',
             'image' => 'nullable|image|max:4096',
+            'linkedin_url' => 'nullable|url|max:500',
         ]);
 
         // Generate slug if not provided (use English title)
@@ -80,6 +81,11 @@ class BlogController extends Controller
 
         $data['is_published'] = $request->has('is_published');
         $data['user_id'] = Auth::id();
+        
+        // Normalize LinkedIn URL if provided
+        if (!empty($data['linkedin_url'])) {
+            $data['linkedin_url'] = $this->normalizeUrl($data['linkedin_url']);
+        }
         
         $blog = Blog::create($data);
 
@@ -153,12 +159,18 @@ class BlogController extends Controller
             'is_published' => 'boolean',
             'tags' => 'nullable|string',
             'image' => 'nullable|image|max:4096',
+            'linkedin_url' => 'nullable|url|max:500',
         ]);
 
         // Process translation fields
         $data = $this->processTranslations($data, $this->getTranslatableFields());
 
         $data['is_published'] = $request->has('is_published');
+        
+        // Normalize LinkedIn URL if provided
+        if (!empty($data['linkedin_url'])) {
+            $data['linkedin_url'] = $this->normalizeUrl($data['linkedin_url']);
+        }
         
         $blog->update($data);
 
@@ -195,5 +207,42 @@ class BlogController extends Controller
         }
         $blog->delete();
         return redirect()->route('admin.blogs.index')->with('status', 'Blog post deleted');
+    }
+
+    /**
+     * Normalize URL to ensure it's a valid absolute URL
+     * Adds https:// if missing and handles relative URLs
+     */
+    private function normalizeUrl(?string $url): ?string
+    {
+        if (empty($url)) {
+            return $url;
+        }
+
+        // Trim whitespace
+        $url = trim($url);
+
+        // If it's already a full URL (starts with http:// or https://), return as is
+        if (preg_match('/^https?:\/\//i', $url)) {
+            return $url;
+        }
+
+        // If it starts with //, add https:
+        if (strpos($url, '//') === 0) {
+            return 'https:' . $url;
+        }
+
+        // If it's a relative URL (starts with # or /), return as is (for internal links)
+        if (strpos($url, '#') === 0 || strpos($url, '/') === 0) {
+            return $url;
+        }
+
+        // If it looks like a domain (contains a dot and doesn't start with special chars), add https://
+        if (strpos($url, '.') !== false && !preg_match('/^[#\/]/', $url)) {
+            return 'https://' . $url;
+        }
+
+        // For any other case, return as is (might be a route name or invalid)
+        return $url;
     }
 }
