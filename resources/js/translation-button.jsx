@@ -90,6 +90,34 @@ const TranslationButton = () => {
     return (
         <>
             <style>{`
+                /* Continuous pulse animation to catch attention */
+                @keyframes pulse-glow {
+                    0%, 100% {
+                        transform: translateY(0) scale(1);
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0 rgba(255, 180, 0, 0.4);
+                    }
+                    50% {
+                        transform: translateY(-4px) scale(1.05);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.12), 0 0 20px rgba(255, 180, 0, 0.6);
+                    }
+                }
+                
+                /* Hover animation - more pronounced */
+                .translation-button-pulse:hover {
+                    animation: pulse-glow-hover 1s ease-in-out infinite;
+                }
+                
+                @keyframes pulse-glow-hover {
+                    0%, 100% {
+                        transform: translateY(-2px) scale(1.08);
+                        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.15), 0 0 30px rgba(255, 180, 0, 0.8);
+                    }
+                    50% {
+                        transform: translateY(-6px) scale(1.12);
+                        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24), 0 4px 10px rgba(0, 0, 0, 0.18), 0 0 40px rgba(255, 180, 0, 1);
+                    }
+                }
+                
                 /* Container: positioned but doesn't block clicks or overlap content */
                 #translation-button-root {
                     position: fixed;
@@ -151,10 +179,11 @@ const TranslationButton = () => {
             <div id="translation-button-root">
                 <button
                     onClick={handleToggle}
-                    className="bg-white dark:bg-gray-800 border-2 border-[#ffb400] hover:bg-[#ffb400] hover:border-[#e6a200] text-[#111] dark:text-gray-100 px-3 py-2 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center font-bold text-sm min-w-[56px] h-[56px] backdrop-blur-sm hover:scale-105 active:scale-95"
+                    className="bg-white dark:bg-gray-800 border-2 border-[#ffb400] hover:bg-[#ffb400] hover:border-[#e6a200] text-[#111] dark:text-gray-100 px-3 py-2 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center font-bold text-sm min-w-[56px] h-[56px] backdrop-blur-sm hover:scale-105 active:scale-95 translation-button-pulse"
                     title={isJapanese ? 'Switch to English' : 'Switch to Japanese'}
                     style={{
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                        animation: 'pulse-glow 2s ease-in-out infinite',
                     }}
                 >
                     <span className="text-base font-bold leading-none">{isJapanese ? 'EN' : '日本語'}</span>
