@@ -499,12 +499,32 @@ Route::get('/api/blogs', function (Request $request) {
         ->map(function($blog) {
             $image = $blog->media->where('type', 'image')->first();
             $publishedAt = $blog->published_at ? $blog->published_at : $blog->created_at;
+            
+            $excerpt = $blog->getTranslated('excerpt');
+            // Filter out error messages from excerpt
+            if (!empty($excerpt) && str_contains($excerpt, 'QUERY LENGTH LIMIT')) {
+                $excerpt = null;
+            }
+            // If excerpt is empty or has errors, generate from content
+            if (empty($excerpt)) {
+                $contentForExcerpt = $blog->getTranslated('content') ?? '';
+                if (!empty($contentForExcerpt) && !str_contains($contentForExcerpt, 'QUERY LENGTH LIMIT')) {
+                    $excerpt = substr(strip_tags($contentForExcerpt), 0, 150) . '...';
+                }
+            }
+            
+            $content = $blog->getTranslated('content');
+            // Filter out error messages from content
+            if (!empty($content) && str_contains($content, 'QUERY LENGTH LIMIT')) {
+                $content = '';
+            }
+            
             return [
                 'id' => $blog->id,
                 'title' => $blog->getTranslated('title'),
                 'slug' => $blog->slug,
-                'excerpt' => $blog->getTranslated('excerpt') ?? substr(strip_tags($blog->getTranslated('content') ?? ''), 0, 150) . '...',
-                'content' => $blog->getTranslated('content'),
+                'excerpt' => $excerpt,
+                'content' => $content,
                 'category' => $blog->category ?? 'Uncategorized',
                 'published_at' => $publishedAt->format('M d, Y'),
                 'published_at_raw' => $publishedAt->toIso8601String(),
@@ -530,13 +550,23 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     $extractContent = function($field) use ($blog) {
         $locale = app()->getLocale();
         
+        // First try getTranslated - this handles array casts properly
+        $translated = $blog->getTranslated($field);
+        if (!empty($translated) && trim($translated) !== '' && !str_contains($translated, 'QUERY LENGTH LIMIT')) {
+            return $translated;
+        }
+        
         // Get raw value from database before casting
         $rawValue = $blog->getRawOriginal($field);
         
-        // If null or empty, try getTranslated
+        // If null or empty, return empty
         if (is_null($rawValue) || $rawValue === '') {
-            $translated = $blog->getTranslated($field);
-            return $translated ?: '';
+            return '';
+        }
+        
+        // Skip if it contains error messages
+        if (is_string($rawValue) && str_contains($rawValue, 'QUERY LENGTH LIMIT')) {
+            return '';
         }
         
         // Helper to decode nested JSON strings recursively
@@ -640,19 +670,19 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
                 // It's JSON, extract translation with fallback
                 // Priority: current locale -> English -> Japanese
                 $content = '';
-                if (!empty($decoded[$locale]) && trim($decoded[$locale]) !== '') {
+                if (!empty($decoded[$locale]) && trim($decoded[$locale]) !== '' && !str_contains($decoded[$locale], 'QUERY LENGTH LIMIT')) {
                     $content = $decoded[$locale];
-                } elseif (!empty($decoded['en']) && trim($decoded['en']) !== '') {
+                } elseif (!empty($decoded['en']) && trim($decoded['en']) !== '' && !str_contains($decoded['en'], 'QUERY LENGTH LIMIT')) {
                     $content = $decoded['en'];
-                } elseif (!empty($decoded['ja']) && trim($decoded['ja']) !== '') {
+                } elseif (!empty($decoded['ja']) && trim($decoded['ja']) !== '' && !str_contains($decoded['ja'], 'QUERY LENGTH LIMIT')) {
                     $content = $decoded['ja'];
                 }
                 
                 // If we have content, try to decode nested JSON
                 if (!empty($content) && is_string($content)) {
                     $finalContent = $decodeNestedJson($content);
-                    // Only return if we got something meaningful
-                    if (!empty($finalContent) && trim($finalContent) !== '') {
+                    // Only return if we got something meaningful and not an error message
+                    if (!empty($finalContent) && trim($finalContent) !== '' && !str_contains($finalContent, 'QUERY LENGTH LIMIT')) {
                         // Decode Unicode escape sequences (\uXXXX)
                         if (strpos($finalContent, '\\u') !== false) {
                             $finalContent = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/i', function ($match) {
@@ -681,19 +711,19 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         if (is_array($rawValue)) {
             $content = '';
             // Priority: current locale -> English -> Japanese
-            if (!empty($rawValue[$locale]) && trim($rawValue[$locale]) !== '') {
+            if (!empty($rawValue[$locale]) && trim($rawValue[$locale]) !== '' && !str_contains($rawValue[$locale], 'QUERY LENGTH LIMIT')) {
                 $content = $rawValue[$locale];
-            } elseif (!empty($rawValue['en']) && trim($rawValue['en']) !== '') {
+            } elseif (!empty($rawValue['en']) && trim($rawValue['en']) !== '' && !str_contains($rawValue['en'], 'QUERY LENGTH LIMIT')) {
                 $content = $rawValue['en'];
-            } elseif (!empty($rawValue['ja']) && trim($rawValue['ja']) !== '') {
+            } elseif (!empty($rawValue['ja']) && trim($rawValue['ja']) !== '' && !str_contains($rawValue['ja'], 'QUERY LENGTH LIMIT')) {
                 $content = $rawValue['ja'];
             }
             
             // If we have content, try to decode nested JSON
             if (!empty($content) && is_string($content)) {
                 $decoded = $decodeNestedJson($content);
-                // Only return if we got something meaningful
-                if (!empty($decoded) && trim($decoded) !== '') {
+                // Only return if we got something meaningful and not an error message
+                if (!empty($decoded) && trim($decoded) !== '' && !str_contains($decoded, 'QUERY LENGTH LIMIT')) {
                     return $decoded;
                 }
             }
@@ -702,23 +732,36 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
             return '';
         }
         
-        // Final fallback: try getTranslated
+        // Final fallback: try getTranslated again
         $translated = $blog->getTranslated($field);
-        return $translated ?: '';
+        if (!empty($translated) && !str_contains($translated, 'QUERY LENGTH LIMIT')) {
+            return $translated;
+        }
+        return '';
     };
     
     // Get content and excerpt
     $content = $extractContent('content');
     $excerpt = $extractContent('excerpt');
     
-    // If content is empty, use excerpt as fallback
-    if (empty($content) || trim($content) === '') {
+    // Clean up excerpt - remove error messages
+    if (!empty($excerpt) && str_contains($excerpt, 'QUERY LENGTH LIMIT')) {
+        $excerpt = '';
+    }
+    
+    // If content is empty, use excerpt as fallback (but not if excerpt has errors)
+    if ((empty($content) || trim($content) === '') && !empty($excerpt) && !str_contains($excerpt, 'QUERY LENGTH LIMIT')) {
         $content = $excerpt;
     }
     
     // Final fallback
-    if (empty($content) || trim($content) === '') {
+    if (empty($content) || trim($content) === '' || str_contains($content, 'QUERY LENGTH LIMIT')) {
         $content = 'No content available.';
+    }
+    
+    // Clean excerpt for display
+    if (!empty($excerpt) && str_contains($excerpt, 'QUERY LENGTH LIMIT')) {
+        $excerpt = '';
     }
     
     return response()->json([
