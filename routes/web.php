@@ -80,16 +80,27 @@ Route::post('/api/translate', function (Request $request) {
     
     // Fallback: Use MyMemory Translation API (free tier)
     try {
-        $response = file_get_contents('https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=' . $from . '|' . $to);
-        $data = json_decode($response, true);
-        if (isset($data['responseData']['translatedText'])) {
-            return response()->json(['translated' => $data['responseData']['translatedText']]);
+        $url = 'https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=' . $from . '|' . $to;
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 10,
+                'user_agent' => 'Mozilla/5.0',
+            ]
+        ]);
+        $response = @file_get_contents($url, false, $context);
+        if ($response !== false) {
+            $data = json_decode($response, true);
+            if (isset($data['responseData']['translatedText']) && !empty(trim($data['responseData']['translatedText']))) {
+                return response()->json(['translated' => $data['responseData']['translatedText']]);
+            }
         }
     } catch (\Exception $e) {
-        // If translation fails, return empty string
+        \Log::warning('Translation API error: ' . $e->getMessage());
     }
     
     // If all else fails, return empty string (user can manually translate)
+    // But log it so we know translations are failing
+    \Log::info('Translation failed for text: ' . substr($text, 0, 100) . '... from ' . $from . ' to ' . $to);
     return response()->json(['translated' => '']);
 })->name('api.translate');
 
@@ -605,6 +616,7 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
             $decoded = json_decode($rawValue, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 // It's JSON, extract translation with fallback
+                // Priority: current locale -> English -> Japanese
                 $content = '';
                 if (!empty($decoded[$locale]) && trim($decoded[$locale]) !== '') {
                     $content = $decoded[$locale];
@@ -614,13 +626,17 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
                     $content = $decoded['ja'];
                 }
                 
-                // Always try to decode nested JSON if content is a string
+                // If we have content, try to decode nested JSON
                 if (!empty($content) && is_string($content)) {
                     $finalContent = $decodeNestedJson($content);
-                    return $finalContent;
+                    // Only return if we got something meaningful
+                    if (!empty($finalContent) && trim($finalContent) !== '') {
+                        return $finalContent;
+                    }
                 }
                 
-                return $content;
+                // Return empty string if no content found
+                return '';
             } else {
                 // It's a plain string, but might be a quoted JSON string
                 $decoded = $decodeNestedJson($rawValue);
@@ -634,6 +650,7 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         // If it's an array (after casting), extract translation
         if (is_array($rawValue)) {
             $content = '';
+            // Priority: current locale -> English -> Japanese
             if (!empty($rawValue[$locale]) && trim($rawValue[$locale]) !== '') {
                 $content = $rawValue[$locale];
             } elseif (!empty($rawValue['en']) && trim($rawValue['en']) !== '') {
@@ -642,13 +659,17 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
                 $content = $rawValue['ja'];
             }
             
-            // Always try to decode nested JSON if content is a string
+            // If we have content, try to decode nested JSON
             if (!empty($content) && is_string($content)) {
                 $decoded = $decodeNestedJson($content);
-                return $decoded;
+                // Only return if we got something meaningful
+                if (!empty($decoded) && trim($decoded) !== '') {
+                    return $decoded;
+                }
             }
             
-            return $content;
+            // Return empty string if no content found
+            return '';
         }
         
         // Final fallback: try getTranslated
