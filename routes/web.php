@@ -517,90 +517,143 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     
     // Helper function to extract content from various formats
     $extractContent = function($field) use ($blog) {
-        // Try getTranslated first (handles most cases)
-        $translated = $blog->getTranslated($field);
-        if (!empty($translated) && trim($translated) !== '') {
-            return $translated;
-        }
+        $locale = app()->getLocale();
         
         // Get raw value from database before casting
         $rawValue = $blog->getRawOriginal($field);
         
-        // If null or empty, return empty
+        // If null or empty, try getTranslated
         if (is_null($rawValue) || $rawValue === '') {
-            return '';
+            $translated = $blog->getTranslated($field);
+            return $translated ?: '';
         }
+        
+        // Helper to decode nested JSON strings recursively
+        $decodeNestedJson = function($str, $maxDepth = 5) use ($locale, &$decodeNestedJson) {
+            if (!is_string($str) || $maxDepth <= 0) return $str;
+            
+            $trimmed = trim($str);
+            // Check if it looks like JSON
+            if (strpos($trimmed, '{') === false && strpos($trimmed, '"{') !== 0 && strpos($trimmed, '"{\\"') !== 0) {
+                return $str; // Not JSON, return as-is
+            }
+            
+            // Strategy 1: Try direct JSON decode
+            $decoded = json_decode($str, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $result = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                // If result is still a JSON string, decode recursively
+                if (is_string($result) && $result !== $str) {
+                    return $decodeNestedJson($result, $maxDepth - 1);
+                }
+                return $result;
+            }
+            
+            // Strategy 2: If it's a quoted JSON string, remove outer quotes
+            if (preg_match('/^"(.+)"$/s', $str, $matches)) {
+                $inner = $matches[1];
+                // Unescape the inner string
+                $inner = str_replace(['\\"', '\\n', '\\r', '\\t', '\\\\', '\\u'], ['"', "\n", "\r", "\t", '\\', '\\u'], $inner);
+                $decoded = json_decode($inner, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $result = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                    // If result is still a JSON string, decode recursively
+                    if (is_string($result) && $result !== $inner) {
+                        return $decodeNestedJson($result, $maxDepth - 1);
+                    }
+                    return $result;
+                }
+            }
+            
+            // Strategy 3: Try unescaping the entire string
+            $unescaped = stripslashes($str);
+            if ($unescaped !== $str) {
+                $decoded = json_decode($unescaped, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $result = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                    // If result is still a JSON string, decode recursively
+                    if (is_string($result) && $result !== $unescaped) {
+                        return $decodeNestedJson($result, $maxDepth - 1);
+                    }
+                    return $result;
+                }
+            }
+            
+            // Strategy 4: Try removing escaped quotes and decode
+            if (strpos($str, '\\"') !== false) {
+                $unquoted = str_replace('\\"', '"', $str);
+                // Remove outer quotes if present
+                if (preg_match('/^"(.+)"$/s', $unquoted, $matches)) {
+                    $unquoted = $matches[1];
+                }
+                $decoded = json_decode($unquoted, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $result = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                    // If result is still a JSON string, decode recursively
+                    if (is_string($result) && $result !== $unquoted) {
+                        return $decodeNestedJson($result, $maxDepth - 1);
+                    }
+                    return $result;
+                }
+            }
+            
+            return $str; // Return original if can't decode
+        };
         
         // If it's already a string, check if it's JSON
         if (is_string($rawValue)) {
-            // Try to decode JSON (might be double-encoded or escaped)
             $decoded = json_decode($rawValue, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                // It's JSON, extract translation
-                $locale = app()->getLocale();
-                $content = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
-                
-                // If content is still a JSON string (double-encoded), decode it again
-                if (is_string($content)) {
-                    $trimmed = trim($content);
-                    // Check if it looks like a JSON string (starts with { or quoted {)
-                    if (strpos($trimmed, '{') !== false || strpos($trimmed, '"{') === 0 || strpos($trimmed, '"{\\"') === 0) {
-                        // Try direct decode first
-                        $doubleDecoded = json_decode($content, true);
-                        if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
-                            $locale = app()->getLocale();
-                            return $doubleDecoded[$locale] ?? $doubleDecoded['en'] ?? ($doubleDecoded['ja'] ?? '');
-                        }
-                        
-                        // If content starts and ends with quotes, remove them
-                        if (preg_match('/^"(.+)"$/s', $content, $matches)) {
-                            $inner = $matches[1];
-                            // Unescape the inner string
-                            $inner = str_replace('\\"', '"', $inner);
-                            $inner = str_replace('\\n', "\n", $inner);
-                            $inner = str_replace('\\r', "\r", $inner);
-                            $inner = str_replace('\\t', "\t", $inner);
-                            $inner = str_replace('\\\\', '\\', $inner);
-                            
-                            $doubleDecoded = json_decode($inner, true);
-                            if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
-                                $locale = app()->getLocale();
-                                return $doubleDecoded[$locale] ?? $doubleDecoded['en'] ?? ($doubleDecoded['ja'] ?? '');
-                            }
-                        }
-                        
-                        // Try unescaping the entire string
-                        $unescaped = stripslashes($content);
-                        $doubleDecoded = json_decode($unescaped, true);
-                        if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
-                            $locale = app()->getLocale();
-                            return $doubleDecoded[$locale] ?? $doubleDecoded['en'] ?? ($doubleDecoded['ja'] ?? '');
-                        }
-                    }
+                // It's JSON, extract translation with fallback
+                $content = '';
+                if (!empty($decoded[$locale]) && trim($decoded[$locale]) !== '') {
+                    $content = $decoded[$locale];
+                } elseif (!empty($decoded['en']) && trim($decoded['en']) !== '') {
+                    $content = $decoded['en'];
+                } elseif (!empty($decoded['ja']) && trim($decoded['ja']) !== '') {
+                    $content = $decoded['ja'];
                 }
+                
+                // Always try to decode nested JSON if content is a string
+                if (!empty($content) && is_string($content)) {
+                    $finalContent = $decodeNestedJson($content);
+                    return $finalContent;
+                }
+                
                 return $content;
             } else {
-                // It's a plain string, return as-is
+                // It's a plain string, but might be a quoted JSON string
+                $decoded = $decodeNestedJson($rawValue);
+                if ($decoded !== $rawValue) {
+                    return $decoded;
+                }
                 return $rawValue;
             }
         }
         
         // If it's an array (after casting), extract translation
         if (is_array($rawValue)) {
-            $locale = app()->getLocale();
-            $content = $rawValue[$locale] ?? $rawValue['en'] ?? ($rawValue['ja'] ?? '');
-            // Check if content is a JSON string that needs decoding
-            if (is_string($content) && (strpos($content, '{"') === 0 || strpos($content, '"{') === 0)) {
-                $decoded = json_decode($content, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $locale = app()->getLocale();
-                    return $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
-                }
+            $content = '';
+            if (!empty($rawValue[$locale]) && trim($rawValue[$locale]) !== '') {
+                $content = $rawValue[$locale];
+            } elseif (!empty($rawValue['en']) && trim($rawValue['en']) !== '') {
+                $content = $rawValue['en'];
+            } elseif (!empty($rawValue['ja']) && trim($rawValue['ja']) !== '') {
+                $content = $rawValue['ja'];
             }
+            
+            // Always try to decode nested JSON if content is a string
+            if (!empty($content) && is_string($content)) {
+                $decoded = $decodeNestedJson($content);
+                return $decoded;
+            }
+            
             return $content;
         }
         
-        return '';
+        // Final fallback: try getTranslated
+        $translated = $blog->getTranslated($field);
+        return $translated ?: '';
     };
     
     // Get content and excerpt
