@@ -137,7 +137,7 @@
                                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.996 2.151c-2.432.917-3.996 3.638-3.996 7.151h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.432.917-3.996 3.638-3.996 7.151h4v10h-10z"/>
                             </svg>
                             <blockquote class="flex-1">
-                                <p class="text-lg md:text-xl lg:text-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-medium" x-html="testimonial ? ('&quot;' + (testimonial.quote || '{{ __('app.testimonials.no_quote_available') }}') + '&quot;') : '&quot;{{ __('app.testimonials.no_quote_available') }}&quot;'"></p>
+                                <p class="text-lg md:text-xl lg:text-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-medium" x-html="testimonial && testimonial.quote ? ('&quot;' + testimonial.quote.replace(/\n/g, '<br>') + '&quot;') : '&quot;{{ __('app.testimonials.no_quote_available') }}&quot;'"></p>
                             </blockquote>
                         </div>
                     </div>

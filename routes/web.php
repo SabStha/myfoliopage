@@ -515,28 +515,51 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     $image = $blog->media->where('type', 'image')->first();
     $publishedAt = $blog->published_at ? $blog->published_at : $blog->created_at;
     
-    // Get content with fallback to excerpt if content is empty
-    $content = $blog->getTranslated('content');
-    $excerpt = $blog->getTranslated('excerpt');
+    // Helper function to extract content from various formats
+    $extractContent = function($field) use ($blog) {
+        $rawValue = $blog->getAttribute($field); // Get raw attribute before casting
+        
+        // If it's already a string (not JSON), return it
+        if (is_string($rawValue) && !is_numeric($rawValue)) {
+            // Check if it's JSON
+            $decoded = json_decode($rawValue, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                // It's JSON, extract translation
+                $locale = app()->getLocale();
+                return $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+            } else {
+                // It's a plain string, return as-is
+                return $rawValue;
+            }
+        }
+        
+        // If it's an array (after casting), extract translation
+        if (is_array($rawValue)) {
+            $locale = app()->getLocale();
+            return $rawValue[$locale] ?? $rawValue['en'] ?? ($rawValue['ja'] ?? '');
+        }
+        
+        // Try getTranslated as fallback
+        $translated = $blog->getTranslated($field);
+        if (!empty($translated) && trim($translated) !== '') {
+            return $translated;
+        }
+        
+        return '';
+    };
+    
+    // Get content and excerpt
+    $content = $extractContent('content');
+    $excerpt = $extractContent('excerpt');
     
     // If content is empty, use excerpt as fallback
     if (empty($content) || trim($content) === '') {
         $content = $excerpt;
     }
     
-    // If still empty, try to get from raw content field
+    // Final fallback
     if (empty($content) || trim($content) === '') {
-        $rawContent = $blog->content;
-        if (is_array($rawContent)) {
-            $content = $rawContent[app()->getLocale()] ?? $rawContent['en'] ?? '';
-        } elseif (is_string($rawContent)) {
-            $decoded = json_decode($rawContent, true);
-            if (is_array($decoded)) {
-                $content = $decoded[app()->getLocale()] ?? $decoded['en'] ?? '';
-            } else {
-                $content = $rawContent;
-            }
-        }
+        $content = 'No content available.';
     }
     
     return response()->json([
@@ -544,7 +567,7 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         'title' => $blog->getTranslated('title') ?: 'Untitled',
         'slug' => $blog->slug,
         'excerpt' => $excerpt,
-        'content' => $content ?: 'No content available.',
+        'content' => $content,
         'category' => $blog->category ?? 'Uncategorized',
         'published_at' => $publishedAt->format('M d, Y'),
         'published_at_raw' => $publishedAt->toIso8601String(),
@@ -566,12 +589,42 @@ Route::get('/api/testimonials/{testimonial}', function (\App\Models\Testimonial 
         $mainPhoto = asset('storage/' . $images->first()->path);
     }
     
+    // Helper function to extract translatable content
+    $extractTranslatable = function($field) use ($testimonial) {
+        $rawValue = $testimonial->getAttribute($field);
+        
+        // If it's already a string (not JSON), return it
+        if (is_string($rawValue) && !is_numeric($rawValue)) {
+            $decoded = json_decode($rawValue, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $locale = app()->getLocale();
+                return $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+            } else {
+                return $rawValue;
+            }
+        }
+        
+        // If it's an array (after casting), extract translation
+        if (is_array($rawValue)) {
+            $locale = app()->getLocale();
+            return $rawValue[$locale] ?? $rawValue['en'] ?? ($rawValue['ja'] ?? '');
+        }
+        
+        // Try getTranslated as fallback
+        $translated = $testimonial->getTranslated($field);
+        if (!empty($translated) && trim($translated) !== '') {
+            return $translated;
+        }
+        
+        return '';
+    };
+    
     return response()->json([
         'id' => $testimonial->id,
         'name' => $testimonial->name,
-        'company' => $testimonial->company,
+        'company' => $extractTranslatable('company'),
         'title' => $testimonial->title,
-        'quote' => $testimonial->quote,
+        'quote' => $extractTranslatable('quote'),
         'sns_url' => $testimonial->sns_url,
         'mainPhoto' => $mainPhoto,
         'images' => $images->map(fn($m) => asset('storage/' . $m->path))->values()->all(),
