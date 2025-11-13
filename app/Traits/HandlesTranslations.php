@@ -16,18 +16,20 @@ trait HandlesTranslations
     {
         foreach ($translatableFields as $field) {
             if (isset($data[$field]) && is_array($data[$field])) {
-                // Convert array to JSON
+                // Normalize array format - ensure en and ja keys exist
+                // Don't JSON encode here - let Laravel's array cast handle it
                 $translations = [
                     'en' => $data[$field]['en'] ?? '',
                     'ja' => $data[$field]['ja'] ?? '',
                 ];
-                $data[$field] = json_encode($translations);
+                $data[$field] = $translations;
             } elseif (isset($data[$field]) && is_string($data[$field])) {
-                // If it's already a string (legacy), convert to JSON
-                $data[$field] = json_encode([
+                // If it's already a string (legacy), convert to array format
+                // Laravel's array cast will JSON encode it automatically
+                $data[$field] = [
                     'en' => $data[$field],
                     'ja' => '',
-                ]);
+                ];
             }
         }
         

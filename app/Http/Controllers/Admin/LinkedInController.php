@@ -40,10 +40,7 @@ class LinkedInController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        // Process translation fields
-        $data = $this->processTranslations($data, ['title', 'content', 'excerpt']);
-
-        // Generate slug from English title
+        // Generate slug from English title (before processing translations)
         $titleForSlug = is_array($data['title']) ? ($data['title']['en'] ?? '') : $data['title'];
         $slug = Str::slug($titleForSlug);
         $counter = 1;
@@ -52,19 +49,21 @@ class LinkedInController extends Controller
             $counter++;
         }
 
-        // Create excerpt from English content
+        // Create excerpt from English content (before processing translations)
         $contentForExcerpt = is_array($data['content']) ? ($data['content']['en'] ?? '') : $data['content'];
         $excerptText = strip_tags($contentForExcerpt);
         if (strlen($excerptText) > 200) {
             $excerptText = substr($excerptText, 0, 200) . '...';
         }
         
-        // Create excerpt in same format as content (JSON with translations)
-        $excerpt = [
+        // Add excerpt to data as array (will be processed by processTranslations)
+        $data['excerpt'] = [
             'en' => $excerptText,
             'ja' => '', // Will be auto-translated if needed
         ];
-        $data['excerpt'] = json_encode($excerpt);
+        
+        // Process translation fields (converts arrays to proper format for Laravel casts)
+        $data = $this->processTranslations($data, ['title', 'content', 'excerpt']);
 
         $blog = Blog::create([
             'title' => $data['title'],
@@ -78,7 +77,7 @@ class LinkedInController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('admin.blogs.index#list')->with('status', 'Blog post imported from LinkedIn successfully! You can now edit it from the list.');
+        return redirect()->route('admin.blogs.index')->with('status', 'Blog post imported from LinkedIn successfully! You can now edit it from the list.');
     }
     
     /**
