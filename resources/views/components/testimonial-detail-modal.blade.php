@@ -95,11 +95,12 @@
             <div class="px-6 py-8">
                 <!-- Photo Slideshow -->
                 <div x-show="getCurrentImage()" class="mb-8 -mx-6 relative" @mouseenter="stopSlideshow()" @mouseleave="startSlideshow()">
-                    <div class="w-full min-h-[200px] max-h-[400px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 relative">
+                    <div class="w-full min-h-[200px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 relative py-4">
                         <img 
                             :src="getCurrentImage()" 
                             :alt="testimonial && testimonial.name ? testimonial.name : '{{ __('app.testimonials.name_not_available') }}'"
-                            class="max-w-full max-h-full w-auto h-auto object-contain transition-opacity duration-500"
+                            class="max-w-full w-auto h-auto object-contain transition-opacity duration-500"
+                            style="max-height: 500px; object-fit: contain; object-position: center;"
                             x-show="getCurrentImage()"
                         />
                         <!-- Image indicators -->

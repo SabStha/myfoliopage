@@ -517,23 +517,68 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     
     // Helper function to extract content from various formats
     $extractContent = function($field) use ($blog) {
+        // Try getTranslated first (handles most cases)
+        $translated = $blog->getTranslated($field);
+        if (!empty($translated) && trim($translated) !== '') {
+            return $translated;
+        }
+        
         // Get raw value from database before casting
-        $rawValue = $blog->getRawOriginal($field) ?? $blog->getAttribute($field);
+        $rawValue = $blog->getRawOriginal($field);
         
         // If null or empty, return empty
         if (is_null($rawValue) || $rawValue === '') {
-            // Try getTranslated as fallback
-            $translated = $blog->getTranslated($field);
-            return $translated ?: '';
+            return '';
         }
         
         // If it's already a string, check if it's JSON
         if (is_string($rawValue)) {
+            // Try to decode JSON (might be double-encoded or escaped)
             $decoded = json_decode($rawValue, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 // It's JSON, extract translation
                 $locale = app()->getLocale();
-                return $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                $content = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                
+                // If content is still a JSON string (double-encoded), decode it again
+                if (is_string($content)) {
+                    $trimmed = trim($content);
+                    // Check if it looks like a JSON string (starts with { or quoted {)
+                    if (strpos($trimmed, '{') !== false || strpos($trimmed, '"{') === 0 || strpos($trimmed, '"{\\"') === 0) {
+                        // Try direct decode first
+                        $doubleDecoded = json_decode($content, true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
+                            $locale = app()->getLocale();
+                            return $doubleDecoded[$locale] ?? $doubleDecoded['en'] ?? ($doubleDecoded['ja'] ?? '');
+                        }
+                        
+                        // If content starts and ends with quotes, remove them
+                        if (preg_match('/^"(.+)"$/s', $content, $matches)) {
+                            $inner = $matches[1];
+                            // Unescape the inner string
+                            $inner = str_replace('\\"', '"', $inner);
+                            $inner = str_replace('\\n', "\n", $inner);
+                            $inner = str_replace('\\r', "\r", $inner);
+                            $inner = str_replace('\\t', "\t", $inner);
+                            $inner = str_replace('\\\\', '\\', $inner);
+                            
+                            $doubleDecoded = json_decode($inner, true);
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
+                                $locale = app()->getLocale();
+                                return $doubleDecoded[$locale] ?? $doubleDecoded['en'] ?? ($doubleDecoded['ja'] ?? '');
+                            }
+                        }
+                        
+                        // Try unescaping the entire string
+                        $unescaped = stripslashes($content);
+                        $doubleDecoded = json_decode($unescaped, true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
+                            $locale = app()->getLocale();
+                            return $doubleDecoded[$locale] ?? $doubleDecoded['en'] ?? ($doubleDecoded['ja'] ?? '');
+                        }
+                    }
+                }
+                return $content;
             } else {
                 // It's a plain string, return as-is
                 return $rawValue;
@@ -543,13 +588,16 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
         // If it's an array (after casting), extract translation
         if (is_array($rawValue)) {
             $locale = app()->getLocale();
-            return $rawValue[$locale] ?? $rawValue['en'] ?? ($rawValue['ja'] ?? '');
-        }
-        
-        // Try getTranslated as final fallback
-        $translated = $blog->getTranslated($field);
-        if (!empty($translated) && trim($translated) !== '') {
-            return $translated;
+            $content = $rawValue[$locale] ?? $rawValue['en'] ?? ($rawValue['ja'] ?? '');
+            // Check if content is a JSON string that needs decoding
+            if (is_string($content) && (strpos($content, '{"') === 0 || strpos($content, '"{') === 0)) {
+                $decoded = json_decode($content, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $locale = app()->getLocale();
+                    return $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                }
+            }
+            return $content;
         }
         
         return '';
