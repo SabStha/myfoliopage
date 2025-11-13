@@ -78,8 +78,7 @@ class LinkedInController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('admin.blogs.edit', $blog)
-            ->with('status', 'Blog post imported from LinkedIn successfully!');
+        return redirect()->route('admin.blogs.index#list')->with('status', 'Blog post imported from LinkedIn successfully! You can now edit it from the list.');
     }
     
     /**

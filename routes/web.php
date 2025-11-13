@@ -563,8 +563,8 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
             // Strategy 2: If it's a quoted JSON string, remove outer quotes
             if (preg_match('/^"(.+)"$/s', $str, $matches)) {
                 $inner = $matches[1];
-                // Unescape the inner string
-                $inner = str_replace(['\\"', '\\n', '\\r', '\\t', '\\\\', '\\u'], ['"', "\n", "\r", "\t", '\\', '\\u'], $inner);
+                // Unescape the inner string - handle multiple levels of escaping
+                $inner = str_replace(['\\\\"', '\\"', '\\n', '\\r', '\\t', '\\\\', '\\u'], ['"', '"', "\n", "\r", "\t", '\\', '\\u'], $inner);
                 $decoded = json_decode($inner, true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                     $result = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
@@ -573,6 +573,28 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
                         return $decodeNestedJson($result, $maxDepth - 1);
                     }
                     return $result;
+                }
+            }
+            
+            // Strategy 2.5: Handle triple-encoded JSON (escaped quotes within escaped quotes)
+            if (preg_match('/^"(.+)"$/s', $str, $matches)) {
+                $inner = $matches[1];
+                // Try multiple unescape passes
+                for ($i = 0; $i < 3; $i++) {
+                    $inner = stripslashes($inner);
+                    // Remove outer quotes if they appear after unescaping
+                    if (preg_match('/^"(.+)"$/s', $inner, $innerMatches)) {
+                        $inner = $innerMatches[1];
+                    }
+                    $decoded = json_decode($inner, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $result = $decoded[$locale] ?? $decoded['en'] ?? ($decoded['ja'] ?? '');
+                        // If result is still a JSON string, decode recursively
+                        if (is_string($result) && $result !== $inner) {
+                            return $decodeNestedJson($result, $maxDepth - 1);
+                        }
+                        return $result;
+                    }
                 }
             }
             
@@ -631,6 +653,14 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
                     $finalContent = $decodeNestedJson($content);
                     // Only return if we got something meaningful
                     if (!empty($finalContent) && trim($finalContent) !== '') {
+                        // Decode Unicode escape sequences (\uXXXX)
+                        if (strpos($finalContent, '\\u') !== false) {
+                            $finalContent = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/i', function ($match) {
+                                return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+                            }, $finalContent);
+                        }
+                        // Decode other escape sequences
+                        $finalContent = stripcslashes($finalContent);
                         return $finalContent;
                     }
                 }

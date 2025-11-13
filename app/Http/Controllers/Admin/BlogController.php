@@ -106,7 +106,7 @@ class BlogController extends Controller
             $blog->media()->create(['title' => 'Cover', 'type' => 'image', 'path' => $path]);
         }
 
-        return redirect()->route('admin.blogs.index')->with('status', 'Blog post created');
+        return redirect()->route('admin.blogs.index#list')->with('status', 'Blog post created');
     }
 
     /**
@@ -194,7 +194,7 @@ class BlogController extends Controller
             $blog->media()->create(['title' => 'Cover', 'type' => 'image', 'path' => $path]);
         }
 
-        return redirect()->route('admin.blogs.index')->with('status', 'Blog post updated');
+        return redirect()->route('admin.blogs.index#list')->with('status', 'Blog post updated');
     }
 
     /**
@@ -206,7 +206,7 @@ class BlogController extends Controller
             abort(403, 'Unauthorized access');
         }
         $blog->delete();
-        return redirect()->route('admin.blogs.index')->with('status', 'Blog post deleted');
+        return redirect()->route('admin.blogs.index#list')->with('status', 'Blog post deleted');
     }
 
     /**
