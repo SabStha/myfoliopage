@@ -266,7 +266,7 @@
                             <input 
                                 type="file" 
                                 name="image" 
-                                accept="image/*,.pdf"
+                                accept="image/*"
                                 @change="previewImage($event)"
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none" />
                             <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.certificate.certificate_image_hint') }}</p>

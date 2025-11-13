@@ -21,13 +21,29 @@ class BlogController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $blogs = Blog::where('user_id', Auth::id())
             ->latest('published_at')
             ->latest('created_at')
             ->paginate(12);
-        return view('admin.blogs.index', compact('blogs'));
+        
+        // If editing a blog, load it
+        $editingBlog = null;
+        $allTags = collect();
+        $blogTags = '';
+        if ($request->has('edit')) {
+            $editingBlog = Blog::with('media', 'tags')
+                ->where('id', $request->edit)
+                ->where('user_id', Auth::id())
+                ->first();
+            if ($editingBlog) {
+                $allTags = Tag::orderBy('name')->get();
+                $blogTags = $editingBlog->tags->pluck('name')->join(', ');
+            }
+        }
+        
+        return view('admin.blogs.index', compact('blogs', 'editingBlog', 'allTags', 'blogTags'));
     }
 
     /**
@@ -129,9 +145,8 @@ class BlogController extends Controller
         } elseif ($blog->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access. This blog belongs to another user.');
         }
-        $allTags = Tag::orderBy('name')->get();
-        $blogTags = $blog->tags->pluck('name')->join(', ');
-        return view('admin.blogs.edit', compact('blog', 'allTags', 'blogTags'));
+        // Redirect to unified page with edit parameter
+        return redirect()->route('admin.blogs.index', ['edit' => $blog->id])->with('status', 'Edit blog post');
     }
 
     /**

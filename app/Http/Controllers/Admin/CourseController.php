@@ -118,7 +118,7 @@ class CourseController extends Controller
                 'sections' => 'nullable|array',
                 'sections.*' => 'exists:category_items,id',
                 'tags' => 'nullable|string',
-                'image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240', // Certificate/image/PDF file (10MB max)
+                'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // Certificate/image file (10MB max)
                 'screenshots' => 'nullable|array',
                 'screenshots.*' => 'image|max:8192',
             ]);
@@ -190,18 +190,14 @@ class CourseController extends Controller
         $data['user_id'] = Auth::id();
         $course = Course::create($data);
         
-        // Handle image/PDF upload (certificate/proof)
+        // Handle image upload (certificate/proof)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('courses', 'public');
             
-            // Determine file type based on MIME type
-            $mimeType = $file->getMimeType();
-            $fileType = str_starts_with($mimeType, 'image/') ? 'image' : 'document';
-            
             $course->media()->create([
                 'path' => $path,
-                'type' => $fileType,
+                'type' => 'image',
                 'name' => $file->getClientOriginalName(),
             ]);
         }
@@ -360,7 +356,7 @@ class CourseController extends Controller
                 'sections' => 'nullable|array',
                 'sections.*' => 'exists:category_items,id',
                 'tags' => 'nullable|string',
-                'image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240', // Certificate/image/PDF file (10MB max)
+                'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // Certificate/image file (10MB max)
                 'screenshots' => 'nullable|array',
                 'screenshots.*' => 'image|max:8192',
                 'delete_image' => 'nullable|integer|exists:media,id',
@@ -456,18 +452,14 @@ class CourseController extends Controller
             }
         }
         
-        // Handle image/PDF upload (certificate/proof)
+        // Handle image upload (certificate/proof)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('courses', 'public');
             
-            // Determine file type based on MIME type
-            $mimeType = $file->getMimeType();
-            $fileType = str_starts_with($mimeType, 'image/') ? 'image' : 'document';
-            
             $course->media()->create([
                 'path' => $path,
-                'type' => $fileType,
+                'type' => 'image',
                 'name' => $file->getClientOriginalName(),
             ]);
         }
