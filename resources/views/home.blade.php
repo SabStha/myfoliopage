@@ -157,7 +157,14 @@
       $imageOrder = $isReversed ? 1 : 2;
     @endphp
     <div class="relative z-20 hero-text-container w-full px-1 sm:px-2 md:px-0" style="transform: translateX({{ $textOffset }}px);" data-order="{{ $textOrder }}">
-       <p class="uppercase tracking-widest text-[10px] min-[375px]:text-xs sm:text-sm font-semibold mb-2 sm:mb-3 md:mb-4 relative z-10 hero-badge-offset" style="color: {{ $heroSection->badge_color ?? '#ffb400' }}; transform: translateX({{ $badgeOffset }}px);">{{ $heroSection ? $heroSection->getTranslated('badge_text') : __('app.hero.badge') }}</p>
+       @php
+         $badgeMobileSize = $heroSection->badge_size_mobile ?? 'text-xs';
+         $badgeTabletSize = $heroSection->badge_size_tablet ?? 'text-sm';
+         $badgeDesktopSize = $heroSection->badge_size_desktop ?? 'text-sm';
+         $badgeTextColor = $heroSection->badge_text_color ?? '#000000';
+         $badgeBgColor = $heroSection->badge_color ?? '#ffb400';
+       @endphp
+       <p class="uppercase tracking-widest {{ $badgeMobileSize }} sm:{{ $badgeTabletSize }} md:{{ $badgeDesktopSize }} font-semibold mb-2 sm:mb-3 md:mb-4 relative z-10 hero-badge-offset" style="color: {{ $badgeTextColor }}; background-color: {{ $badgeBgColor }}; padding: 0.25rem 0.5rem; border-radius: 0.25rem; display: inline-block; transform: translateX({{ $badgeOffset }}px);">{{ $heroSection ? $heroSection->getTranslated('badge_text') : __('app.hero.badge') }}</p>
       <h1 class="{{ $heroSection->heading_size_mobile ?? 'text-2xl' }} {{ $heroSection->heading_size_tablet ?? 'min-[375px]:text-3xl sm:text-4xl md:text-5xl' }} {{ $heroSection->heading_size_desktop ?? 'lg:text-6xl' }} font-extrabold leading-tight text-gray-900 break-words hyphens-auto">
         <span id="typed-head" class="headline" aria-label="{{ $heroSection ? $heroSection->getTranslated('heading_text') : __('app.hero.title') }}"></span>
       </h1>

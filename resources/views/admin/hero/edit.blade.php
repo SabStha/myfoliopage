@@ -58,7 +58,7 @@
         {{-- Badge/Tagline Section --}}
         <x-card class="p-6">
             <h2 class="text-xl font-semibold mb-4 text-gray-900">{{ __('app.admin.hero.badge_tagline') }}</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-4">
                 <div>
                     <x-dual-language-input 
                         name="badge_text" 
@@ -68,11 +68,49 @@
                         required
                     />
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.badge_color') }}</label>
-                    <div class="flex items-center gap-2">
-                        <input type="color" name="badge_color" value="{{ old('badge_color', $heroSection->badge_color ?? '#ffb400') }}" class="h-10 w-20 rounded border border-gray-300">
-                        <input type="text" value="{{ old('badge_color', $heroSection->badge_color ?? '#ffb400') }}" oninput="this.previousElementSibling.value=this.value" class="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="#ffb400">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.badge_color') }}</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" name="badge_color" value="{{ old('badge_color', $heroSection->badge_color ?? '#ffb400') }}" class="h-10 w-20 rounded border border-gray-300">
+                            <input type="text" value="{{ old('badge_color', $heroSection->badge_color ?? '#ffb400') }}" oninput="this.previousElementSibling.value=this.value" class="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="#ffb400">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.text_color') }}</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" name="badge_text_color" value="{{ old('badge_text_color', $heroSection->badge_text_color ?? '#000000') }}" class="h-10 w-20 rounded border border-gray-300">
+                            <input type="text" value="{{ old('badge_text_color', $heroSection->badge_text_color ?? '#000000') }}" oninput="this.previousElementSibling.value=this.value" class="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="#000000">
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.mobile_size') }}</label>
+                        <select name="badge_size_mobile" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="text-[10px]" {{ ($heroSection->badge_size_mobile ?? 'text-xs') == 'text-[10px]' ? 'selected' : '' }}>Text 10px</option>
+                            <option value="text-xs" {{ ($heroSection->badge_size_mobile ?? 'text-xs') == 'text-xs' ? 'selected' : '' }}>{{ __('app.admin.hero.text_3xl') }}</option>
+                            <option value="text-sm" {{ ($heroSection->badge_size_mobile ?? 'text-xs') == 'text-sm' ? 'selected' : '' }}>{{ __('app.admin.hero.text_4xl') }}</option>
+                            <option value="text-base" {{ ($heroSection->badge_size_mobile ?? 'text-xs') == 'text-base' ? 'selected' : '' }}>Text Base</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.tablet_size') }}</label>
+                        <select name="badge_size_tablet" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="text-xs" {{ ($heroSection->badge_size_tablet ?? 'text-sm') == 'text-xs' ? 'selected' : '' }}>{{ __('app.admin.hero.text_3xl') }}</option>
+                            <option value="text-sm" {{ ($heroSection->badge_size_tablet ?? 'text-sm') == 'text-sm' ? 'selected' : '' }}>{{ __('app.admin.hero.text_4xl') }}</option>
+                            <option value="text-base" {{ ($heroSection->badge_size_tablet ?? 'text-sm') == 'text-base' ? 'selected' : '' }}>Text Base</option>
+                            <option value="text-lg" {{ ($heroSection->badge_size_tablet ?? 'text-sm') == 'text-lg' ? 'selected' : '' }}>Text LG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.admin.hero.desktop_size') }}</label>
+                        <select name="badge_size_desktop" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="text-sm" {{ ($heroSection->badge_size_desktop ?? 'text-sm') == 'text-sm' ? 'selected' : '' }}>{{ __('app.admin.hero.text_4xl') }}</option>
+                            <option value="text-base" {{ ($heroSection->badge_size_desktop ?? 'text-sm') == 'text-base' ? 'selected' : '' }}>Text Base</option>
+                            <option value="text-lg" {{ ($heroSection->badge_size_desktop ?? 'text-sm') == 'text-lg' ? 'selected' : '' }}>Text LG</option>
+                            <option value="text-xl" {{ ($heroSection->badge_size_desktop ?? 'text-sm') == 'text-xl' ? 'selected' : '' }}>Text XL</option>
+                        </select>
                     </div>
                 </div>
             </div>
