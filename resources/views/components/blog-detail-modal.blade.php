@@ -13,7 +13,9 @@
             if (!this.slug) return;
             this.loading = true;
             try {
-                const response = await fetch(`/api/blogs/${this.slug}`);
+                // Get current locale from cookie or default to 'en'
+                const locale = document.cookie.match(/locale=([^;]+)/)?.[1] || 'en';
+                const response = await fetch(`/api/blogs/${this.slug}?lang=${locale}`);
                 if (response.ok) {
                     this.blog = await response.json();
                 } else {

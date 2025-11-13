@@ -639,10 +639,27 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     
     // Helper function to extract content from various formats
     $extractContent = function($field) use ($blog) {
-        $locale = app()->getLocale();
+        // Get locale from request (query param, session, cookie, or default)
+        $locale = request()->query('lang') 
+            ?? session('locale') 
+            ?? request()->cookie('locale') 
+            ?? app()->getLocale();
+        
+        // Ensure locale is valid
+        if (!in_array($locale, ['en', 'ja'])) {
+            $locale = 'en';
+        }
+        
+        // Temporarily set locale for getTranslated to work correctly
+        $originalLocale = app()->getLocale();
+        app()->setLocale($locale);
         
         // First try getTranslated - this handles array casts properly
-        $translated = $blog->getTranslated($field);
+        $translated = $blog->getTranslated($field, $locale);
+        
+        // Restore original locale
+        app()->setLocale($originalLocale);
+        
         if (!empty($translated) && trim($translated) !== '' && !str_contains($translated, 'QUERY LENGTH LIMIT')) {
             return $translated;
         }
