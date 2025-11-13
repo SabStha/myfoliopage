@@ -78,7 +78,10 @@
 
                 <!-- Blog Content -->
                 <div class="prose prose-lg dark:prose-invert max-w-none mb-8">
-                    <div class="text-gray-800 dark:text-gray-200 leading-relaxed text-base md:text-lg whitespace-pre-wrap" x-text="blog?.content || ''"></div>
+                    <div 
+                        class="text-gray-800 dark:text-gray-200 leading-relaxed text-base md:text-lg" 
+                        x-html="blog?.content ? blog.content.replace(/\n/g, '<br>') : '<p class=\"text-gray-500 italic\">No content available.</p>'"
+                    ></div>
                 </div>
 
                 <!-- Divider -->

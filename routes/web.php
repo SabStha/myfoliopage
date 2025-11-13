@@ -515,12 +515,36 @@ Route::get('/api/blogs/{blog:slug}', function (\App\Models\Blog $blog) {
     $image = $blog->media->where('type', 'image')->first();
     $publishedAt = $blog->published_at ? $blog->published_at : $blog->created_at;
     
+    // Get content with fallback to excerpt if content is empty
+    $content = $blog->getTranslated('content');
+    $excerpt = $blog->getTranslated('excerpt');
+    
+    // If content is empty, use excerpt as fallback
+    if (empty($content) || trim($content) === '') {
+        $content = $excerpt;
+    }
+    
+    // If still empty, try to get from raw content field
+    if (empty($content) || trim($content) === '') {
+        $rawContent = $blog->content;
+        if (is_array($rawContent)) {
+            $content = $rawContent[app()->getLocale()] ?? $rawContent['en'] ?? '';
+        } elseif (is_string($rawContent)) {
+            $decoded = json_decode($rawContent, true);
+            if (is_array($decoded)) {
+                $content = $decoded[app()->getLocale()] ?? $decoded['en'] ?? '';
+            } else {
+                $content = $rawContent;
+            }
+        }
+    }
+    
     return response()->json([
         'id' => $blog->id,
-        'title' => $blog->getTranslated('title'),
+        'title' => $blog->getTranslated('title') ?: 'Untitled',
         'slug' => $blog->slug,
-        'excerpt' => $blog->getTranslated('excerpt'),
-        'content' => $blog->getTranslated('content'),
+        'excerpt' => $excerpt,
+        'content' => $content ?: 'No content available.',
         'category' => $blog->category ?? 'Uncategorized',
         'published_at' => $publishedAt->format('M d, Y'),
         'published_at_raw' => $publishedAt->toIso8601String(),
