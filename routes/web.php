@@ -583,28 +583,43 @@ Route::get('/api/blogs', function (Request $request) {
         }
     }
     
+    // Get locale from request (query param, session, cookie, or default)
+    $locale = $request->query('lang') 
+        ?? session('locale') 
+        ?? $request->cookie('locale') 
+        ?? app()->getLocale();
+    
+    // Ensure locale is valid
+    if (!in_array($locale, ['en', 'ja'])) {
+        $locale = 'en';
+    }
+    
+    // Temporarily set locale for getTranslated to work correctly
+    $originalLocale = app()->getLocale();
+    app()->setLocale($locale);
+    
     $blogs = $query->with(['media', 'tags'])
         ->orderBy('published_at', 'desc')
         ->orderBy('created_at', 'desc')
         ->get()
-        ->map(function($blog) {
+        ->map(function($blog) use ($locale) {
             $image = $blog->media->where('type', 'image')->first();
             $publishedAt = $blog->published_at ? $blog->published_at : $blog->created_at;
             
-            $excerpt = $blog->getTranslated('excerpt');
+            $excerpt = $blog->getTranslated('excerpt', $locale);
             // Filter out error messages from excerpt
             if (!empty($excerpt) && str_contains($excerpt, 'QUERY LENGTH LIMIT')) {
                 $excerpt = null;
             }
             // If excerpt is empty or has errors, generate from content
             if (empty($excerpt)) {
-                $contentForExcerpt = $blog->getTranslated('content') ?? '';
+                $contentForExcerpt = $blog->getTranslated('content', $locale) ?? '';
                 if (!empty($contentForExcerpt) && !str_contains($contentForExcerpt, 'QUERY LENGTH LIMIT')) {
                     $excerpt = substr(strip_tags($contentForExcerpt), 0, 150) . '...';
                 }
             }
             
-            $content = $blog->getTranslated('content');
+            $content = $blog->getTranslated('content', $locale);
             // Filter out error messages from content
             if (!empty($content) && str_contains($content, 'QUERY LENGTH LIMIT')) {
                 $content = '';
@@ -612,7 +627,7 @@ Route::get('/api/blogs', function (Request $request) {
             
             return [
                 'id' => $blog->id,
-                'title' => $blog->getTranslated('title'),
+                'title' => $blog->getTranslated('title', $locale),
                 'slug' => $blog->slug,
                 'excerpt' => $excerpt,
                 'content' => $content,
@@ -624,6 +639,9 @@ Route::get('/api/blogs', function (Request $request) {
                 'tags' => $blog->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
             ];
         });
+    
+    // Restore original locale
+    app()->setLocale($originalLocale);
     
     return response()->json($blogs);
 })->name('api.blogs.index');

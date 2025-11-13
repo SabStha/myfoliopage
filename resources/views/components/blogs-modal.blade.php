@@ -12,10 +12,16 @@
         async loadBlogs() {
             this.loading = true;
             try {
+                // Get current locale from cookie or default to 'en'
+                const locale = document.cookie.match(/locale=([^;]+)/)?.[1] || 'en';
+                
                 // Extract username from current URL path
                 const pathParts = window.location.pathname.split('/').filter(p => p);
                 const username = pathParts[0] || null;
-                const apiUrl = username ? `/api/blogs?username=${encodeURIComponent(username)}` : '/api/blogs';
+                let apiUrl = username ? `/api/blogs?username=${encodeURIComponent(username)}` : '/api/blogs';
+                
+                // Add locale parameter
+                apiUrl += (apiUrl.includes('?') ? '&' : '?') + `lang=${locale}`;
                 
                 const response = await fetch(apiUrl);
                 this.blogs = await response.json();
