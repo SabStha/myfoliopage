@@ -194,7 +194,7 @@ class CertificateController extends Controller
                 'sections' => 'nullable|array',
                 'sections.*' => 'exists:category_items,id',
                 'tags' => 'nullable|string',
-                'image' => 'nullable|image|max:8192', // Certificate image file
+                'image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240', // Certificate image/PDF file (10MB max)
             ]);
         } catch (ValidationException $e) {
             // Return JSON response for AJAX requests
@@ -263,13 +263,18 @@ class CertificateController extends Controller
 
         $certificate = Certificate::create($data);
         
-        // Handle image upload
+        // Handle image/PDF upload
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('certificates', 'public');
+            
+            // Determine file type based on MIME type
+            $mimeType = $file->getMimeType();
+            $fileType = str_starts_with($mimeType, 'image/') ? 'image' : 'document';
+            
             $certificate->media()->create([
                 'path' => $path,
-                'type' => 'image',
+                'type' => $fileType,
                 'name' => $file->getClientOriginalName(),
             ]);
         }
@@ -462,13 +467,18 @@ class CertificateController extends Controller
             }
         }
         
-        // Handle image upload
+        // Handle image/PDF upload
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('certificates', 'public');
+            
+            // Determine file type based on MIME type
+            $mimeType = $file->getMimeType();
+            $fileType = str_starts_with($mimeType, 'image/') ? 'image' : 'document';
+            
             $certificate->media()->create([
                 'path' => $path,
-                'type' => 'image',
+                'type' => $fileType,
                 'name' => $file->getClientOriginalName(),
             ]);
         }
