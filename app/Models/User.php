@@ -147,4 +147,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Room::class);
     }
+
+    public function bookPages()
+    {
+        return $this->hasMany(BookPage::class);
+    }
+
+    public function codeSummaries()
+    {
+        return $this->hasMany(CodeSummary::class);
+    }
 }
