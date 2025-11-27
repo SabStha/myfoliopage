@@ -4,7 +4,13 @@
     <script>
         window.courseCreateData = {
             sections: @js($sections->map(function($s) {
-                return ['id' => $s->id, 'name' => $s->getTranslated('title'), 'title' => $s->getTranslated('title'), 'category_id' => $s->category_id, 'category_name' => $s->category ? $s->category->getTranslated('name') : 'Uncategorized'];
+                return [
+                    'id' => $s->id, 
+                    'name' => optional($s)->getTranslated('title') ?? $s->slug, 
+                    'title' => optional($s)->getTranslated('title') ?? $s->slug, 
+                    'category_id' => $s->category_id, 
+                    'category_name' => optional($s->category)->getTranslated('name') ?? 'Uncategorized'
+                ];
             })),
             selectedCategories: [],
             translations: {

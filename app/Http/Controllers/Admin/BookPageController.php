@@ -114,6 +114,17 @@ class BookPageController extends Controller
                 ->render();
         }
         
+        \Log::info('BookPageController::create - Data prepared', [
+            'categories_count' => $categories->count(),
+            'sections_count' => $sections->count(),
+            'sections_sample' => $sections->take(3)->map(fn($s) => [
+                'id' => $s->id,
+                'category_id' => $s->category_id,
+                'category_loaded' => $s->relationLoaded('category'),
+                'category_is_null' => is_null($s->category),
+            ])
+        ]);
+        
         return view('admin.book-pages.create', compact('categories', 'allTags', 'sections', 'sectionsByCategory'));
     }
 

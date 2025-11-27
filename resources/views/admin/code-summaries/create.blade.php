@@ -4,7 +4,13 @@
     <script>
         window.codeSummaryCreateData = {
             sections: @js($sections->map(function($s) {
-                return ['id' => $s->id, 'name' => $s->getTranslated('title'), 'title' => $s->getTranslated('title'), 'category_id' => $s->category_id, 'category_name' => $s->category ? $s->category->getTranslated('name') : 'Uncategorized'];
+                return [
+                    'id' => $s->id, 
+                    'name' => optional($s)->getTranslated('title') ?? $s->slug, 
+                    'title' => optional($s)->getTranslated('title') ?? $s->slug, 
+                    'category_id' => $s->category_id, 
+                    'category_name' => optional($s->category)->getTranslated('name') ?? 'Uncategorized'
+                ];
             })),
             selectedCategories: [],
             translations: {
@@ -866,7 +872,7 @@
                                 class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all outline-none min-h-[150px]"
                             >
                                 @forelse($sections ?? [] as $section)
-                                    <option value="{{ $section->id }}">{{ $section->category ? ($section->category->getTranslated('name') ?: $section->category->slug) : 'Uncategorized' }} → {{ $section->getTranslated('title') ?: $section->slug }}</option>
+                                    <option value="{{ $section->id }}">{{ optional($section->category)->getTranslated('name') ?: optional($section->category)->slug ?: 'Uncategorized' }} → {{ optional($section)->getTranslated('title') ?: $section->slug }}</option>
                                 @empty
                                     <option value="" disabled>No sections available. Please create sections first.</option>
                                 @endforelse
