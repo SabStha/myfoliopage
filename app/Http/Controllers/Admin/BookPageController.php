@@ -189,7 +189,7 @@ class BookPageController extends Controller
             ])->withInput();
         }
 
-        // Quality guardrails: If Applied Snippet is empty 竊・require Result/Evidence
+        // Quality guardrails: If Applied Snippet is empty → require Result/Evidence
         if (empty($data['applied_snippet']) && empty($data['result_evidence'])) {
             return back()->withErrors([
                 'result_evidence' => 'Result/Evidence is required when Applied Snippet is empty.'
@@ -433,7 +433,7 @@ class BookPageController extends Controller
             ];
         }
 
-        // Quality guardrails: If Applied Snippet is empty 竊・require Result/Evidence
+        // Quality guardrails: If Applied Snippet is empty → require Result/Evidence
         if (empty($data['applied_snippet']) && empty($data['result_evidence'])) {
             return back()->withErrors([
                 'result_evidence' => 'Result/Evidence is required when Applied Snippet is empty.'
@@ -614,4 +614,3 @@ Format your response as JSON with the following structure:
         }
     }
 }
-
