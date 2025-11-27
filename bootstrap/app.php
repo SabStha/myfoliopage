@@ -13,10 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\CheckSessionCookie::class,
         ]);
+        
+        // Redirect guests to login, and authenticated users to admin dashboard
+        $middleware->redirectTo(
+            guests: '/login',
+            users: '/admin/dashboard'
+        );
+
         $middleware->trustProxies(at: '*');
         // Use custom Authenticate middleware - override the default auth middleware
         $middleware->alias([
