@@ -48,84 +48,90 @@ class BookPageController extends Controller
      */
     public function create(Request $request)
     {
-        // Debug logging
-        \Log::info('BookPageController::create called', [
-            'isAjax' => $request->header('X-Requested-With') === 'XMLHttpRequest',
-            'header' => $request->header('X-Requested-With'),
-            'auth_check' => Auth::check(),
-            'user_id' => Auth::id(),
-            'session_id' => $request->session()->getId(),
-            'has_session' => $request->hasSession(),
-        ]);
-        
-        // Ensure user is authenticated - middleware should handle this, but double-check
-        if (!Auth::check()) {
-            // Check if this is an AJAX request
-            if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
-                \Log::warning('Unauthenticated AJAX request to BookPageController::create');
-                return response()->json(['error' => 'Unauthorized', 'message' => 'Please log in to continue'], 401);
+        try {
+            // Debug logging
+            \Log::info('BookPageController::create called', [
+                'isAjax' => $request->header('X-Requested-With') === 'XMLHttpRequest',
+                'header' => $request->header('X-Requested-With'),
+                'auth_check' => Auth::check(),
+                'user_id' => Auth::id(),
+                'session_id' => $request->session()->getId(),
+                'has_session' => $request->hasSession(),
+            ]);
+            
+            // Ensure user is authenticated - middleware should handle this, but double-check
+            if (!Auth::check()) {
+                // Check if this is an AJAX request
+                if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+                    \Log::warning('Unauthenticated AJAX request to BookPageController::create');
+                    return response()->json(['error' => 'Unauthorized', 'message' => 'Please log in to continue'], 401);
+                }
+                return redirect()->route('login');
             }
-            return redirect()->route('login');
+            
+            $userId = Auth::id();
+            
+            // Always show all categories and sections for the user when creating content
+            // This ensures users can always see and select from all their categories
+            $categories = Category::where('user_id', $userId)
+                ->orderBy('position')
+                ->orderBy('slug')
+                ->get();
+            
+            // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
+            // First get user's category IDs
+            $userCategoryIds = Category::where('user_id', $userId)->pluck('id')->toArray();
+            
+            $sections = CategoryItem::where(function($query) use ($userId, $userCategoryIds) {
+                    $query->where('user_id', $userId)
+                          ->orWhere(function($q) use ($userCategoryIds) {
+                              $q->whereNull('user_id')
+                                ->whereIn('category_id', $userCategoryIds);
+                          });
+                })
+                ->with('category')
+                ->orderBy('category_id')
+                ->orderBy('position')
+                ->get();
+            
+            $allTags = Tag::orderBy('name')->get();
+            // Get sections grouped by category for easier selection
+            $sectionsByCategory = $sections->groupBy('category_id');
+            
+            // If this is an AJAX request (for modal), return just the form
+            // Check for AJAX request by checking the X-Requested-With header directly
+            $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->ajax() || $request->wantsJson();
+            
+            \Log::info('BookPageController::create - checking AJAX', [
+                'isAjax' => $isAjax,
+                'ajax_method' => $request->ajax(),
+                'wantsJson' => $request->wantsJson(),
+                'header' => $request->header('X-Requested-With'),
+                'accept' => $request->header('Accept'),
+            ]);
+            
+            if ($isAjax) {
+                return view('admin.book-pages.create', compact('categories', 'allTags', 'sections', 'sectionsByCategory'))
+                    ->render();
+            }
+            
+            \Log::info('BookPageController::create - Data prepared', [
+                'categories_count' => $categories->count(),
+                'sections_count' => $sections->count(),
+                'sections_sample' => $sections->take(3)->map(fn($s) => [
+                    'id' => $s->id,
+                    'category_id' => $s->category_id,
+                    'category_loaded' => $s->relationLoaded('category'),
+                    'category_is_null' => is_null($s->category),
+                ])
+            ]);
+            
+            return view('admin.book-pages.create', compact('categories', 'allTags', 'sections', 'sectionsByCategory'));
+        } catch (\Exception $e) {
+            \Log::error('BookPageController::create Error: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json(['error' => 'Server Error', 'message' => $e->getMessage()], 500);
         }
-        
-        $userId = Auth::id();
-        
-        // Always show all categories and sections for the user when creating content
-        // This ensures users can always see and select from all their categories
-        $categories = Category::where('user_id', $userId)
-            ->orderBy('position')
-            ->orderBy('slug')
-            ->get();
-        
-        // Get sections that belong to the user, or sections without user_id that belong to user's categories (backward compatibility)
-        // First get user's category IDs
-        $userCategoryIds = Category::where('user_id', $userId)->pluck('id')->toArray();
-        
-        $sections = CategoryItem::where(function($query) use ($userId, $userCategoryIds) {
-                $query->where('user_id', $userId)
-                      ->orWhere(function($q) use ($userCategoryIds) {
-                          $q->whereNull('user_id')
-                            ->whereIn('category_id', $userCategoryIds);
-                      });
-            })
-            ->with('category')
-            ->orderBy('category_id')
-            ->orderBy('position')
-            ->get();
-        
-        $allTags = Tag::orderBy('name')->get();
-        // Get sections grouped by category for easier selection
-        $sectionsByCategory = $sections->groupBy('category_id');
-        
-        // If this is an AJAX request (for modal), return just the form
-        // Check for AJAX request by checking the X-Requested-With header directly
-        $isAjax = $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->ajax() || $request->wantsJson();
-        
-        \Log::info('BookPageController::create - checking AJAX', [
-            'isAjax' => $isAjax,
-            'ajax_method' => $request->ajax(),
-            'wantsJson' => $request->wantsJson(),
-            'header' => $request->header('X-Requested-With'),
-            'accept' => $request->header('Accept'),
-        ]);
-        
-        if ($isAjax) {
-            return view('admin.book-pages.create', compact('categories', 'allTags', 'sections', 'sectionsByCategory'))
-                ->render();
-        }
-        
-        \Log::info('BookPageController::create - Data prepared', [
-            'categories_count' => $categories->count(),
-            'sections_count' => $sections->count(),
-            'sections_sample' => $sections->take(3)->map(fn($s) => [
-                'id' => $s->id,
-                'category_id' => $s->category_id,
-                'category_loaded' => $s->relationLoaded('category'),
-                'category_is_null' => is_null($s->category),
-            ])
-        ]);
-        
-        return view('admin.book-pages.create', compact('categories', 'allTags', 'sections', 'sectionsByCategory'));
     }
 
     /**
