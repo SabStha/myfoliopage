@@ -42,6 +42,13 @@ class Room extends Model
             'description',
             'summary',
         ];
+            'summary',
+        ];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function media(): MorphMany
