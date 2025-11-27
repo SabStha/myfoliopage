@@ -383,7 +383,7 @@
                                     @input="handleTitleInput($event.target.value, 'en')"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none" 
                                     placeholder="{{ __('app.admin.book_page.title_placeholder') }}"
-                                    required />
+                                    placeholder="{{ __('app.admin.book_page.title_placeholder') }}" />
                                 <p class="text-xs text-gray-500 mt-1">{{ __('app.common.type_in_english_auto_translate') }}</p>
                             </div>
                             <div x-show="titleLang === 'ja'" 
@@ -397,7 +397,7 @@
                                     @input="handleTitleInput($event.target.value, 'ja')"
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none" 
                                     placeholder="{{ __('app.admin.book_page.title_placeholder') }}"
-                                    required />
+                                    placeholder="{{ __('app.admin.book_page.title_placeholder') }}" />
                                 <p class="text-xs text-gray-500 mt-1">{{ __('app.common.type_in_japanese_auto_translate') }}</p>
                             </div>
                         </div>
@@ -467,7 +467,7 @@
                                     rows="4" 
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none resize-none" 
                                     placeholder="{{ __('app.admin.categories.summary_placeholder') }}"
-                                    required></textarea>
+                                    placeholder="{{ __('app.admin.categories.summary_placeholder') }}"></textarea>
                                 <p class="text-xs text-gray-500 mt-1">{{ __('app.common.type_in_english_auto_translate') }}</p>
                             </div>
                             <div x-show="summaryLang === 'ja'" 
@@ -482,7 +482,7 @@
                                     rows="4" 
                                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none resize-none" 
                                     placeholder="{{ __('app.admin.categories.summary_placeholder') }}"
-                                    required></textarea>
+                                    placeholder="{{ __('app.admin.categories.summary_placeholder') }}"></textarea>
                                 <p class="text-xs text-gray-500 mt-1">{{ __('app.common.type_in_japanese_auto_translate') }}</p>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">{{ __('app.admin.book_page.required_field') }}</p>
