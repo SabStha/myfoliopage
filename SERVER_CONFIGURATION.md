@@ -142,3 +142,4 @@ No additional Laravel configuration needed.
 - **Storage**: Ensure your server has enough disk space for large image files.
 - **Backup**: Always backup your configuration files before making changes.
 
+

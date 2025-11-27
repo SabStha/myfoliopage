@@ -4,112 +4,6 @@
 <div class="min-h-screen snap-y snap-mandatory overflow-y-auto">
   {{-- HERO --}}
   <section id="hero" class="relative snap-start min-h-[85vh] sm:h-[85vh] flex flex-col" style="background-color: {{ ($heroSection->background_color ?? '#e0e7ff') }}; overflow-x: visible; overflow-y: visible;">
-  <style>
-    @keyframes blobPulse {
-      0% { transform: translateX(0) scale(1.00); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.10)); }
-      50% { transform: translateX(-2.2%) scale(1.05); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.14)); }
-      100% { transform: translateX(1.2%) scale(1.03); filter: drop-shadow(0 14px 26px rgba(0,0,0,0.12)); }
-    }
-    .animate-blob { 
-      animation: blobPulse 5s ease-in-out infinite alternate; 
-      transform-origin: 80% 50%;
-      will-change: transform, filter;
-      isolation: isolate; /* Isolate the animation so it doesn't affect siblings */
-    }
-    .hover-lift { transition: transform .3s ease-in-out, box-shadow .3s ease-in-out; }
-    .hover-lift:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 20px 30px rgba(0,0,0,.15); }
-    .btn-lift { transition: transform .2s ease-in-out, box-shadow .2s ease-in-out, filter .2s ease-in-out; }
-    .btn-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 16px rgba(0,0,0,.12); filter: brightness(0.98); }
-    #typed-head { position: relative; white-space: pre-wrap; word-wrap: break-word; }
-    @keyframes caretBlink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
-    #typed-head::after { content: '▌'; margin-left: 2px; animation: caretBlink 1s step-end infinite; color: #111; }
-    .headline { display: inline-block; background-image: linear-gradient(currentColor, currentColor); background-size: 0% 2px; background-repeat: no-repeat; background-position: left 100%; transition: background-size .4s ease-in-out, color .3s ease-in-out, transform .3s ease-in-out; }
-    .headline:hover { background-size: 100% 2px; color: #0f172a; transform: translateY(-2px); }
-    /* Blob hover interaction */
-    .blob-interactive { 
-      transition: transform .45s ease-in-out, filter .45s ease-in-out; 
-      will-change: transform, filter;
-      isolation: isolate; /* Prevent affecting other elements */
-    }
-    .blob-hover:hover .blob-interactive { 
-      transform: scale(1.10) translateX(-2%); 
-      filter: drop-shadow(0 20px 36px rgba(0,0,0,.16)); 
-    }
-    /* Lock text and image container positions - but allow transforms */
-    .hero-text-container { 
-      position: relative !important; 
-      isolation: isolate;
-      overflow: hidden; /* Prevent content overflow */
-      max-width: 100%;
-      width: 100%;
-    }
-    .hero-image-container { 
-      position: absolute !important; 
-      isolation: isolate;
-      will-change: auto;
-      max-width: 100%;
-    }
-    /* Ensure images don't get cut off */
-    .hero-image-container img {
-      object-position: center !important;
-      max-width: 100%;
-      height: auto;
-    }
-    /* When reversed, ensure left-aligned positioning works with padding */
-    .hero-layout-reversed .hero-image-container {
-      left: 0.5rem !important; /* Minimal padding for very small screens */
-    }
-    @media (min-width: 375px) {
-      .hero-layout-reversed .hero-image-container {
-        left: 1rem !important; /* Slightly more padding for small screens */
-      }
-    }
-    @media (min-width: 640px) {
-      .hero-layout-reversed .hero-image-container {
-        left: 2rem !important; /* Restore padding for larger screens */
-      }
-    }
-    /* Prevent parent containers from clipping the image */
-    .blob-hover {
-      overflow-x: visible !important;
-      overflow-y: visible !important;
-      max-width: 100%;
-    }
-    /* Responsive offsets - disable on very small screens */
-    @media (max-width: 640px) {
-      .hero-text-container[style*="translateX"] {
-        transform: translateX(0) !important;
-      }
-      .hero-image-container[style*="translateX"] {
-        transform: translateX(0) !important;
-      }
-      .hero-badge-offset[style*="translateX"] {
-        transform: translateX(0) !important;
-      }
-    }
-    /* Ensure blob doesn't overflow on small screens */
-    @media (max-width: 640px) {
-      .blob-hover svg {
-        max-width: 100%;
-        overflow: hidden;
-      }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .animate-blob, .hover-lift, .btn-lift { animation: none !important; transition: none !important; }
-    }
-    /* Ensure grid order works for layout reversal */
-    @media (min-width: 1024px) {
-      .hero-layout-container {
-        display: grid !important;
-      }
-      .hero-layout-container > [data-order="1"] {
-        order: 1;
-      }
-      .hero-layout-container > [data-order="2"] {
-        order: 2;
-      }
-    }
-  </style>
    @if(($heroSection->nav_visible ?? true) && !empty($heroSection->navigation_links))
    <nav class="absolute right-3 top-3 sm:right-6 sm:top-6 z-30 hidden md:flex items-center gap-4 lg:gap-10 font-medium text-sm lg:text-base" style="color: {{ $heroSection->navigation_text_color ?? '#374151' }};">
      @foreach($heroSection->getTranslatedNavigationLinks() as $navLink)
@@ -241,45 +135,10 @@
    </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var el = document.getElementById('typed-head');
-      if (!el) return;
-      var full = el.getAttribute('aria-label') || '';
-      var i = 0; var speed = 55; var typing = false; var timer;
-      function step() {
-        if (i <= full.length) {
-          el.textContent = full.slice(0, i);
-          i++;
-          timer = setTimeout(step, speed);
-        } else { typing = false; }
-      }
-      function startTyping(reset) {
-        if (typing) return; // avoid overlapping
-        if (reset) { clearTimeout(timer); i = 0; }
-        typing = true; step();
-      }
-      // initial slow typing only
-      startTyping(true);
-
-      // Profile image rotation
-      var profileImages = document.querySelectorAll('.profile-image');
-      if (profileImages.length > 1) {
-        var currentIndex = 0;
-        var rotationInterval = {{ ($heroSection->image_rotation_interval ?? 2000) }};
-        var imageInterval = setInterval(function() {
-          // Fade out current image
-          profileImages[currentIndex].classList.remove('opacity-100');
-          profileImages[currentIndex].classList.add('opacity-0');
-          
-          // Move to next image
-          currentIndex = (currentIndex + 1) % profileImages.length;
-          
-          // Fade in next image
-          profileImages[currentIndex].classList.remove('opacity-0');
-          profileImages[currentIndex].classList.add('opacity-100');
-        }, rotationInterval);
-      }
-    });
+    // Pass data to external JS
+    window.profileImages = @json($finalProfileImages ?? []);
+    window.imageRotationInterval = {{ ($heroSection->image_rotation_interval ?? 2000) }};
+    window.typedHeadLabel = "{{ $heroSection ? $heroSection->getTranslated('heading_text') : __('app.hero.title') }}";
   </script>
  </section>
 

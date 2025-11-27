@@ -156,6 +156,7 @@
                                         label="Title" 
                                         required="true"
                                     />
+                                    <p class="text-xs text-gray-500 mt-1">Both English and Japanese translations are required.</p>
                                     @error('title')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -182,12 +183,14 @@
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-sm mb-1">Content</label>
+                                    <label class="block text-sm mb-1">Content <span class="text-red-500">*</span></label>
                                     <x-dual-language-input 
                                         name="content" 
                                         label="Content" 
                                         rows="10"
+                                        required="true"
                                     />
+                                    <p class="text-xs text-gray-500 mt-1">Both English and Japanese translations are required.</p>
                                     @error('content')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -338,6 +341,7 @@
                                         :value="$editingBlog->getTranslations('title')"
                                         required="true"
                                     />
+                                    <p class="text-xs text-gray-500 mt-1">Both English and Japanese translations are required.</p>
                                     @error('title')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -365,13 +369,15 @@
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-sm mb-1">Content</label>
+                                    <label class="block text-sm mb-1">Content <span class="text-red-500">*</span></label>
                                     <x-dual-language-input 
                                         name="content" 
                                         label="Content" 
                                         :value="$editingBlog->getTranslations('content')"
                                         rows="10"
+                                        required="true"
                                     />
+                                    <p class="text-xs text-gray-500 mt-1">Both English and Japanese translations are required.</p>
                                     @error('content')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
