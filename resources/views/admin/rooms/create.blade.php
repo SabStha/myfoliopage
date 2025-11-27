@@ -4,7 +4,7 @@
     <script>
         window.roomCreateData = {
             sections: @js($sections->map(function($s) {
-                return ['id' => $s->id, 'name' => $s->getTranslated('title'), 'title' => $s->getTranslated('title'), 'category_id' => $s->category_id, 'category_name' => $s->category->getTranslated('name')];
+                return ['id' => $s->id, 'name' => $s->getTranslated('title'), 'title' => $s->getTranslated('title'), 'category_id' => $s->category_id, 'category_name' => $s->category ? $s->category->getTranslated('name') : 'Uncategorized'];
             })),
             selectedCategories: []
         };
@@ -816,7 +816,7 @@
                                 size="5">
                                 @forelse($sections ?? [] as $section)
                                     <option value="{{ $section->id }}" {{ in_array($section->id, old('sections', [])) ? 'selected' : '' }}>
-                                        {{ $section->category->getTranslated('name') ?: $section->category->slug }} → {{ $section->getTranslated('title') ?: $section->slug }}
+                                        {{ $section->category ? ($section->category->getTranslated('name') ?: $section->category->slug) : 'Uncategorized' }} → {{ $section->getTranslated('title') ?: $section->slug }}
                                     </option>
                                 @empty
                                     <option value="" disabled>No sections available. Please create sections first.</option>
