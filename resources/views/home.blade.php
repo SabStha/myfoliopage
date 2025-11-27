@@ -196,7 +196,7 @@
   <x-blog-section :blogs="$blogs" />
 
   {{-- TESTIMONIALS SECTION --}}
-  <x-testimonials-section />
+  <x-testimonials-section :user="$user" />
 
   {{-- FOOTER --}}
   <x-footer />

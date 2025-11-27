@@ -1,3 +1,4 @@
+@props(['user' => null])
 <section id="testimonials" class="bg-neutral-100 py-12 sm:py-14 md:py-16 px-4 sm:px-6 md:px-12">
   <div class="max-w-7xl mx-auto">
     <!-- Header Section -->
@@ -94,7 +95,14 @@
         </style>
         <div class="testimonials-carousel-container" style="width: 200%; display: flex;">
           @php
-            $testimonials = \App\Models\Testimonial::published()->ordered()->with('media')->get();
+            $query = \App\Models\Testimonial::published()->ordered()->with('media');
+            
+            // Filter by user if provided
+            if (isset($user) && $user) {
+                $query->where('user_id', $user->id);
+            }
+            
+            $testimonials = $query->get();
             
             // If no testimonials, show empty state
             if ($testimonials->isEmpty()) {
